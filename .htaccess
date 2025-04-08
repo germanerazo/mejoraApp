@@ -1,0 +1,38 @@
+# Activar el motor de reescritura de URLs
+RewriteEngine On
+
+# Redirigir todo el tráfico a www (si lo deseas)
+RewriteCond %{HTTP_HOST} ^localhost.mejora$
+RewriteRule ^(.*)$ http://www.localhost.mejora/$1 [R=301,L]
+
+# Forzar HTTPS si tienes un certificado SSL
+# RewriteCond %{HTTPS} off
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Redirigir a la página principal si no se proporciona una ruta
+RewriteRule ^$ /index.php [L]
+
+# Evitar el acceso a archivos .htaccess y otros archivos ocultos
+<Files .htaccess>
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Evitar el acceso a archivos .env, .git, y otros archivos de configuración
+<FilesMatch "^\.">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Habilitar la visualización de errores (solo en desarrollo)
+php_flag display_errors On
+php_value error_reporting E_ALL
+
+# Especificar la versión de PHP si es necesario (depende de tu servidor)
+# AddHandler application/x-httpd-php73 .php
+
+# Asegúrate de que el directorio /mejoraApp/ sea accesible
+<Directory "/Users/germanerazo/Desktop/Proyectos/Mejora/MejoraApp/mejoraApp">
+    AllowOverride All
+    Require all granted
+</Directory>

@@ -1,0 +1,9 @@
+{
+    "connection" : {
+        "server" : "162.241.60.183",
+        "user" : "mejorac3_german",
+        "password" : "Ot&TW27LI_)A",
+        "database" : "mejorac3_mejorabd",
+        "port" : 3306
+    }
+}
