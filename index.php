@@ -143,4 +143,7 @@ $connection = new connection;
     </div>
 
 </body>
+<footer>    
+<p>© 2025 MejoraApp. Todos los derechos reservados.</p>
+</footer>
 </html>
