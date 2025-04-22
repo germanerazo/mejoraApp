@@ -91,29 +91,39 @@ class users extends connection {
     public function put($json) {
         $_answers = new answers;
         $data = json_decode($json, true);
-        if(!isset($data['userId'])) {
-            return $_answers->error_400();
+        if(!isset($data['token'])) {
+            return $_answers->error_401();
         } else {
-            $this->id = $data['userId'];
-            if(isset($data['name'])) { $this->name = $data['name']; }
-            if(isset($data['email'])) { $this->email = $data['email']; }
-            if(isset($data['cc'])) { $this->cc = $data['cc']; }
-            if(isset($data['idClient'])) { $this->idClient = $data['idClient']; }
-            if(isset($data['password'])) { 
-                $this->password = $data['password']; 
-                $this->password = parent::encript($this->password);
-                $this->passwordMD5 = parent::encriptMD5($this->password);
-            }
-            if(isset($data['profile'])) { $this->profile = $data['profile']; }
-            $res = $this->updateUser();
-            if ($res) {
-                $response = $_answers->response;
-                $response["result"] = array(
-                    "userId" => $this->id
-                );
-                return $response;
+            $this->token = $data['token'];
+            $arrayToken = $this->searchToken();
+            if($arrayToken) {
+                if(!isset($data['userId'])) {
+                    return $_answers->error_400();
+                } else {
+                    $this->id = $data['userId'];
+                    if(isset($data['name'])) { $this->name = $data['name']; }
+                    if(isset($data['email'])) { $this->email = $data['email']; }
+                    if(isset($data['cc'])) { $this->cc = $data['cc']; }
+                    if(isset($data['idClient'])) { $this->idClient = $data['idClient']; }
+                    if(isset($data['password'])) { 
+                        $this->password = $data['password']; 
+                        $this->password = parent::encript($this->password);
+                        $this->passwordMD5 = parent::encriptMD5($this->password);
+                    }
+                    if(isset($data['profile'])) { $this->profile = $data['profile']; }
+                    $res = $this->updateUser();
+                    if ($res) {
+                        $response = $_answers->response;
+                        $response["result"] = array(
+                            "userId" => $this->id
+                        );
+                        return $response;
+                    } else {
+                        return $_answers->error_500("Error inserting data");
+                    }
+                }
             } else {
-                return $_answers->error_500("Error inserting data");
+                return $_answers->error_401("This token is not valid or has expired");
             }
         }
     }
@@ -131,19 +141,30 @@ class users extends connection {
     public function delete($json) {
         $_answers = new answers;
         $data = json_decode($json, true);
-        if(!isset($data['userId'])) {
-            return $_answers->error_400();
+
+        if(!isset($data['token'])) {
+            return $_answers->error_401();
         } else {
-            $this->id = $data['userId'];
-            $res = $this->deleteUser();
-            if ($res) {
-                $response = $_answers->response;
-                $response["result"] = array(
-                    "userId" => $this->id
-                );
-                return $response;
+            $this->token = $data['token'];
+            $arrayToken = $this->searchToken();
+            if($arrayToken) {
+                if(!isset($data['userId'])) {
+                    return $_answers->error_400();
+                } else {
+                    $this->id = $data['userId'];
+                    $res = $this->deleteUser();
+                    if ($res) {
+                        $response = $_answers->response;
+                        $response["result"] = array(
+                            "userId" => $this->id
+                        );
+                        return $response;
+                    } else {
+                        return $_answers->error_500("Error deleting data");
+                    }
+                }
             } else {
-                return $_answers->error_500("Error deleting data");
+                return $_answers->error_401("This token is not valid or has expired");
             }
         }
     }
