@@ -1,5 +1,5 @@
 <?php
-require_once 'class/connection/connection.php';
+require_once 'connection/connection.php';
 require_once 'answers.class.php';
 require_once 'config.php';
 

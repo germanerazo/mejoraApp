@@ -1,7 +1,7 @@
 <?php
 require_once 'config.php';
-require_once 'class/answers.class.php';
-require_once 'class/users.class.php';
+require_once '../class/answers.class.php';
+require_once '../class/users.class.php';
 
 $_answers = new answers;
 $_users = new users;

@@ -1,6 +1,6 @@
 <?php
-require_once 'class/auth.class.php';
-require_once 'class/answers.class.php';
+require_once '../class/auth.class.php';
+require_once '../class/answers.class.php';
 
 $_answers = new answers;
 $_auth = new auth; 
