@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Mejora</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css">
+    <link href="
+https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.min.css
+" rel="stylesheet">
     <link rel="stylesheet" href="../styles/colors.css">
     <style>
         body {
@@ -44,7 +46,7 @@
         }
 
         button {
-            width: 100%;
+            width: 106%;
             padding: 12px;
             background-color: var(--color2);
             border: none;
@@ -60,7 +62,7 @@
 
         .right-container {
             width: 50%;
-            background-color: var(--color1);
+            background-color: var(--fondo);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -98,7 +100,7 @@
         <img src="../assets/logo_mejora.png" alt="Logo Mejora">
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.all.min.js"></script>
     <script>
         document.getElementById('loginForm').addEventListener('submit', async function(event) {
             event.preventDefault();
@@ -111,7 +113,7 @@
             }
 
             try {
-                const response = await fetch('https://cors-anywhere.herokuapp.com/https://api.mejora.com.co/api/auth.php', {
+                const response = await fetch('https://api.mejora.com.co/api/auth.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
