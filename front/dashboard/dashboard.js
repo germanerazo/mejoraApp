@@ -1,25 +1,16 @@
 import config from '../js/config.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-
+document.addEventListener('DOMContentLoaded', async () => {
   const contentArea = document.querySelector('.content-area');
-  document.querySelectorAll('.submenu a').forEach(link => {
-    link.addEventListener('click', async (e) => {
-      e.preventDefault();
-      const url = link.getAttribute('data-url');
-      if (!url) return;
-  
-      try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Error al cargar la página');
-        const html = await response.text();
-        contentArea.innerHTML = html;
-        resetExpiration(); // renovar sesión al navegar
-      } catch (err) {
-        contentArea.innerHTML = `<p style="color:red;">Error cargando la página: ${err.message}</p>`;
-      }
-    });
-  });
+  const mainMenu = document.getElementById('mainMenu');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const menuToggle = document.getElementById('menuToggle');
+  let collapsed = false;
+
+  const resetExpiration = () => {
+    const newExpiration = Date.now() + config.EXPIRATION_MINUTES * 60 * 1000;
+    sessionStorage.setItem('expiresAt', newExpiration);
+  };
 
   const checkSessionExpiration = () => {
     const expiresAt = sessionStorage.getItem('expiresAt');
@@ -33,46 +24,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  checkSessionExpiration(); // Validar inmediatamente
-
-  // Revalidar cada 10 segundos
+  checkSessionExpiration();
   setInterval(checkSessionExpiration, 10000);
 
-  const menuItems = document.querySelectorAll('#mainMenu > li');
-  const submenus = document.querySelectorAll('.submenu');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const menuToggle = document.getElementById('menuToggle');
-  let collapsed = false;
-
-  const resetExpiration = () => {
-    const newExpiration = Date.now() + config.EXPIRATION_MINUTES * 60 * 1000;
-    sessionStorage.setItem('expiresAt', newExpiration);
-  };
-
-  // Ocultar todos los submenús al inicio
-  submenus.forEach(menu => menu.style.display = 'none');
-
-  menuItems.forEach(item => {
-    item.dataset.fullText = item.firstChild.textContent.trim();
-    item.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const submenuId = item.getAttribute('data-submenu');
-      submenus.forEach(sm => {
-        if (sm.id !== submenuId) sm.style.display = 'none';
-      });
-      const submenu = document.getElementById(submenuId);
-      submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-    });
-  });
-
-  menuToggle.addEventListener('click', () => {
-    collapsed = !collapsed;
-    const sidebar = document.querySelector('.sidebar');
-    sidebar.classList.toggle('collapsed', collapsed);
-    menuItems.forEach(li => {
-      const fullText = li.dataset.fullText;
-      li.firstChild.textContent = collapsed ? fullText.charAt(0) : fullText;
-    });
+  // Eventos para renovar sesión
+  ['click', 'mousemove', 'keydown'].forEach(evt => {
+    document.addEventListener(evt, resetExpiration);
   });
 
   logoutBtn.addEventListener('click', () => {
@@ -88,8 +45,127 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // Eventos para renovar sesión
-  ['click', 'mousemove', 'keydown'].forEach(evt => {
-    document.addEventListener(evt, resetExpiration);
-  });
+  // ====== CARGAR MENÚ DINÁMICO DESDE API ======
+  try {
+    const response = await fetch(`${config.BASE_API_URL}options.php?page=1`);
+    const data = await response.json();
+
+    const options = data.filter(option => option.state === '0');
+
+    const menuMap = {};
+
+    options.forEach(option => {
+      const nivel = parseInt(option.nivel);
+      if (nivel === 1) {
+        menuMap[option.code] = {
+          ...option,
+          sub: []
+        };
+      } else {
+        const parentCode = Object.keys(menuMap).find(code =>
+          parseInt(option.code) > parseInt(code) &&
+          parseInt(option.code) < parseInt(code) + 100
+        );
+        if (parentCode) {
+          menuMap[parentCode].sub.push(option);
+        }
+      }
+    });
+
+    const sortedParents = Object.values(menuMap).sort((a, b) => a.order - b.order);
+
+    sortedParents.forEach(parent => {
+      const li = document.createElement('li');
+      li.setAttribute('data-submenu', `submenu-${parent.code}`);
+      li.dataset.fullText = parent.name;
+
+      const label = document.createElement('span');
+      label.textContent = parent.name;
+      li.appendChild(label);
+
+      if (parent.sub.length > 0) {
+        const submenu = document.createElement('ul');
+        submenu.classList.add('submenu');
+        submenu.id = `submenu-${parent.code}`;
+        submenu.style.display = 'none';
+
+        const sortedSub = parent.sub.sort((a, b) => a.order - b.order);
+        sortedSub.forEach(sub => {
+          const subLi = document.createElement('li');
+          const subLink = document.createElement('a');
+          subLink.href = '#';
+          subLink.setAttribute('data-url', sub.link);
+          subLink.textContent = sub.name;
+          subLi.appendChild(subLink);
+          submenu.appendChild(subLi);
+        });
+
+        li.appendChild(submenu);
+      } else {
+        label.classList.add('clickable');
+        label.setAttribute('data-url', parent.link);
+      }
+
+      mainMenu.appendChild(li);
+    });
+
+    // Inicializar eventos después de construir menú dinámico
+    inicializarEventosMenu();
+
+  } catch (error) {
+    console.error('Error al cargar el menú:', error);
+    mainMenu.innerHTML = '<li>Error al cargar el menú</li>';
+  }
+
+  function inicializarEventosMenu() {
+    // Manejo de clicks en submenús
+    document.querySelectorAll('.submenu a, li > span.clickable').forEach(link => {
+      link.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const url = link.getAttribute('data-url');
+        if (!url) return;
+
+        try {
+          const response = await fetch(url);
+          if (!response.ok) throw new Error('Error al cargar la página');
+          const html = await response.text();
+          contentArea.innerHTML = html;
+          resetExpiration();
+        } catch (err) {
+          contentArea.innerHTML = `<p style="color:red;">Error cargando la página: ${err.message}</p>`;
+        }
+      });
+    });
+
+    // Mostrar/Ocultar submenús
+    const menuItems = document.querySelectorAll('#mainMenu > li');
+    const submenus = document.querySelectorAll('.submenu');
+
+    menuItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const submenuId = item.getAttribute('data-submenu');
+        submenus.forEach(sm => {
+          if (sm.id !== submenuId) sm.style.display = 'none';
+        });
+        const submenu = document.getElementById(submenuId);
+        if (submenu) {
+          submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+        }
+      });
+    });
+
+    // Toggle menú colapsado
+    menuToggle.addEventListener('click', () => {
+      collapsed = !collapsed;
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('collapsed', collapsed);
+      menuItems.forEach(li => {
+        const fullText = li.dataset.fullText;
+        if (li.firstChild && li.firstChild.nodeType === Node.ELEMENT_NODE) {
+          li.firstChild.textContent = collapsed ? fullText.charAt(0) : fullText;
+        }
+      });
+    });
+  }
 });
