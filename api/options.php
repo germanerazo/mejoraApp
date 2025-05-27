@@ -6,6 +6,11 @@ require_once '../class/options.class.php';
 
 $_answers = new answers;
 $_options = new options;
+// Permitir solicitudes desde cualquier origen
+header("Access-Control-Allow-Origin: *");
+
+// Permitir cabeceras personalizadas
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
