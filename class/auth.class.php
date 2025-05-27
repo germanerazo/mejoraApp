@@ -29,6 +29,7 @@ class auth  extends connection {
                                     "email" => $data[0]['email'],
                                     "user" => $data[0]['codusr'],
                                     "idClient" => $data[0]['idCliente'],
+                                    "profile" => $data[0]['perfil'],
                                 )
                             );
                             return $result;
