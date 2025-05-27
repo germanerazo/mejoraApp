@@ -23,12 +23,15 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     const result = await response.json();
 
     if (result.status === 'ok') {
+        const { token, user } = result.result;
       // Puedes guardar el token en sessionStorage/localStorage si lo necesitas
         const expirationTime = Date.now() + config.EXPIRATION_MINUTES * 60 * 1000;
         console.log('Expiration time:', expirationTime);
         sessionStorage.setItem('expiresAt', expirationTime);
-
+        sessionStorage.setItem('user', JSON.stringify(user));
         sessionStorage.setItem('loggedIn', 'true');
+        sessionStorage.setItem('token', token);
+
         window.location.href = '../dashboard/dashboard.php';
     } else {
       Swal.fire('Error', result.result.error_message, 'error');
