@@ -29,6 +29,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Eventos para renovar sesión
   ['click', 'mousemove', 'keydown'].forEach(evt => {
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    console.log('Usuario actual:', user);
     document.addEventListener(evt, resetExpiration);
   });
 
@@ -46,11 +48,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ====== CARGAR MENÚ DINÁMICO DESDE API ======
-  try {
-    const response = await fetch(`${config.BASE_API_URL}options.php?page=1`);
-    const data = await response.json();
+    try {
+    const user = JSON.parse(sessionStorage.getItem('user'));
 
-    const options = data.filter(option => option.state === '0');
+    // 1. Obtener accesos permitidos al usuario
+    const accessResponse = await fetch(`${config.BASE_API_URL}access.php?page=1`);
+    const accessData = await accessResponse.json();
+
+    const userAccess = accessData.filter(acceso =>
+      acceso.idUsuario === user.id ||
+      acceso.rol === user.profile &&
+      acceso.acceso === '1' &&
+      acceso.estado === '0'
+    );
+
+    const allowedCodes = userAccess.map(a => a.codigo);
+
+    // 2. Obtener opciones del menú
+    const optionsResponse = await fetch(`${config.BASE_API_URL}options.php?page=1`);
+    const optionsData = await optionsResponse.json();
+
+    // 3. Filtrar opciones válidas
+    const options = optionsData.filter(option =>
+      option.state === '0' && allowedCodes.includes(option.code)
+    );
 
     const menuMap = {};
 
@@ -109,13 +130,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       mainMenu.appendChild(li);
     });
 
-    // Inicializar eventos después de construir menú dinámico
     inicializarEventosMenu();
 
   } catch (error) {
     console.error('Error al cargar el menú:', error);
     mainMenu.innerHTML = '<li>Error al cargar el menú</li>';
   }
+
 
   function inicializarEventosMenu() {
     // Manejo de clicks en submenús
