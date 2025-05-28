@@ -16,7 +16,7 @@
 
   <div class="main-content">
     <div class="header">
-      <span>Dashboard</span>
+      <span id="userInfo" class="user-meta"></span>
     </div>
     <div class="content-area">
       <h2>Bienvenido al sistema MEJORA</h2>
