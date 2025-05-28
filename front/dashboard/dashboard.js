@@ -50,11 +50,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ====== CARGAR MENÚ DINÁMICO DESDE API ======
     try {
     const userNameSpan = document.getElementById('userInfo');
-
     const user = JSON.parse(sessionStorage.getItem('user'));
     if (user) {
-      userNameSpan.textContent = `${user.name} | Cliente: ${user.idClient}`;
+      userNameSpan.textContent = `${user.name} | ID Cliente: ${user.idClient} | Perfil: ${user.profile}`;
     }
+
+    const companyResponse = await fetch(`${config.BASE_API_URL}companies.php?id=1`);
+    const companyData = await companyResponse.json();
+    const companyNameSpan = document.getElementById('companyName');
+
+    if (companyData && companyData.length > 0) {
+      const companyName = companyData[0].nomEmpresa;
+      companyNameSpan.textContent = `Empresa: ${companyName}`;
+    }
+
 
     // 1. Obtener accesos permitidos al usuario
     const accessResponse = await fetch(`${config.BASE_API_URL}access.php?page=1`);

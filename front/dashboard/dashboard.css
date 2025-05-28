@@ -77,12 +77,14 @@ body {
 }
 
 .header {
-  background-color: #f0f0f0;
-  padding: 10px 20px;
-  font-size: 20px;
-  font-weight: bold;
   display: flex;
+  justify-content: space-between;
   align-items: center;
+  background-color: var(--color5);
+  color: black;
+  font-weight: bold;
+  padding: 1rem;
+  flex-wrap: wrap;
 }
 
 .sidebar.collapsed {
@@ -108,7 +110,14 @@ body {
   content: '⎋';
   font-size: 20px;
 }
+
+.user-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.95rem;
+}
+
 .user-meta {
-  font-size: 0.9rem;
-  opacity: 0.8;
+  opacity: 0.9;
 }
