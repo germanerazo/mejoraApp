@@ -5,6 +5,11 @@ require_once '../class/users.class.php';
 
 $_answers = new answers;
 $_users = new users;
+// Permitir solicitudes desde cualquier origen
+header("Access-Control-Allow-Origin: *");
+
+// Permitir cabeceras personalizadas
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
@@ -26,7 +31,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         header('Content-Type: application/json');
         $postBody = file_get_contents('php://input');
         $dataArray = $_users->post($postBody);
-        if(isset($dataArray["result"]["error_id"])) {
+        if (isset($dataArray["result"]["error_id"])) {
             $responseCode = $dataArray["result"]["error_id"];
             http_response_code($responseCode);
         } else {
@@ -40,7 +45,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         header('Content-Type: application/json');
         $postBody = file_get_contents('php://input');
         $dataArray = $_users->put($postBody);
-        if(isset($dataArray["result"]["error_id"])) {
+        if (isset($dataArray["result"]["error_id"])) {
             $responseCode = $dataArray["result"]["error_id"];
             http_response_code($responseCode);
         } else {
@@ -54,7 +59,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         header('Content-Type: application/json');
         $postBody = file_get_contents('php://input');
         $dataArray = $_users->delete($postBody);
-        if(isset($dataArray["result"]["error_id"])) {
+        if (isset($dataArray["result"]["error_id"])) {
             $responseCode = $dataArray["result"]["error_id"];
             http_response_code($responseCode);
         } else {
@@ -71,4 +76,3 @@ switch ($_SERVER['REQUEST_METHOD']) {
         echo json_encode($dataArray);
         break;
 }
-?>

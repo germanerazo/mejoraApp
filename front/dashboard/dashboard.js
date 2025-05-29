@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Eventos para renovar sesión
   ['click', 'mousemove', 'keydown'].forEach(evt => {
     const user = JSON.parse(sessionStorage.getItem('user'));
-    console.log('Usuario actual:', user);
     document.addEventListener(evt, resetExpiration);
   });
 
@@ -55,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       userNameSpan.textContent = `${user.name} | ID Cliente: ${user.idClient} | Perfil: ${user.profile}`;
     }
 
-    const companyResponse = await fetch(`${config.BASE_API_URL}companies.php?id=1`);
+    const companyResponse = await fetch(`${config.BASE_API_URL}companies.php?id=${user.idClient}`);
     const companyData = await companyResponse.json();
     const companyNameSpan = document.getElementById('companyName');
 
