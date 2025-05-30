@@ -5,7 +5,8 @@ require_once 'connection/connection.php';
 require_once 'token.class.php';
 
 
-class users extends connection {
+class users extends connection
+{
 
     private $table = "users";
     private $id;
@@ -18,37 +19,46 @@ class users extends connection {
     private $profile;
     private $token;
 
-    public function listUsers($page = 1) {
+    public function listUsers($page = 1)
+    {
         $initial = 0;
         $limit = 100;
         if ($page > 1) {
             $initial = (($page - 1) * $limit) + 1;
             $limit = $limit * $page;
         }
-        $query = "SELECT idUsuario, nombre, email, codusr, idCliente, perfil FROM ". $this->table." LIMIT $initial, $limit";
+        $query = "SELECT a.idUsuario, a.nombre, a.email, a.codusr, a.idCliente, a.perfil, b.nomEmpresa 
+              FROM " . $this->table . " a 
+              INNER JOIN companies b ON a.idCliente = b.idEmpresa 
+              ORDER BY a.idUsuario 
+              LIMIT $initial, $limit";
         $data = parent::getData($query);
         return $data;
     }
 
-    public function getUser($id) {
-        $query = "SELECT idUsuario, nombre, email, codusr, idCliente, perfil FROM ". $this->table." WHERE codusr = $id";
+    public function getUser($id)
+    {
+        $query = "SELECT idUsuario, nombre, email, codusr, idCliente, perfil FROM " . $this->table . " WHERE codusr = $id";
         $data = parent::getData($query);
         return $data;
     }
 
-    public function post($json) {
+    public function post($json)
+    {
         $_answers = new answers;
         $_token = new token;
         $data = json_decode($json, true);
-        if(!isset($data['token'])) {
+        if (!isset($data['token'])) {
             return $_answers->error_401();
         } else {
             $this->token = $data['token'];
             $arrayToken = $_token->searchToken($this->token);
-            if($arrayToken) {
-                if(!isset($data['name']) || !isset($data['email']) || !isset($data['cc']) || 
-                !isset($data['idClient']) || !isset($data['password']) || !isset($data['profile'])) {
-                return $_answers->error_400();
+            if ($arrayToken) {
+                if (
+                    !isset($data['name']) || !isset($data['email']) || !isset($data['cc']) ||
+                    !isset($data['idClient']) || !isset($data['password']) || !isset($data['profile'])
+                ) {
+                    return $_answers->error_400();
                 } else {
                     $this->name = $data['name'];
                     $this->email = $data['email'];
@@ -79,8 +89,9 @@ class users extends connection {
         }
     }
 
-    private function setUser() {
-        $query = "INSERT INTO ". $this->table." (nombre, email, codusr, idCliente, contrasena_nueva, pwdusr, perfil) 
+    private function setUser()
+    {
+        $query = "INSERT INTO " . $this->table . " (nombre, email, codusr, idCliente, contrasena_nueva, pwdusr, perfil) 
         VALUES ('$this->name', '$this->email', '$this->cc', '$this->idClient', '$this->password', '$this->passwordMD5', '$this->profile')";
         $response = parent::nonQueryId($query);
         if ($response) {
@@ -90,30 +101,41 @@ class users extends connection {
         }
     }
 
-    public function put($json) {
+    public function put($json)
+    {
         $_answers = new answers;
         $_token = new token;
         $data = json_decode($json, true);
-        if(!isset($data['token'])) {
+        if (!isset($data['token'])) {
             return $_answers->error_401();
         } else {
             $this->token = $data['token'];
             $arrayToken = $_token->searchToken($this->token);
-            if($arrayToken) {
-                if(!isset($data['userId'])) {
+            if ($arrayToken) {
+                if (!isset($data['userId'])) {
                     return $_answers->error_400();
                 } else {
                     $this->id = $data['userId'];
-                    if(isset($data['name'])) { $this->name = $data['name']; }
-                    if(isset($data['email'])) { $this->email = $data['email']; }
-                    if(isset($data['cc'])) { $this->cc = $data['cc']; }
-                    if(isset($data['idClient'])) { $this->idClient = $data['idClient']; }
-                    if(isset($data['password'])) { 
-                        $this->password = $data['password']; 
+                    if (isset($data['name'])) {
+                        $this->name = $data['name'];
+                    }
+                    if (isset($data['email'])) {
+                        $this->email = $data['email'];
+                    }
+                    if (isset($data['cc'])) {
+                        $this->cc = $data['cc'];
+                    }
+                    if (isset($data['idClient'])) {
+                        $this->idClient = $data['idClient'];
+                    }
+                    if (isset($data['password'])) {
+                        $this->password = $data['password'];
                         $this->password = parent::encript($this->password);
                         $this->passwordMD5 = parent::encriptMD5($this->password);
                     }
-                    if(isset($data['profile'])) { $this->profile = $data['profile']; }
+                    if (isset($data['profile'])) {
+                        $this->profile = $data['profile'];
+                    }
                     $res = $this->updateUser();
                     if ($res) {
                         $response = $_answers->response;
@@ -131,8 +153,9 @@ class users extends connection {
         }
     }
 
-    private function updateUser() {
-        $query = "UPDATE ". $this->table." SET nombre = '$this->name', email = '$this->email', codusr = '$this->cc', idCliente = '$this->idClient', perfil = '$this->profile' WHERE idUsuario = $this->id"; 
+    private function updateUser()
+    {
+        $query = "UPDATE " . $this->table . " SET nombre = '$this->name', email = '$this->email', codusr = '$this->cc', idCliente = '$this->idClient', perfil = '$this->profile' WHERE idUsuario = $this->id";
         $response = parent::nonQuery($query);
         if ($response >= 1) {
             return $response;
@@ -141,17 +164,18 @@ class users extends connection {
         }
     }
 
-    public function delete($json) {
+    public function delete($json)
+    {
         $_answers = new answers;
         $_token = new token;
         $data = json_decode($json, true);
-        if(!isset($data['token'])) {
+        if (!isset($data['token'])) {
             return $_answers->error_401();
         } else {
             $this->token = $data['token'];
             $arrayToken = $_token->searchToken($this->token);
-            if($arrayToken) {
-                if(!isset($data['userId'])) {
+            if ($arrayToken) {
+                if (!isset($data['userId'])) {
                     return $_answers->error_400();
                 } else {
                     $this->id = $data['userId'];
@@ -172,8 +196,9 @@ class users extends connection {
         }
     }
 
-    private function deleteUser() {
-        $query = "DELETE FROM ". $this->table." WHERE idUsuario = $this->id"; 
+    private function deleteUser()
+    {
+        $query = "DELETE FROM " . $this->table . " WHERE idUsuario = $this->id";
         $response = parent::nonQuery($query);
         if ($response >= 1) {
             return $response;
@@ -181,7 +206,4 @@ class users extends connection {
             return 0;
         }
     }
-
 }
-
-?>
