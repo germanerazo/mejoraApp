@@ -40,7 +40,7 @@ function renderUsers(users) {
             <td>${user.nombre}</td>
             <td>${user.email}</td>
             <td>${user.codusr}</td>
-            <td>${user.idCliente}</td>
+            <td>${user.nomEmpresa}</td>
             <td>${user.perfil}</td>
             <td class="actions">
                 <button class="edit-btn" data-user='${JSON.stringify(user)}'>Editar</button>
@@ -108,7 +108,7 @@ function openUserModal(user = null) {
 function createUser(data) {
     console.log('users.js: createUser', data);
     const payload = {
-        token: localStorage.getItem('token') || '',
+        token: sessionStorage.getItem('token') || '',
         name: data.name,
         email: data.email,
         cc: data.cc,
@@ -140,8 +140,8 @@ function createUser(data) {
 function updateUser(userId, data) {
     console.log('users.js: updateUser', userId, data);
     const payload = {
-        token: localStorage.getItem('token') || '',
-        idUsuario: userId,
+        token: sessionStorage.getItem('token') || '',
+        userId: userId,
         name: data.name,
         email: data.email,
         cc: data.cc,
