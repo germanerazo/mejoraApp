@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Gestión de Usuarios</title>
-    <script type="module" src="./users/users.js"></script>
+    <link rel="stylesheet" href="../users/users.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="./users/users.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.all.min.js"></script>
+    <!-- Tu módulo debe ir al final del body para asegurar que todo el DOM esté cargado -->
 </head>
 
 <body>
@@ -26,11 +26,11 @@
                     <th>Acciones</th>
                 </tr>
             </thead>
-            <tbody id="usersTbody">
-                <!-- Usuarios aquí -->
-            </tbody>
+            <tbody id="usersTbody"></tbody>
         </table>
     </div>
+    <!-- Mueve tu script de módulo aquí -->
+    <script type="module" src="../users/users.js"></script>
 </body>
 
 </html>

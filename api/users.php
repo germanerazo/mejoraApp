@@ -7,7 +7,7 @@ $_answers = new answers;
 $_users = new users;
 // Permitir solicitudes desde cualquier origen
 header("Access-Control-Allow-Origin: *");
-
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 // Permitir cabeceras personalizadas
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 

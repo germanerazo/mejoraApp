@@ -164,6 +164,26 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (!response.ok) throw new Error('Error al cargar la página');
           const html = await response.text();
           contentArea.innerHTML = html;
+          // Busca y carga los scripts manualmente
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = html;
+          const scripts = tempDiv.querySelectorAll('script');
+          scripts.forEach(script => {
+              if (script.src) {
+                  // Si es un script externo
+                  const newScript = document.createElement('script');
+                  newScript.type = script.type || 'text/javascript';
+                  newScript.src = script.src;
+                  newScript.async = false;
+                  document.body.appendChild(newScript);
+              } else {
+                  // Si es un script inline
+                  const newScript = document.createElement('script');
+                  newScript.type = script.type || 'text/javascript';
+                  newScript.textContent = script.textContent;
+                  document.body.appendChild(newScript);
+              }
+          });
           resetExpiration();
         } catch (err) {
           contentArea.innerHTML = `<p style="color:red;">Error cargando la página: ${err.message}</p>`;
