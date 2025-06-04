@@ -65,19 +65,46 @@ function renderUsers(users) {
     });
 }
 
-function openUserModal(user = null) {
-    console.log('users.js: openUserModal llamada', user);
+async function getCompaniesOptions(selectedId = null) {
+    const url = `${config.BASE_API_URL}companies.php?page=1`;
+    try {
+        const res = await fetch(url);
+        const companies = await res.json();
+        let options = '<option value="">Seleccione una empresa...</option>';
+        companies.forEach(emp => {
+            options += `<option value="${emp.idEmpresa}" ${selectedId == emp.idEmpresa ? 'selected' : ''}>${emp.nomEmpresa}</option>`;
+        });
+        return options;
+    } catch (e) {
+        return '<option value="">Error cargando empresas</option>';
+    }
+}
+
+async function openUserModal(user = null) {
     const isEdit = !!user;
+    const companiesOptions = await getCompaniesOptions(user ? user.idCliente : null);
+
     Swal.fire({
         title: isEdit ? 'Editar Usuario' : 'Nuevo Usuario',
         html: `
             <input id="swal-name" class="swal2-input" placeholder="Nombre" value="${user ? user.nombre : ''}">
             <input id="swal-email" class="swal2-input" placeholder="Email" value="${user ? user.email : ''}">
             <input id="swal-cc" class="swal2-input" placeholder="CC" value="${user ? user.codusr : ''}">
-            <input id="swal-idClient" class="swal2-input" placeholder="ID Cliente" value="${user ? user.idCliente : ''}">
-            <input id="swal-profile" class="swal2-input" placeholder="Perfil" value="${user ? user.perfil : ''}">
+            <select id="swal-idClient" class="swal2-input" style="width:100%;">${companiesOptions}</select>
+            <select id="swal-profile" class="swal2-input" style="width:100%;">
+                <option value="">Seleccione perfil...</option>
+                <option value="ADM" ${user && user.perfil === 'ADM' ? 'selected' : ''}>Administrador</option>
+                <option value="CLI" ${user && user.perfil === 'CLI' ? 'selected' : ''}>Cliente</option>
+            </select>
             ${isEdit ? '<input id="swal-password" class="swal2-input" placeholder="Nueva contraseña (opcional)" type="password">' : '<input id="swal-password" class="swal2-input" placeholder="Contraseña" type="password">'}
         `,
+        didOpen: () => {
+            // Inicializa select2 para búsqueda
+            $('#swal-idClient').select2({
+                dropdownParent: $('.swal2-popup'),
+                width: '100%'
+            });
+        },
         focusConfirm: false,
         showCancelButton: true,
         confirmButtonText: isEdit ? 'Actualizar' : 'Crear',
@@ -85,7 +112,7 @@ function openUserModal(user = null) {
             const name = document.getElementById('swal-name').value.trim();
             const email = document.getElementById('swal-email').value.trim();
             const cc = document.getElementById('swal-cc').value.trim();
-            const idClient = document.getElementById('swal-idClient').value.trim();
+            const idClient = document.getElementById('swal-idClient').value;
             const profile = document.getElementById('swal-profile').value.trim();
             const password = document.getElementById('swal-password').value.trim();
             if (!name || !email || !cc || !idClient || !profile || (!isEdit && !password)) {

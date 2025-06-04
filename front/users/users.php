@@ -6,7 +6,10 @@
     <title>Gestión de Usuarios</title>
     <link rel="stylesheet" href="../users/users.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <!-- Tu módulo debe ir al final del body para asegurar que todo el DOM esté cargado -->
 </head>
 
@@ -21,7 +24,7 @@
                     <th>Nombre</th>
                     <th>Email</th>
                     <th>CC</th>
-                    <th>ID Cliente</th>
+                    <th>Cliente</th>
                     <th>Perfil</th>
                     <th>Acciones</th>
                 </tr>

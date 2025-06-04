@@ -39,13 +39,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.replace('../login/login.php');
   });
 
-  if (window.history && window.history.pushState) {
-    window.history.pushState(null, "", window.location.href);
-    window.onpopstate = function () {
-      window.history.pushState(null, "", window.location.href);
-    };
-  }
-
   // ====== CARGAR MENÚ DINÁMICO DESDE API ======
     try {
     const userNameSpan = document.getElementById('userInfo');
@@ -154,40 +147,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   function inicializarEventosMenu() {
     // Manejo de clicks en submenús
     document.querySelectorAll('.submenu a, li > span.clickable').forEach(link => {
-      link.addEventListener('click', async (e) => {
+      link.addEventListener('click', (e) => {
         e.preventDefault();
         const url = link.getAttribute('data-url');
         if (!url) return;
-
-        try {
-          const response = await fetch(url);
-          if (!response.ok) throw new Error('Error al cargar la página');
-          const html = await response.text();
-          contentArea.innerHTML = html;
-          // Busca y carga los scripts manualmente
-          const tempDiv = document.createElement('div');
-          tempDiv.innerHTML = html;
-          const scripts = tempDiv.querySelectorAll('script');
-          scripts.forEach(script => {
-              if (script.src) {
-                  // Si es un script externo
-                  const newScript = document.createElement('script');
-                  newScript.type = script.type || 'text/javascript';
-                  newScript.src = script.src;
-                  newScript.async = false;
-                  document.body.appendChild(newScript);
-              } else {
-                  // Si es un script inline
-                  const newScript = document.createElement('script');
-                  newScript.type = script.type || 'text/javascript';
-                  newScript.textContent = script.textContent;
-                  document.body.appendChild(newScript);
-              }
-          });
-          resetExpiration();
-        } catch (err) {
-          contentArea.innerHTML = `<p style="color:red;">Error cargando la página: ${err.message}</p>`;
-        }
+        window.location.hash = encodeURIComponent(url);
+        resetExpiration();
+        // Quita: await cargarContenidoPorHash();
       });
     });
 
@@ -222,4 +188,47 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
   }
+
+  async function cargarContenidoPorHash() {
+    const hash = window.location.hash.replace('#', '');
+    if (!hash) {
+      contentArea.innerHTML = `
+        <h2>Bienvenido al sistema MEJORA</h2>
+        <p>Selecciona una opción del menú para comenzar.</p>
+      `;
+      return;
+    }
+
+    try {
+      const url = decodeURIComponent(hash);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Error al cargar la página');
+      const html = await response.text();
+      contentArea.innerHTML = html;
+      // Ejecutar scripts embebidos en el HTML cargado
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
+      const scripts = tempDiv.querySelectorAll('script');
+      scripts.forEach(script => {
+        const newScript = document.createElement('script');
+        if (script.type) newScript.type = script.type;
+        if (script.src) {
+          newScript.src = script.src;
+        } else {
+          newScript.textContent = script.textContent;
+        }
+        document.body.appendChild(newScript);
+      });
+    } catch (err) {
+      contentArea.innerHTML = `<p style="color:red;">Error cargando la página: ${err.message}</p>`;
+    }
+  }
+
+  if (window.location.hash) {
+    cargarContenidoPorHash();
+  }
+
+  // Escuchar cambios en el hash
+  window.addEventListener('hashchange', cargarContenidoPorHash);
+
 });

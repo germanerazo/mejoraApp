@@ -60,6 +60,9 @@ class users extends connection
                 ) {
                     return $_answers->error_400();
                 } else {
+                    if ($this->codusrExists($data['cc'])) {
+                        return $_answers->error_400("El número de CC ya está registrado.");
+                    }
                     $this->name = $data['name'];
                     $this->email = $data['email'];
                     $this->cc = $data['cc'];
@@ -87,6 +90,13 @@ class users extends connection
                 return $_answers->error_401("This token is not valid or has expired");
             }
         }
+    }
+
+    private function codusrExists($codusr)
+    {
+        $query = "SELECT idUsuario FROM " . $this->table . " WHERE codusr = '$codusr' LIMIT 1";
+        $data = parent::getData($query);
+        return !empty($data);
     }
 
     private function setUser()
