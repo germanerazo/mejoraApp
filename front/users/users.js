@@ -155,7 +155,7 @@ function createUser(data) {
             Swal.fire('Éxito', 'Usuario creado correctamente', 'success');
             loadUsers();
         } else {
-            Swal.fire('Error', resp.error || 'No se pudo crear el usuario valide el numero de cédula', 'error');
+            Swal.fire('Error', resp.result.error_message || 'No se pudo crear el usuario valide el numero de cédula', 'error');
         }
     })
     .catch((e) => {
@@ -184,11 +184,11 @@ function updateUser(userId, data) {
     .then(res => res.json())
     .then(resp => {
         console.log('users.js: updateUser respuesta', resp);
-        if (resp.result) {
+        if (resp.status == "ok") {
             Swal.fire('Éxito', 'Usuario actualizado correctamente', 'success');
             loadUsers();
         } else {
-            Swal.fire('Error', resp.error || 'No se pudo actualizar el usuario', 'error');
+            Swal.fire('Error', resp.result.error_message || 'No se pudo actualizar el usuario', 'error');
         }
     })
     .catch((e) => {
