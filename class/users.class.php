@@ -61,7 +61,7 @@ class users extends connection
                     return $_answers->error_400();
                 } else {
                     if ($this->codusrExists($data['cc'])) {
-                        return $_answers->error_400("El número de CC ya está registrado.");
+                        return $_answers->error_200("El número de CC ya está registrado.");
                     }
                     $this->name = $data['name'];
                     $this->email = $data['email'];
@@ -125,6 +125,9 @@ class users extends connection
                 if (!isset($data['userId'])) {
                     return $_answers->error_400();
                 } else {
+                    if ($this->codusrExists($data['cc'])) {
+                        return $_answers->error_200("El número de CC ya está registrado.");
+                    }
                     $this->id = $data['userId'];
                     if (isset($data['name'])) {
                         $this->name = $data['name'];

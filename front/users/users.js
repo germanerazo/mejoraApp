@@ -151,11 +151,11 @@ function createUser(data) {
     .then(res => res.json())
     .then(resp => {
         console.log('users.js: createUser respuesta', resp);
-        if (resp.result) {
+        if (resp.status == "ok") {
             Swal.fire('Éxito', 'Usuario creado correctamente', 'success');
             loadUsers();
         } else {
-            Swal.fire('Error', resp.error || 'No se pudo crear el usuario', 'error');
+            Swal.fire('Error', resp.error || 'No se pudo crear el usuario valide el numero de cédula', 'error');
         }
     })
     .catch((e) => {
