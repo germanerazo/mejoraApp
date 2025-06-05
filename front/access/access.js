@@ -75,8 +75,8 @@ async function openAccessModal(access = null) {
             <input id="swal-user-id" class="swal2-input" placeholder="ID Usuario" value="${isEdit ? access.idUsuario : ''}">
             <input id="swal-access" class="swal2-input" placeholder="Acceso" value="${isEdit ? access.acceso : ''}">
             <select id="swal-status" class="swal2-input">
-                <option value="1" ${isEdit && access.estado === '0' ? 'selected' : ''}>Activo</option>
-                <option value="0" ${isEdit && access.estado === '1' ? 'selected' : ''}>Inactivo</option>
+                <option value="0" ${isEdit && access.estado === '0' ? 'selected' : ''}>Activo</option>
+                <option value="1" ${isEdit && access.estado === '1' ? 'selected' : ''}>Inactivo</option>
             </select>
         `,
         focusConfirm: false,
@@ -117,7 +117,7 @@ async function openAccessModal(access = null) {
 
 function createAccess(accessData) {
     const payload = {
-        token: localStorage.getItem('token') || '',
+        token: sessionStorage.getItem('token') || '',
         codigo: accessData.codigo,
         rol: accessData.rol,
         idUsuario: accessData.idUsuario,
@@ -148,7 +148,7 @@ function createAccess(accessData) {
 
 function updateAccess(accessData) {
     const payload = {
-        token: localStorage.getItem('token') || '',
+        token: sessionStorage.getItem('token') || '',
         idAcceso: accessData.idAcceso,
         codigo: accessData.codigo,
         rol: accessData.rol,
@@ -189,7 +189,7 @@ function deleteAccess(accessId) {
     }).then((result) => {
         if (result.isConfirmed) {
             const payload = {
-                token: localStorage.getItem('token') || '',
+                token: sessionStorage.getItem('token') || '',
                 idAcceso: accessId
             };
             fetch(API_URL, {
