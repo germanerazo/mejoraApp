@@ -8,6 +8,7 @@ $_answers = new answers;
 $_access = new access;
 // Permitir solicitudes desde cualquier origen
 header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 // Permitir cabeceras personalizadas
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
@@ -75,4 +76,3 @@ switch ($_SERVER['REQUEST_METHOD']) {
         http_response_code(405); // Método no permitido
         echo json_encode($_answers->error_405());
 }
-?>

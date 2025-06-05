@@ -1,16 +1,13 @@
 import config from '../js/config.js';
 
-console.log('users.js: Iniciando script');
 
 // Configuración de la URL base (ajusta según tu entorno)
 const API_URL = `${config.BASE_API_URL}users.php`;
 
 function loadUsers() {
-    console.log('users.js: loadUsers');
     fetch(`${API_URL}?page=1`)
         .then(res => res.json())
         .then(data => {
-            console.log('users.js: Datos recibidos', data);
             if (Array.isArray(data)) {
                 renderUsers(data);
             } else if (data.result) {
@@ -26,7 +23,6 @@ function loadUsers() {
 }
 
 function renderUsers(users) {
-    console.log('users.js: renderUsers', users);
     const tbody = document.getElementById('usersTbody');
     if (!tbody) {
         console.error('users.js: No se encontró el tbody');
@@ -133,7 +129,6 @@ async function openUserModal(user = null) {
 }
 
 function createUser(data) {
-    console.log('users.js: createUser', data);
     const payload = {
         token: sessionStorage.getItem('token') || '',
         name: data.name,
@@ -150,7 +145,6 @@ function createUser(data) {
     })
     .then(res => res.json())
     .then(resp => {
-        console.log('users.js: createUser respuesta', resp);
         if (resp.status == "ok") {
             Swal.fire('Éxito', 'Usuario creado correctamente', 'success');
             loadUsers();
@@ -200,7 +194,7 @@ function updateUser(userId, data) {
 function deleteUser(userId) {
     console.log('users.js: deleteUser', userId);
     Swal.fire({
-        title: '¿Eliminar usuario?',
+        title: '¿Estás seguro de eliminar usuario?',
         text: 'Esta acción no se puede deshacer',
         icon: 'warning',
         showCancelButton: true,
@@ -218,7 +212,6 @@ function deleteUser(userId) {
             })
             .then(res => res.json())
             .then(resp => {
-                console.log('users.js: deleteUser respuesta', resp);
                 if (resp.result) {
                     Swal.fire('Eliminado', 'Usuario eliminado correctamente', 'success');
                     loadUsers();
@@ -237,4 +230,3 @@ function deleteUser(userId) {
 // Haz global la función para el botón
 window.openUserModal = openUserModal;
 loadUsers();
-console.log('users.js: Finalizando script');
