@@ -68,10 +68,14 @@ async function openAccessModal(access = null) {
     const isEdit = !!access;
 
     Swal.fire({
-        title: isEdit ? 'Editar Acceso' : 'Nuevo Acceso',
+        title: isEdit ? 'Editar Acceso' : 'Nuevo -Acceso',
         html: `
             <input id="swal-code" class="swal2-input" placeholder="Código" value="${isEdit ? access.codigo : ''}">
-            <input id="swal-role" class="swal2-input" placeholder="Rol" value="${isEdit ? access.rol : ''}">
+            <select id="swal-role" class="swal2-input" style="width:100%;">
+                <option value="">Seleccione perfil...</option>
+                <option value="ADM" ${access && access.perfil === 'ADM' ? 'selected' : ''}>Administrador</option>
+                <option value="CLI" ${access && access.perfil === 'CLI' ? 'selected' : ''}>Cliente</option>
+            </select>
             <input id="swal-user-id" class="swal2-input" placeholder="ID Usuario" value="${isEdit ? access.idUsuario : ''}">
             <input id="swal-access" class="swal2-input" placeholder="Acceso" value="${isEdit ? access.acceso : ''}">
             <select id="swal-status" class="swal2-input">

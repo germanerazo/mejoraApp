@@ -60,19 +60,15 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
     case 'DELETE':
         header('Content-Type: application/json');
-        if (!empty($_GET['id'])) {
-            $dataArray = $_access->delete($_GET['id']);
-            if (isset($dataArray["result"]["error_id"])) {
-                $responseCode = $dataArray["result"]["error_id"];
-                http_response_code($responseCode);
-            } else {
-                http_response_code(200);
-            }
-            echo json_encode($dataArray);
+        $postBody = file_get_contents('php://input');
+        $dataArray = $_users->delete($postBody);
+        if (isset($dataArray["result"]["error_id"])) {
+            $responseCode = $dataArray["result"]["error_id"];
+            http_response_code($responseCode);
         } else {
-            http_response_code(400);
-            echo json_encode($_answers->error_400());
+            http_response_code(200);
         }
+        echo json_encode($dataArray);
         break;
 
     default:
