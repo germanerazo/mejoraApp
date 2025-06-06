@@ -61,7 +61,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
     case 'DELETE':
         header('Content-Type: application/json');
         $postBody = file_get_contents('php://input');
-        $dataArray = $_users->delete($postBody);
+        $dataArray = $_access->delete($postBody);
         if (isset($dataArray["result"]["error_id"])) {
             $responseCode = $dataArray["result"]["error_id"];
             http_response_code($responseCode);
