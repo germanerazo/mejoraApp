@@ -21,19 +21,28 @@ function loadAccess() {
         });
 }
 
+let dataTableInitialized = false;
+let dataTableInstance;
+
 function renderAccess(accessList) {
     const tbody = document.getElementById('accessTbody');
     if (!tbody) {
         console.error('access.js: No se encontró el tbody');
         return;
     }
+
+    // Si ya está inicializado, destrúyelo antes de modificar el DOM
+    if (dataTableInitialized) {
+        dataTableInstance.destroy();
+        dataTableInitialized = false;
+    }
+
     tbody.innerHTML = '';
+
     accessList.forEach(access => {
         const tr = document.createElement('tr');
-        // Determinar el texto y color de estado
         const estadoTexto = access.estado == 0 ? 'Activo' : 'Inactivo';
         const estadoColor = access.estado == 0 ? 'background-color: #d4edda; color: #155724;' : 'background-color: #e2e3e5; color: #6c757d;';
-
         tr.innerHTML = `
             <td>${access.idAcceso}</td>
             <td>${access.codigo}</td>
@@ -42,8 +51,8 @@ function renderAccess(accessList) {
             <td>${access.acceso}</td>
             <td style="${estadoColor}">${estadoTexto}</td>
             <td class="actions">
-            <button class="edit-btn" data-access='${JSON.stringify(access)}'>Editar</button>
-            <button class="delete-btn" data-id='${access.idAcceso}'>Eliminar</button>
+              <button class="edit-btn" data-access='${JSON.stringify(access)}'>Editar</button>
+              <button class="delete-btn" data-id='${access.idAcceso}'>Eliminar</button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -62,6 +71,29 @@ function renderAccess(accessList) {
             deleteAccess(accessId);
         });
     });
+
+    // Inicializa SIEMPRE el DataTable después de poblar la tabla
+    dataTableInstance = $('#accessTable').DataTable({
+        pageLength: 10,
+        language: {
+            search: "Buscar:",
+            lengthMenu: "Mostrar _MENU_ registros por página",
+            zeroRecords: "No se encontraron resultados",
+            info: "Mostrando página _PAGE_ de _PAGES_",
+            infoEmpty: "No hay registros disponibles",
+            infoFiltered: "(filtrado de _MAX_ registros totales)",
+            paginate: {
+                first: "Primero",
+                last: "Último",
+                next: "Siguiente",
+                previous: "Anterior"
+            }
+        },
+        columnDefs: [
+            { targets: -1, orderable: false }
+        ]
+    });
+    dataTableInitialized = true;
 }
 
 async function openAccessModal(access = null) {
@@ -73,8 +105,8 @@ async function openAccessModal(access = null) {
             <input id="swal-code" class="swal2-input" placeholder="Código" value="${isEdit ? access.codigo : ''}">
             <select id="swal-role" class="swal2-input" style="width:100%;">
                 <option value="">Seleccione perfil...</option>
-                <option value="ADM" ${access && access.perfil === 'ADM' ? 'selected' : ''}>Administrador</option>
-                <option value="CLI" ${access && access.perfil === 'CLI' ? 'selected' : ''}>Cliente</option>
+                <option value="ADM" ${access && access.rol === 'ADM' ? 'selected' : ''}>Administrador</option>
+                <option value="CLI" ${access && access.rol === 'CLI' ? 'selected' : ''}>Cliente</option>
             </select>
             <input id="swal-user-id" class="swal2-input" placeholder="ID Usuario" value="${isEdit ? access.idUsuario : ''}">
             <input id="swal-access" class="swal2-input" placeholder="Acceso" value="${isEdit ? access.acceso : ''}">
@@ -170,8 +202,10 @@ function updateAccess(accessData) {
     .then(res => res.json())
     .then(resp => {
         if (resp.status == "ok") {
-            Swal.fire('Éxito', 'Acceso actualizado correctamente', 'success');
-            loadAccess();
+            Swal.fire('Éxito', 'Acceso actualizado correctamente', 'success')
+            .then(() => {
+                loadAccess();
+            });
         } else {
             Swal.fire('Error', resp.result.error_message || 'No se pudo actualizar el acceso', 'error');
         }

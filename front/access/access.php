@@ -10,7 +10,7 @@
     <div class="container">
         <h1>Gestión de Accesos</h1>
         <button class="add-btn" onclick="openAccessModal()">+ Nuevo Acceso</button>
-        <table id="accessTable">
+        <table id="accessTable" class="display">
             <thead>
                 <tr>
                     <th>ID</th>
