@@ -27,11 +27,21 @@ const initStrategic = () => {
             document.getElementById('policyContent').value = strategicData.policy.content;
         }
         
-        // Render Principles if any (mock data or restored state)
+        // Show sections if policy appears saved (has name)
+        if (strategicData.policy.name) {
+             document.getElementById('principlesSection').style.display = 'block';
+             document.getElementById('objectivesSection').style.display = 'block';
+             document.getElementById('btnPrint').style.display = 'inline-block';
+        }
+
+        // Render Principles if any
         if (strategicData.principles.length > 0) {
             renderPrinciples();
-            // In a real app we'd check if policy is saved/exists to show this
-            // For now, we'll keep it hidden until "Save" is clicked unless we add a check here
+        }
+
+        // Render Objectives if any
+        if (strategicData.objectives && strategicData.objectives.length > 0) {
+            renderObjectives();
         }
     }
 };
@@ -67,14 +77,17 @@ window.savePolicy = function() {
         content: document.getElementById('policyContent').value
     };
 
-    // Reveal Principles Section and Print Button
+    // Reveal Principles Section, Objectives Section and Print Button
     document.getElementById('principlesSection').style.display = 'block';
+    document.getElementById('objectivesSection').style.display = 'block';
     document.getElementById('btnPrint').style.display = 'inline-block';
+
+    renderObjectives();
 
     Swal.fire({
         icon: 'success',
         title: 'Política Guardada',
-        text: 'La política ha sido guardada. Ahora puede agregar los principios.',
+        text: 'La política ha sido guardada. Ahora puede agregar principios y objetivos.',
         timer: 1500,
         showConfirmButton: false
     });
@@ -83,12 +96,22 @@ window.savePolicy = function() {
 window.printPolicy = function() {
     const policy = strategicData.policy;
     const principles = strategicData.principles;
+    const objectives = strategicData.objectives || [];
 
     let principlesHtml = '';
     if (principles.length > 0) {
         principlesHtml = '<ul>' + principles.map(p => `<li>${p.text}</li>`).join('') + '</ul>';
     } else {
         principlesHtml = '<p>No hay principios registrados.</p>';
+    }
+
+    let objectivesHtml = '';
+    if (objectives.length > 0) {
+        objectivesHtml = '<table style="width:100%; border-collapse: collapse; margin-top: 10px;"><thead><tr><th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Nombre Objetivo</th></tr></thead><tbody>' + 
+            objectives.map(o => `<tr><td style="border: 1px solid #ddd; padding: 8px;">${o.text}</td></tr>`).join('') + 
+            '</tbody></table>';
+    } else {
+        objectivesHtml = '<p>No hay objetivos estratégicos registrados.</p>';
     }
 
     const printWindow = window.open('', '_blank');
@@ -100,7 +123,7 @@ window.printPolicy = function() {
                 body { font-family: Arial, sans-serif; line-height: 1.6; padding: 40px; }
                 h1 { text-align: center; color: #333; }
                 .policy-content { margin: 30px 0; text-align: justify; }
-                .principles-section { margin: 30px 0; }
+                .principles-section, .objectives-section { margin: 30px 0; }
                 .signature-section { margin-top: 100px; text-align: center; }
                 .signature-line { border-top: 1px solid #000; width: 300px; margin: 0 auto; padding-top: 10px; }
             </style>
@@ -117,6 +140,11 @@ window.printPolicy = function() {
                 ${principlesHtml}
             </div>
 
+            <div class="objectives-section">
+                <h3>Objetivos Estratégicos</h3>
+                ${objectivesHtml}
+            </div>
+
             <div class="signature-section">
                 <div class="signature-line">
                     <strong>Gerente General</strong><br>
@@ -130,6 +158,134 @@ window.printPolicy = function() {
         </html>
     `);
     printWindow.document.close();
+};
+
+// Objectives Logic
+window.showCreateObjective = function() {
+    document.getElementById('mainStrategicView').style.display = 'none';
+    document.getElementById('createObjectiveView').style.display = 'block';
+    
+    // Clear form
+    document.getElementById('newObjectiveText').value = '';
+};
+
+window.hideCreateObjective = function() {
+    document.getElementById('createObjectiveView').style.display = 'none';
+    document.getElementById('mainStrategicView').style.display = 'block';
+};
+
+window.saveObjective = function() {
+    const text = document.getElementById('newObjectiveText').value;
+    if (!text) {
+        Swal.fire('Error', 'Debe escribir un objetivo', 'error');
+        return;
+    }
+
+    if (!strategicData.objectives) strategicData.objectives = [];
+    
+    strategicData.objectives.push({
+        id: Date.now(),
+        text: text
+    });
+
+    renderObjectives();
+    hideCreateObjective();
+    Swal.fire('Guardado', 'Objetivo agregado correctamente', 'success');
+};
+
+window.deleteObjective = function(id) {
+    Swal.fire({
+        title: '¿Eliminar objetivo?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            strategicData.objectives = strategicData.objectives.filter(o => o.id !== id);
+            renderObjectives();
+            Swal.fire('Eliminado', '', 'success');
+        }
+    });
+};
+
+function renderObjectives() {
+    const tbody = document.querySelector('#tableObjectives tbody');
+    if (!tbody) return;
+
+    if (!strategicData.objectives || strategicData.objectives.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" class="empty-state">No hay objetivos registrados.</td></tr>`;
+        return;
+    }
+
+    let html = '';
+    strategicData.objectives.forEach(item => {
+        html += `<tr>
+            <td style="white-space: nowrap;">
+                <button class="btn-icon btn-delete" title="Eliminar" onclick="deleteObjective(${item.id})">🗑️</button>
+            </td>
+            <td>${item.text}</td>
+            <td>
+                 <button class="btn-icon btn-view" title="Ver Indicadores" onclick="showIndicators(${item.id})">👁️</button>
+            </td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+}
+
+// Indicator Logic
+window.showIndicators = function(objectiveId) {
+    const objective = strategicData.objectives.find(o => o.id === objectiveId);
+    if (!objective) return;
+
+    // View Switching
+    document.getElementById('mainStrategicView').style.display = 'none';
+    document.getElementById('indicatorsView').style.display = 'block';
+
+    // Set Context
+    document.getElementById('currentObjectiveId').value = objectiveId;
+    document.getElementById('indicatorObjectiveTitle').innerText = `Objetivo: ${objective.text}`;
+
+    // Populate Data (if exists)
+    const ind = objective.indicator || {};
+    document.getElementById('indFormula').value = ind.formula || '';
+    document.getElementById('indResponsible').value = ind.responsible || '';
+    document.getElementById('indExpected').value = ind.expected || '';
+    document.getElementById('indCritical').value = ind.critical || '';
+    document.getElementById('indSource').value = ind.source || '';
+    document.getElementById('indPeriodicity').value = ind.periodicity || '';
+    document.getElementById('indType').value = ind.type || '';
+    document.getElementById('indLimitType').value = ind.limitType || '';
+    document.getElementById('indTarget').value = ind.target || '';
+    document.getElementById('indDate').value = ind.date || new Date().toISOString().split('T')[0];
+};
+
+window.hideIndicators = function() {
+    document.getElementById('indicatorsView').style.display = 'none';
+    document.getElementById('mainStrategicView').style.display = 'block';
+};
+
+window.saveIndicator = function() {
+    const objectiveId = parseInt(document.getElementById('currentObjectiveId').value);
+    const objective = strategicData.objectives.find(o => o.id === objectiveId);
+    
+    if (!objective) return;
+
+    objective.indicator = {
+        formula: document.getElementById('indFormula').value,
+        responsible: document.getElementById('indResponsible').value,
+        expected: document.getElementById('indExpected').value,
+        critical: document.getElementById('indCritical').value,
+        source: document.getElementById('indSource').value,
+        periodicity: document.getElementById('indPeriodicity').value,
+        type: document.getElementById('indType').value,
+        limitType: document.getElementById('indLimitType').value,
+        target: document.getElementById('indTarget').value,
+        date: document.getElementById('indDate').value
+    };
+
+    hideIndicators();
+    Swal.fire('Guardado', 'Indicador actualizado correctamente', 'success');
 };
 
 window.addPrinciple = async function() {
@@ -220,6 +376,9 @@ function renderPrinciples() {
 }
 
 // Check DOM Ready
+// Check DOM Ready
 if (document.readyState === 'loading') {
     document.addEventListener("DOMContentLoaded", initStrategic);
+} else {
+    initStrategic();
 } 

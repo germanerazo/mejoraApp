@@ -1,0 +1,18 @@
+/* Inherit base styles */
+@import url("../../planear/process/processMap.css?v=1.3");
+
+/* Specific styles for Personal Consolidation */
+.personal-table td {
+    vertical-align: top;
+    padding: 10px;
+}
+
+.responsibility-list {
+    list-style-type: disc;
+    padding-left: 20px;
+    margin: 0;
+}
+
+.responsibility-list li {
+    margin-bottom: 5px;
+}
