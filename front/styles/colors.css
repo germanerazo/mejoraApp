@@ -1,73 +1,148 @@
 :root {
-    --fondo: #23547b;
-    --color2: #329bd6;
-    --color3: #90e0ef;
-    --color4: #00b4d8;
-    --color5: #e9ecee;
-    --color6: #0077b6;
-    --colorRed1: #e74c3c;
-    --colorRed2: #c0392b;
+        --fondo: #22496d;
+        --color2: #329bd6;
+        --color3: #90e0ef;
+        --color4: #00b4d8;
+        --color5: #e9ecee;
+        --color6: #0077b6;
+        --colorRed1: #e74c3c;
+        --colorRed2: #c0392b;
 }
 
 /* Estilo para Select2 en el modal de SweetAlert2 */
 
-        /* Igualar el ancho del select2 al de los inputs de SweetAlert2 */
-        .swal2-popup .select2-container {
-                width: 100% !important;
-                min-width: 0 !important;
-                max-width: 100% !important;
-                margin-bottom: 10px;
-        }
-        .swal2-popup .select2-container--default .select2-selection--single {
-                background-color: #fff;
-                border: 1px solid #d9d9d9;
-                border-radius: 4px;
-                height: 40px !important;
-                padding: 0 12px;
-                font-size: 16px;
-                box-sizing: border-box;
-                display: flex;
-                align-items: center;
-                min-width: 0 !important;
-                width: 100% !important;
-        }
-        .swal2-popup .select2-selection__rendered {
-                line-height: 40px !important;
-                padding-left: 0 !important;
-                color: #333 !important;
-                font-size: 16px !important;
-        }
-        .swal2-popup .select2-selection__arrow {
-                height: 38px !important;
-                right: 10px !important;
-        }
-        .swal2-popup select.swal2-input {
-                height: 40px;
-                border: 1px solid #d9d9d9;
-                border-radius: 4px;
-                font-size: 16px;
-                padding: 0 12px;
-                box-sizing: border-box;
-                width: 100%;
-                margin-bottom: 10px;
-                background: #fff;
-                color: #333;
-                appearance: none;
-                -webkit-appearance: none;
-                -moz-appearance: none;
-        }
+/* Igualar el ancho del select2 al de los inputs de SweetAlert2 */
+.swal2-popup .select2-container {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        margin-bottom: 10px;
+}
+
+.swal2-popup .select2-container--default .select2-selection--single {
+        background-color: #fff;
+        border: 1px solid #d9d9d9;
+        border-radius: 4px;
+        height: 40px !important;
+        padding: 0 12px;
+        font-size: 16px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        min-width: 0 !important;
+        width: 100% !important;
+}
+
+.swal2-popup .select2-selection__rendered {
+        line-height: 40px !important;
+        padding-left: 0 !important;
+        color: #333 !important;
+        font-size: 16px !important;
+}
+
+.swal2-popup .select2-selection__arrow {
+        height: 38px !important;
+        right: 10px !important;
+}
+
+.swal2-popup select.swal2-input {
+        height: 40px;
+        border: 1px solid #d9d9d9;
+        border-radius: 4px;
+        font-size: 16px;
+        padding: 0 12px;
+        box-sizing: border-box;
+        width: 100%;
+        margin-bottom: 10px;
+        background: #fff;
+        color: #333;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+}
+
 /* Estilo para tabla  */
-body { font-family: Arial, sans-serif; background: #f5f6fa; }
-.container { max-width: 1100px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 2px 12px #0001; }
-        h1 { text-align: center; color: #333; }
-        table { width: 100%; border-collapse: collapse; margin-top: 25px; }
-        th, td { padding: 12px 8px; border-bottom: 1px solid #eee; text-align: left; }
-        th { background: #f0f0f0; color: #444; }
-        tr:hover { background: #f9fafb; }
-        .actions button { margin-right: 6px; }
-        .add-btn { background: var(--fondo); color: #fff; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; margin-bottom: 10px; }
-        .add-btn:hover { background: var(--color2); }
-        .edit-btn { background: var(--color6); color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-        .edit-btn:hover { background: var(--color4); }
-        .delete-btn { background: var(--colorRed1); color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-        .delete-btn:hover { background: var(--colorRed2); }
+body {
+        font-family: Arial, sans-serif;
+        background: #f5f6fa;
+}
+
+.container {
+        max-width: 1100px;
+        margin: 40px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px #0001;
+}
+
+h1 {
+        text-align: center;
+        color: #333;
+}
+
+table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 25px;
+}
+
+th,
+td {
+        padding: 12px 8px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+}
+
+th {
+        background: #f0f0f0;
+        color: #444;
+}
+
+tr:hover {
+        background: #f9fafb;
+}
+
+.actions button {
+        margin-right: 6px;
+}
+
+.add-btn {
+        background: var(--fondo);
+        color: #fff;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-bottom: 10px;
+}
+
+.add-btn:hover {
+        background: var(--color2);
+}
+
+.edit-btn {
+        background: var(--color6);
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+}
+
+.edit-btn:hover {
+        background: var(--color4);
+}
+
+.delete-btn {
+        background: var(--colorRed1);
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+}
+
+.delete-btn:hover {
+        background: var(--colorRed2);
+}

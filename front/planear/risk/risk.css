@@ -1,0 +1,194 @@
+/* Inherit base styles */
+@import url("../../styles/colors.css");
+@import url("../../planear/process/processMap.css?v=1.3");
+
+/* Specific styles for Risk Management */
+
+/* Matrix Table Styles */
+.risk-matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+}
+
+/* Initial column width logic for 5-column matrices */
+#tableRiskHazards,
+#tableRiskProcesses {
+    table-layout: fixed;
+}
+
+#tableRiskHazards th:first-child,
+#tableRiskProcesses th:first-child {
+    width: 40%;
+    /* Main column gets more space */
+}
+
+#tableRiskHazards th:not(:first-child),
+#tableRiskProcesses th:not(:first-child) {
+    width: 15%;
+    /* Status columns get equal space (15% * 4 = 60%) */
+    word-wrap: break-word;
+    /* Handle long text in headers */
+    vertical-align: middle;
+}
+
+/* Ensure cells follow header widths */
+#tableRiskHazards td,
+#tableRiskProcesses td {
+    overflow-wrap: break-word;
+}
+
+.risk-matrix-table th,
+.risk-matrix-table td {
+    border: 1px solid #ddd;
+    padding: 8px 10px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.risk-matrix-table th {
+    background-color: #f8f9fa;
+    font-weight: 700;
+    color: #333;
+}
+
+.risk-matrix-table th.header-main {
+    text-align: left;
+    background-color: #e9ecef;
+    font-size: 1.1em;
+}
+
+/* Criticality Colors */
+.bg-red {
+    background-color: #ffcccc;
+    /* Light Red */
+    color: #c0392b;
+    font-weight: bold;
+}
+
+.bg-orange {
+    background-color: #ffe0b2;
+    /* Light Orange */
+    color: #e67e22;
+    font-weight: bold;
+}
+
+.bg-yellow {
+    background-color: #fff3cd;
+    /* Light Yellow */
+    color: #d35400;
+    font-weight: bold;
+}
+
+.bg-green {
+    background-color: #d4edda;
+    /* Light Green */
+    color: #155724;
+    font-weight: bold;
+}
+
+.bg-light-green {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    font-weight: bold;
+}
+
+/* Section Headers */
+.risk-section-title {
+    font-size: 1.2rem;
+    color: var(--fondo);
+    margin-top: 30px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--color6);
+    padding-bottom: 5px;
+    font-weight: 600;
+}
+
+/* Prevention Measures List */
+.prevention-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.prevention-item {
+    background: #fff;
+    border: 1px solid #eee;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Sub-header for matrix columns to match screenshot style */
+.col-header-danger {
+    background-color: #e74c3c !important;
+    color: white !important;
+}
+
+.col-header-warning {
+    background-color: #f39c12 !important;
+    color: white !important;
+}
+
+.col-header-yellow {
+    background-color: #f1c40f !important;
+    color: white !important;
+}
+
+.col-header-success {
+    background-color: #2ecc71 !important;
+    color: white !important;
+}
+
+/* Print Styles */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .page-header,
+    .page-header * {
+        visibility: visible;
+    }
+
+    .content-card,
+    .content-card * {
+        visibility: visible;
+    }
+
+    .page-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        margin: 0;
+        padding: 10px 0;
+        text-align: center;
+    }
+
+    .content-card {
+        position: absolute;
+        top: 60px;
+        left: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        border: none;
+    }
+
+    /* Hide Actions and Buttons */
+    .risk-actions,
+    button {
+        display: none !important;
+    }
+
+    /* Ensure colors print */
+    .risk-matrix-table th,
+    .risk-matrix-table td {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}

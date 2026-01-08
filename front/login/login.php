@@ -18,7 +18,7 @@
     </form>
   </div>
   <div class="right-container">
-    <img src="../assets/logo_mejora.png" alt="Logo Mejora">
+    <img src="../assets/animacion_logo.gif" alt="Logo Mejora">
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.all.min.js"></script>

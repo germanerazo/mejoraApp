@@ -1,11 +1,14 @@
+/* Import Standard Colors */
+@import url("../../styles/colors.css");
+
 :root {
-    /* Color Palette */
-    --primary-color: #4361ee;
-    --primary-hover: #3a53d0;
-    --secondary-color: #3f37c9;
+    /* Align with standard palette */
+    --primary-color: var(--fondo);
+    --primary-hover: var(--color6);
+    --secondary-color: var(--color2);
     --success-color: #27ae60;
     --warning-color: #f2994a;
-    --danger-color: #eb5757;
+    --danger-color: var(--colorRed2);
     --text-main: #2b2d42;
     --text-secondary: #8d99ae;
     --bg-body: #f8f9fa;
@@ -119,8 +122,8 @@ body {
 
 .btn-secondary {
     background: white;
-    color: var(--primary-color);
-    border: 1px solid var(--primary-color);
+    color: var(--color6);
+    border: 1px solid var(--color6);
     padding: 10px 20px;
     border-radius: var(--radius-sm);
     font-weight: 500;
@@ -133,7 +136,7 @@ body {
 }
 
 .btn-secondary:hover {
-    background: rgba(67, 97, 238, 0.05);
+    background: rgba(0, 119, 182, 0.05);
     transform: translateY(-1px);
 }
 

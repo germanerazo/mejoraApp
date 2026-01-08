@@ -1,0 +1,160 @@
+/* Inherit base styles */
+@import url("../../styles/colors.css");
+@import url("../../planear/process/processMap.css?v=1.3");
+
+/* Specific styles for Annual Plan */
+
+.annual-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.annual-table th,
+.annual-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.annual-table th {
+    background-color: #f8f9fa;
+    color: #2c3e50;
+    font-weight: bold;
+}
+
+.btn-icon-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: var(--colorRed2);
+}
+
+.btn-icon-view {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: var(--color6);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-input-date {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.btn-create-orange {
+    background-color: var(--fondo);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s;
+}
+
+.btn-create-orange:hover {
+    background-color: var(--color6);
+}
+
+.section-subtitle {
+    color: var(--fondo);
+    border-bottom: 2px solid var(--color6);
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    margin-top: 30px;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+@media print {
+
+    /* Hide Everything by default */
+    body * {
+        visibility: hidden;
+    }
+
+    /* Show only the Detail View */
+    #annualDetailView,
+    #annualDetailView * {
+        visibility: visible;
+    }
+
+    /* Position Detail View to Overlay Everything */
+    #annualDetailView {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 20px;
+        background-color: white;
+        z-index: 99999;
+        /* Top of stack */
+        overflow-y: auto;
+    }
+
+    /* Hide Action Buttons and UI Elements */
+    button,
+    .btn-create-orange,
+    .btn-secondary,
+    .btn-icon-delete,
+    .btn-icon-view,
+    .btn-icon,
+    .no-print {
+        display: none !important;
+    }
+
+    /* Hide "Acción" columns in tables */
+    .annual-table th:first-child,
+    .annual-table td:first-child {
+        display: none !important;
+    }
+
+    /* Improve Layout for Print */
+    .section-header {
+        border-bottom: 2px solid #000;
+        margin-bottom: 20px;
+    }
+
+    .section-subtitle {
+        page-break-after: avoid;
+        margin-top: 20px;
+        color: #000;
+        border-bottom: 1px solid #000;
+    }
+
+    table {
+        page-break-inside: auto;
+    }
+
+    tr {
+        page-break-inside: avoid;
+    }
+
+    /* Ensure backgrounds/colors print */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
