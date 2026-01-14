@@ -62,50 +62,32 @@
 
 /* Print Styles */
 @media print {
-
-    /* Hide everything by default */
-    body>* {
-        display: none !important;
+    body * {
+        visibility: hidden;
     }
 
-    /* Ensure the print container is visible */
-    /* Assuming #examsPrintView is inside some containers, we might need to un-hide parents or move it. 
-       Best strategy: Fixed positioning overlay. */
-
-    body {
-        background: white;
-        margin: 0;
-        padding: 0;
-    }
-
-    #examsPrintView {
-        display: block !important;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 20px;
-        background: white;
-        z-index: 9999;
-        visibility: visible;
-        border: none;
-        /* Remove card border */
-        box-shadow: none;
-        /* Remove card shadow */
-    }
-
+    #examsPrintView,
     #examsPrintView * {
         visibility: visible;
     }
 
-    /* Hide the buttons */
+    #examsPrintView {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        /* Reset margins */
+        padding: 0;
+        /* Reset padding if needed */
+        background: white;
+    }
+
     .print-actions {
         display: none !important;
     }
 
-    /* Hide other potential persistent elements */
+    /* Hide known headers just in case they overlap space */
     .page-header,
     .sidebar,
     header,
