@@ -1,0 +1,170 @@
+/* Base Layout */
+.page-header {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.page-title {
+    margin: 0;
+    color: var(--fondo);
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.breadcrumbs {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.content-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+/* Form Elements */
+.form-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+    /* Critical for grid layouts */
+}
+
+/* Buttons */
+.btn-orange {
+    background: var(--color6);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* Print Styles */
+@media print {
+
+    /* Hide everything by default */
+    body>* {
+        display: none !important;
+    }
+
+    /* Ensure the print container is visible */
+    /* Assuming #examsPrintView is inside some containers, we might need to un-hide parents or move it. 
+       Best strategy: Fixed positioning overlay. */
+
+    body {
+        background: white;
+        margin: 0;
+        padding: 0;
+    }
+
+    #examsPrintView {
+        display: block !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 20px;
+        background: white;
+        z-index: 9999;
+        visibility: visible;
+        border: none;
+        /* Remove card border */
+        box-shadow: none;
+        /* Remove card shadow */
+    }
+
+    #examsPrintView * {
+        visibility: visible;
+    }
+
+    /* Hide the buttons */
+    .print-actions {
+        display: none !important;
+    }
+
+    /* Hide other potential persistent elements */
+    .page-header,
+    .sidebar,
+    header,
+    nav,
+    footer {
+        display: none !important;
+    }
+}
+
+/* Table */
+.table-container {
+    overflow-x: auto;
+}
+
+.exams-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.exams-table th {
+    background: var(--color2);
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 500;
+}
+
+.exams-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+}
+
+/* Utilities */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-realizado {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-pendiente {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-vencido {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
