@@ -46,7 +46,7 @@
 
     <form id="examsForm">
         <div style="margin-bottom: 20px; font-weight: bold; font-size: 1.1rem; color: var(--color6);">
-            Empresa: NOMBRE DE LA EMPRESA S.A.S.
+            Empresa: DINAMIK ZONA FRANCA S.A.S
         </div>
 
         <div class="grid-3" style="column-gap: 20px;">
@@ -87,10 +87,21 @@
 
     <div class="print-document" id="printContent">
         <div class="print-header" style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px;">
-            <div style="font-size: 1.5rem; font-weight: bold;">NOMBRE DE LA EMPRESA S.A.S.</div>
-            <div style="font-size: 0.9rem;">NIT: 900.000.000-1</div>
-            <div style="margin-top: 10px; font-weight: bold; font-size: 1.2rem;">ORDEN DE EXAMEN MÉDICO OCUPACIONAL</div>
-            <div style="font-size: 0.9rem; margin-top: 5px;" id="printDate">Fecha: </div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <!-- Logo -->
+                <div style="width: 200px;">
+                    <img src="https://sig.prevencionmas.com/logo/96-LOGO%20DINAMIK%20.jpg" style="max-width: 100%; height: auto;" alt="Logo Empresa">
+                </div>
+                
+                <!-- Info -->
+                <div style="text-align: right; font-size: 0.9rem;">
+                    <div style="font-weight: bold; font-size: 1.1rem;">DINAMIK ZONA FRANCA S.A.S</div>
+                    <div>NIT: 900.000.000-1</div> <!-- Keeping placeholder NIT unless seen in screenshot, assume placeholder for now or generic -->
+                    <div id="printCityDate" style="margin-top: 5px;">Bogotá, 2024-01-01</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; font-weight: bold; font-size: 1.4rem; border: 1px solid #000; padding: 10px; display: inline-block;">ORDEN DE SERVICIO <br> EXAMEN MÉDICO OCUPACIONAL</div>
         </div>
 
         <div class="print-body" style="font-size: 14px; line-height: 1.6;">

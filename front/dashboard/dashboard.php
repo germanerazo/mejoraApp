@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <title>Dashboard</title>
   <link rel="stylesheet" href="../styles/colors.css">
-  <link rel="stylesheet" href="./dashboard.css?v=1.1">
+  <link rel="stylesheet" href="./dashboard.css?v=1.2">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.min.css" rel="stylesheet">
@@ -15,7 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.all.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-  <script type="module" src="./dashboard.js?v=1.1"></script>
+  <script type="module" src="./dashboard.js?v=1.2"></script>
 </head>
 
 <body>
@@ -27,8 +27,11 @@
 
   <div class="main-content">
     <div class="header">
-      <span id="userInfo" class="user-meta"></span>
-      <span id="companyName" class="user-meta"></span>
+      <div class="header-info">
+        <span id="companyName" class="company-name"></span>
+        <span id="userName" class="user-name"></span>
+        <span id="userProfile" class="user-profile"></span>
+      </div>
     </div>
     <div class="content-area">
       <h2>Bienvenido al sistema MEJORA</h2>

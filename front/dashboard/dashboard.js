@@ -5,8 +5,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const mainMenu = document.getElementById('mainMenu');
   const logoutBtn = document.getElementById('logoutBtn');
   const menuToggle = document.getElementById('menuToggle');
-  const userNameSpan = document.getElementById('userInfo');
   const companyNameSpan = document.getElementById('companyName');
+  const userNameSpan = document.getElementById('userName');
+  const userProfileSpan = document.getElementById('userProfile');
   let collapsed = false;
 
   const resetExpiration = () => {
@@ -63,34 +64,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Renderizado Header Usuario
     if (user) {
-      const userInfoSection = document.createElement('div');
-      userInfoSection.className = 'user-info-section';
-      
-      const nameEl = document.createElement('span');
-      nameEl.className = 'user-name';
-      nameEl.textContent = user.name;
-      
-      const roleEl = document.createElement('span');
-      roleEl.className = 'company-name';
-      roleEl.textContent = `Perfil: ${user.profile}`;
-
-      userInfoSection.appendChild(nameEl);
-      userInfoSection.appendChild(roleEl);
-      
-      userNameSpan.parentNode.replaceChild(userInfoSection, userNameSpan);
-      // Ocultar el span original reemplazado o reusar contenedor
-      if(companyNameSpan) companyNameSpan.style.display = 'none'; // Reemplazamos la logica de header
-      
-      // Fetch company info normally to append if needed, or just keep simple
+      // Fetch company info first
       const companyResponse = await fetch(`${config.BASE_API_URL}companies.php?id=${user.idClient}`);
       const companyData = await companyResponse.json();
-      if (companyData && companyData.length > 0) {
+      
+      if (companyData && companyData.length > 0 && companyNameSpan) {
         const companyName = companyData[0].nomEmpresa;
-        const compEl = document.createElement('span');
-        compEl.className = 'company-name';
-        compEl.style.marginLeft = '0';
-        compEl.textContent = ` | ${companyName}`;
-        userInfoSection.appendChild(compEl);
+        companyNameSpan.textContent = companyName;
+      }
+      
+      // Set user name
+      if (userNameSpan) {
+        userNameSpan.textContent = user.name;
+      }
+      
+      // Set user profile
+      if (userProfileSpan) {
+        userProfileSpan.textContent = `(${user.profile})`;
       }
     }
 
@@ -106,6 +96,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
 
     const allowedCodes = userAccess.map(a => a.codigo);
+    allowedCodes.push('207'); // Allow Morbidity Module manually
 
     // 2. Obtener opciones del menú
     const optionsResponse = await fetch(`${config.BASE_API_URL}options.php?page=1`);

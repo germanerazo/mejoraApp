@@ -9,7 +9,14 @@ $_companies = new companies;
 // Permitir solicitudes desde cualquier origen
 header("Access-Control-Allow-Origin: *");
 // Permitir cabeceras personalizadas
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+// Permitir métodos específicos
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
@@ -29,8 +36,17 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
     case 'POST':
         header('Content-Type: application/json');
-        $postBody = file_get_contents('php://input');
-        $dataArray = $_companies->post($postBody);
+        if (!empty($_POST)) {
+            // If idEmpresa is present, it's an update (happens with FormData)
+            if (isset($_POST['idEmpresa'])) {
+                $dataArray = $_companies->put(json_encode($_POST));
+            } else {
+                $dataArray = $_companies->post(json_encode($_POST));
+            }
+        } else {
+            $postBody = file_get_contents('php://input');
+            $dataArray = $_companies->post($postBody);
+        }
         if(isset($dataArray["result"]["error_id"])) {
             $responseCode = $dataArray["result"]["error_id"];
             http_response_code($responseCode);
@@ -42,8 +58,13 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
     case 'PUT':
         header('Content-Type: application/json');
-        $postBody = file_get_contents('php://input');
-        $dataArray = $_companies->put($postBody);
+        if (!empty($_POST)) {
+            // Some clients send PUT data via POST with _method=PUT
+            $dataArray = $_companies->put(json_encode($_POST));
+        } else {
+            $postBody = file_get_contents('php://input');
+            $dataArray = $_companies->put($postBody);
+        }
         if(isset($dataArray["result"]["error_id"])) {
             $responseCode = $dataArray["result"]["error_id"];
             http_response_code($responseCode);

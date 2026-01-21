@@ -1,0 +1,210 @@
+/* Morbidity Styles */
+
+.morbidity-container {
+    padding: 20px;
+}
+
+.morbidity-header {
+    background-color: var(--color6);
+    /* Greenish header */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px 5px 0 0;
+    font-weight: bold;
+    font-size: 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.morbidity-toolbar {
+    background: white;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-top: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 0 0 5px 5px;
+    margin-bottom: 20px;
+}
+
+.filter-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.filter-input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 200px;
+}
+
+.btn-filter,
+.btn-graph {
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.btn-filter:hover,
+.btn-graph:hover {
+    background-color: #f5f5f5;
+}
+
+.btn-add-circle {
+    background-color: var(--fondo);
+    /* Orange */
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
+}
+
+.btn-add-circle:hover {
+    transform: scale(1.1);
+}
+
+.morbidity-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.morbidity-table th {
+    background-color: var(--color6);
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 500;
+}
+
+.morbidity-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.morbidity-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+.action-icon {
+    font-size: 1.1rem;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.icon-edit {
+    color: #FFA500;
+}
+
+.icon-delete {
+    color: #FF4444;
+}
+
+/* Status Badges */
+.badge-incapacity {
+    background-color: #FFEBEE;
+    color: #D32F2F;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+}
+
+/* Form Styles */
+.content-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    color: var(--color6);
+    border-bottom: 2px solid var(--color6);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.95rem;
+}
+
+.form-input:focus {
+    border-color: var(--color6);
+    outline: none;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn-secondary {
+    background: #ccc;
+    color: #333;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-orange {
+    background: var(--fondo);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background: #bbb;
+}
+
+.btn-orange:hover {
+    background: #e56000;
+}

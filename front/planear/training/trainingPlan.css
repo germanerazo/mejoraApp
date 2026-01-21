@@ -1,0 +1,146 @@
+/* trainingPlan.css */
+/* Reusing style pattern from Emergency Plan for consistency */
+.training-container {
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f9;
+    min-height: 100vh;
+}
+
+.training-header {
+    background-color: #fff;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-title {
+    font-size: 1.5rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.section-title {
+    font-size: 1.2rem;
+    color: #444;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #ff6b00;
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+.content-card {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.training-toolbar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.btn-add-circle {
+    background-color: #ff6b00;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(255, 107, 0, 0.3);
+    transition: transform 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-add-circle:hover {
+    transform: scale(1.1);
+    background-color: #e65100;
+}
+
+.training-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.training-table th {
+    background-color: #555;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 500;
+}
+
+.training-table td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    color: #555;
+}
+
+.training-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+.action-icon {
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.icon-delete {
+    color: #dc3545;
+}
+
+.icon-download {
+    color: #ff6b00;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-weight: 500;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.btn-orange {
+    background-color: #ff6b00;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    margin-right: 10px;
+}
