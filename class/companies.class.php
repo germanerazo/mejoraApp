@@ -103,10 +103,17 @@ class companies extends connection {
                 $this->fechaEntrega = isset($data['fechaEntrega']) ? $data['fechaEntrega'] : null;
                 $res = $this->setCompany();
                 if ($res) {
+                    $logoPath = $this->processLogo($res);
+                    if ($logoPath) {
+                        $this->idEmpresa = $res;
+                        $this->ruta = $logoPath;
+                        $this->updateRuta();
+                    }
                     $response = $_answers->response;
                     $response['result'] = array(
                         'idEmpresa' => $res,
-                        'nomEmpresa' => $this->nomEmpresa
+                        'nomEmpresa' => $this->nomEmpresa,
+                        'ruta' => $logoPath
                     );
                     return $response;
                 } else {
@@ -116,6 +123,32 @@ class companies extends connection {
                 return $_answers->error_401("This token is not valid or has expired");
             }
         }
+    }
+
+    private function processLogo($idEmpresa) {
+        if (isset($_FILES['logoFile']) && $_FILES['logoFile']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['logoFile'];
+            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $filename = "logo_" . time() . "." . $extension;
+            
+            $rootPath = dirname(__DIR__) . "/";
+            $targetDir = "dataClients/" . $idEmpresa . "/logo/";
+            $fullPath = $rootPath . $targetDir;
+            
+            if (!is_dir($fullPath)) {
+                mkdir($fullPath, 0777, true);
+            }
+            
+            if (move_uploaded_file($file['tmp_name'], $fullPath . $filename)) {
+                return $targetDir . $filename;
+            }
+        }
+        return null;
+    }
+
+    private function updateRuta() {
+        $query = "UPDATE " . $this->table . " SET ruta = '$this->ruta' WHERE idEmpresa = $this->idEmpresa";
+        return parent::nonQuery($query);
     }
 
     private function setCompany() {
@@ -178,6 +211,12 @@ class companies extends connection {
                     if(isset($data['naturaleza'])) { $this->naturaleza = $data['naturaleza']; }
                     if(array_key_exists('ruta', $data)) { $this->ruta = $data['ruta']; }
                     if(array_key_exists('fechaEntrega', $data)) { $this->fechaEntrega = $data['fechaEntrega']; }
+
+                    $logoPath = $this->processLogo($this->idEmpresa);
+                    if ($logoPath) {
+                        $this->ruta = $logoPath;
+                    }
+
                     $res = $this->updateCompany();
                     if ($res) {
                         $response = $_answers->response;
@@ -196,6 +235,15 @@ class companies extends connection {
     }
 
     private function updateCompany() {
+        // En caso de que no se haya subido una nueva imagen, intentamos mantener la actual
+        if (is_null($this->ruta)) {
+            $query_ruta = "SELECT ruta FROM " . $this->table . " WHERE idEmpresa = $this->idEmpresa";
+            $res_ruta = parent::getData($query_ruta);
+            if (isset($res_ruta[0]['ruta'])) {
+                $this->ruta = $res_ruta[0]['ruta'];
+            }
+        }
+
         $query = "UPDATE ". $this->table." SET 
             tipIdentEmp = '$this->tipIdentEmp',
             nroIdentEmp = '$this->nroIdentEmp',

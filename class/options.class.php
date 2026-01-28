@@ -28,6 +28,30 @@ class options extends connection {
         }
         $query = "SELECT idOption, code, name, tag2, link, back, `order`, state, nivel, nivelant FROM ". $this->table." LIMIT $initial, $limit";
         $data = parent::getData($query);
+        
+        // MOCK: Inject Morbidity Module
+        $morbidity = array(
+            'idOption' => 9991,
+            'code' => '207', 
+            'name' => 'Morbilidad / Ausentismo',
+            'tag2' => 'morbidity',
+            'link' => '../hacer/morbidity/morbidity.php',
+            'back' => '',
+            'order' => 99,
+            'state' => '0',
+            'nivel' => '2',
+            'nivelant' => '2' // Assuming parent is '2' (Hacer) which is likely code '2' or '200'. If parent is 2, nivelant=2? No, nivelant is "Nivel Anterior". If level 2, prev level is 1? Or parent code?
+            // Dashboard JS logic: 
+            // if (nivel === 1) map[code] = ...
+            // else parentCode = find(p => code > p && code < p+100)
+            // So if I use code 207, it looks for a parent between 200...299?? No.
+            // logic: find(code => 207 > code && 207 < code + 100).
+            // So if parent is 200, 207 is child.
+            // Nivel/NivelAnt might not be used for hierarchy logic in JS, only 'code' math.
+            // But let's set Nivel=2.
+        );
+        $data[] = $morbidity;
+
         return $data;
     }
     public function getOption($id) {
