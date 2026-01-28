@@ -331,4 +331,66 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   window.addEventListener('hashchange', cargarContenidoPorHash);
 
+  // ====== CHATBOT FUNCTIONALITY ======
+  const chatbotBtn = document.getElementById('chatbotBtn');
+  const chatWindow = document.getElementById('chatWindow');
+  const closeChatBtn = document.getElementById('closeChatBtn');
+  const chatInput = document.getElementById('chatInput');
+  const sendMessageBtn = document.getElementById('sendMessageBtn');
+  const chatMessages = document.getElementById('chatMessages');
+
+  // Toggle chat window
+  chatbotBtn.addEventListener('click', () => {
+    chatWindow.classList.toggle('active');
+    if (chatWindow.classList.contains('active')) {
+      chatInput.focus();
+    }
+  });
+
+  // Close chat window
+  closeChatBtn.addEventListener('click', () => {
+    chatWindow.classList.remove('active');
+  });
+
+  // Send message function
+  function sendMessage() {
+    const message = chatInput.value.trim();
+    if (!message) return;
+
+    // Add user message
+    const userMessageDiv = document.createElement('div');
+    userMessageDiv.className = 'message user-message';
+    userMessageDiv.innerHTML = `
+      <div class="message-content">${message}</div>
+    `;
+    chatMessages.appendChild(userMessageDiv);
+
+    // Clear input
+    chatInput.value = '';
+
+    // Scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Simulate bot response (placeholder for future AI integration)
+    setTimeout(() => {
+      const botMessageDiv = document.createElement('div');
+      botMessageDiv.className = 'message bot-message';
+      botMessageDiv.innerHTML = `
+        <div class="message-content">Gracias por tu mensaje. Estoy aquí para ayudarte con el sistema MEJORA.</div>
+      `;
+      chatMessages.appendChild(botMessageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 1000);
+  }
+
+  // Send message on button click
+  sendMessageBtn.addEventListener('click', sendMessage);
+
+  // Send message on Enter key
+  chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  });
+
 });

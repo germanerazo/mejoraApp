@@ -173,6 +173,7 @@ function saveUser(e) {
         // Update
         data.userId = currentEditingId;
         if (!data.password) delete data.password; // No enviar si está vacío
+        console.log("update",data);
         
         fetch(API_URL, {
             method: 'PUT',

@@ -40,6 +40,42 @@
       <h2>Bienvenido al sistema MEJORA</h2>
       <p>Selecciona una opción del menú para comenzar.</p>
     </div>
+    
+    <!-- Chatbot Button -->
+    <button id="chatbotBtn" class="chatbot-button" title="Asistente Virtual">
+      <img src="../assets/chatbotMejora.png" alt="Chatbot Mejora">
+    </button>
+    
+    <!-- Chat Window -->
+    <div id="chatWindow" class="chat-window">
+      <div class="chat-header">
+        <div class="chat-header-info">
+          <img src="../assets/chatbotMejora.png" alt="Bot" class="chat-bot-avatar">
+          <div>
+            <h3>Asistente Virtual Mejora</h3>
+            <span class="chat-status">En línea</span>
+          </div>
+        </div>
+        <button id="closeChatBtn" class="close-chat-btn">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div id="chatMessages" class="chat-messages">
+        <div class="message bot-message">
+          <div class="message-content">
+            ¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?
+          </div>
+        </div>
+      </div>
+      
+      <div class="chat-input-container">
+        <input type="text" id="chatInput" class="chat-input" placeholder="Escribe tu mensaje...">
+        <button id="sendMessageBtn" class="send-message-btn">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
   </div>
 </body>
 
