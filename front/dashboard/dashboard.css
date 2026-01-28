@@ -324,8 +324,8 @@ body {
 
 /* Animate chatbot button when chat is active */
 .chat-window.active~.chatbot-button {
-  bottom: 490px;
-  right: 350px;
+  bottom: 440px;
+  right: 340px;
   transform: scale(0.45);
   z-index: 10000;
   pointer-events: none;
@@ -370,6 +370,10 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.chat-header-info>div {
+  margin-left: 60px;
 }
 
 .chat-bot-avatar {

@@ -41,11 +41,6 @@
       <p>Selecciona una opción del menú para comenzar.</p>
     </div>
     
-    <!-- Chatbot Button -->
-    <button id="chatbotBtn" class="chatbot-button" title="Asistente Virtual">
-      <img src="../assets/chatbotMejora.png" alt="Chatbot Mejora">
-    </button>
-    
     <!-- Chat Window -->
     <div id="chatWindow" class="chat-window">
       <div class="chat-header">
@@ -76,6 +71,11 @@
         </button>
       </div>
     </div>
+    
+    <!-- Chatbot Button -->
+    <button id="chatbotBtn" class="chatbot-button" title="Asistente Virtual">
+      <img src="../assets/chatbotMejora.png" alt="Chatbot Mejora">
+    </button>
   </div>
 </body>
 

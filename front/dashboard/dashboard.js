@@ -371,16 +371,80 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Scroll to bottom
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    // Simulate bot response (placeholder for future AI integration)
+    // Generate intelligent bot response
     setTimeout(() => {
+      const botResponse = getBotResponse(message);
       const botMessageDiv = document.createElement('div');
       botMessageDiv.className = 'message bot-message';
       botMessageDiv.innerHTML = `
-        <div class="message-content">Gracias por tu mensaje. Estoy aquí para ayudarte con el sistema MEJORA.</div>
+        <div class="message-content">${botResponse}</div>
       `;
       chatMessages.appendChild(botMessageDiv);
       chatMessages.scrollTop = chatMessages.scrollHeight;
-    }, 1000);
+    }, 800);
+  }
+
+  // Intelligent bot response generator
+  function getBotResponse(userMessage) {
+    const msg = userMessage.toLowerCase();
+
+    // Saludos
+    if (msg.match(/hola|buenos días|buenas tardes|buenas noches|hey|hi/)) {
+      return '¡Hola! 👋 Soy tu asistente virtual de MEJORA. Puedo ayudarte con información sobre usuarios, empresas, procesos, plataforma estratégica y más. ¿En qué puedo asistirte?';
+    }
+
+    // Usuarios
+    if (msg.match(/usuario|crear usuario|agregar usuario|nuevo usuario/)) {
+      return 'Para gestionar usuarios, ve al módulo de "Gestión de Usuarios" en el menú lateral. Allí puedes:<br>• Crear nuevos usuarios<br>• Editar información de usuarios existentes<br>• Asignar perfiles (Administrador o Cliente)<br>• Asociar usuarios a empresas';
+    }
+
+    // Empresas/Clientes
+    if (msg.match(/empresa|cliente|compañía|organización|crear empresa/)) {
+      return 'En el módulo de "Gestión de Empresas" puedes:<br>• Registrar nuevas empresas cliente<br>• Actualizar información empresarial<br>• Subir el logo de la empresa<br>• Gestionar datos fiscales y de contacto<br><br>Cada empresa puede tener múltiples usuarios asociados.';
+    }
+
+    // Procesos
+    if (msg.match(/proceso|mapa de proceso|proceso estratégico|proceso operacional/)) {
+      return 'El sistema cuenta con un Mapa de Procesos que incluye:<br>• <b>Procesos Estratégicos</b>: Dirección y planificación<br>• <b>Procesos Operacionales</b>: Actividades principales del negocio<br>• <b>Procesos de Apoyo</b>: Soporte a las operaciones<br><br>Puedes crear, editar y visualizar fichas detalladas de cada proceso.';
+    }
+
+    // Plataforma Estratégica
+    if (msg.match(/plataforma estratégica|misión|visión|valores|objetivos estratégicos/)) {
+      return 'La Plataforma Estratégica te permite definir:<br>• <b>Misión</b>: Razón de ser de la organización<br>• <b>Visión</b>: Aspiraciones a futuro<br>• <b>Valores Corporativos</b>: Principios que guían la empresa<br>• <b>Objetivos Estratégicos</b>: Metas a alcanzar<br>• <b>Factores Críticos de Éxito</b>: Elementos clave para el logro de objetivos';
+    }
+
+    // Perfiles/Permisos
+    if (msg.match(/perfil|permiso|acceso|rol|administrador/)) {
+      return 'El sistema maneja dos perfiles principales:<br>• <b>Administrador (ADM)</b>: Acceso completo al sistema<br>• <b>Cliente (CLI)</b>: Acceso limitado según configuración<br><br>Los permisos se gestionan a través del módulo de accesos, donde puedes controlar qué módulos ve cada usuario.';
+    }
+
+    // Contraseñas
+    if (msg.match(/contraseña|password|cambiar contraseña|olvidé/)) {
+      return 'Para cambiar una contraseña:<br>1. Ve a "Gestión de Usuarios"<br>2. Haz clic en "Editar" del usuario<br>3. Ingresa la nueva contraseña<br>4. Guarda los cambios<br><br>Si es un nuevo usuario, la contraseña es obligatoria. Para editar, es opcional (déjala en blanco si no deseas cambiarla).';
+    }
+
+    // Dashboard/Navegación
+    if (msg.match(/dashboard|menú|navegar|cómo usar|inicio/)) {
+      return 'El dashboard principal incluye:<br>• <b>Menú lateral</b>: Acceso a todos los módulos<br>• <b>Área de contenido</b>: Donde se cargan las diferentes vistas<br>• <b>Header</b>: Muestra información de la empresa y usuario<br><br>Usa el menú lateral para navegar entre módulos. Puedes colapsarlo con el botón ☰.';
+    }
+
+    // Ayuda general
+    if (msg.match(/ayuda|help|qué puedes hacer|funciones/)) {
+      return 'Puedo ayudarte con:<br>✓ Gestión de usuarios y empresas<br>✓ Información sobre procesos<br>✓ Plataforma estratégica<br>✓ Perfiles y permisos<br>✓ Navegación del sistema<br>✓ Cambio de contraseñas<br><br>Escribe tu pregunta y te orientaré con gusto.';
+    }
+
+    // Agradecimientos
+    if (msg.match(/gracias|thank you|excelente|perfecto|ok/)) {
+      return '¡De nada! 😊 Estoy aquí para ayudarte. Si tienes más preguntas, no dudes en escribirme.';
+    }
+
+    // Despedidas
+    if (msg.match(/adiós|chao|hasta luego|bye/)) {
+      return '¡Hasta pronto! 👋 Que tengas un excelente día. Recuerda que siempre estaré aquí para ayudarte.';
+    }
+
+    // Respuesta por defecto
+    return 'Entiendo tu consulta sobre "' + userMessage + '". Te sugiero:<br>• Revisar el menú lateral para explorar los módulos disponibles<br>• Consultar la documentación del sistema<br>• Reformular tu pregunta con palabras clave como: usuarios, empresas, procesos, permisos, etc.<br><br>¿Hay algo específico en lo que pueda ayudarte?';
   }
 
   // Send message on button click
