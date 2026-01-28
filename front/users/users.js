@@ -5,7 +5,7 @@ let currentEditingId = null;
 
 // Inicializa DataTables
 function initDataTable() {
-    $('#usersTable').DataTable({
+    window.$('#usersTable').DataTable({
         pageLength: 10,
         language: {
             search: "Buscar:",
@@ -31,8 +31,10 @@ function loadUsers() {
     fetch(`${API_URL}?page=1`)
         .then(res => res.json())
         .then(data => {
-            const table = $('#usersTable').DataTable();
-            table.destroy(); // Destruir instancia previa
+            console.log("loadUsers", data);
+            if (window.$.fn.DataTable.isDataTable('#usersTable')) {
+                window.$('#usersTable').DataTable().destroy();
+            }
 
             const tbody = document.getElementById('usersTbody');
             tbody.innerHTML = '';
@@ -41,18 +43,35 @@ function loadUsers() {
             
             users.forEach(user => {
                 const tr = document.createElement('tr');
+                
+                // Celdas de datos
                 tr.innerHTML = `
                     <td>${user.idUsuario}</td>
                     <td>${user.nombre}</td>
                     <td>${user.email}</td>
                     <td>${user.codusr}</td>
-                    <td>${user.nomEmpresa}</td>
+                    <td>${user.nomEmpresa || 'N/A'}</td>
                     <td>${user.perfil == 'ADM' ? 'Administrador' : 'Cliente'}</td>
-                    <td class="actions">
-                        <button class="edit-btn" onclick='openEditUser(${JSON.stringify(user)})'>Editar</button>
-                        <button class="delete-btn" onclick="deleteUser('${user.idUsuario}')">Eliminar</button>
-                    </td>
                 `;
+                
+                // Celda de acciones con botones DOM para evitar problemas de quotes en JSON
+                const tdActions = document.createElement('td');
+                tdActions.className = 'actions';
+                
+                const btnEdit = document.createElement('button');
+                btnEdit.className = 'edit-btn';
+                btnEdit.textContent = 'Editar';
+                btnEdit.onclick = () => openEditUser(user);
+                
+                const btnDelete = document.createElement('button');
+                btnDelete.className = 'delete-btn';
+                btnDelete.textContent = 'Eliminar';
+                btnDelete.onclick = () => deleteUser(user.idUsuario);
+                
+                tdActions.appendChild(btnEdit);
+                tdActions.appendChild(btnDelete);
+                tr.appendChild(tdActions);
+                
                 tbody.appendChild(tr);
             });
 
@@ -232,9 +251,18 @@ window.showFormView = showFormView;
 window.hideFormView = hideFormView;
 
 // Listeners
-document.addEventListener('DOMContentLoaded', () => {
-    loadUsers();
-    
-    const form = document.getElementById('userForm');
-    if(form) form.addEventListener('submit', saveUser);
-});
+// Listeners
+// Como este script se carga dinámicamente, el DOMContentLoaded ya ocurrió.
+// Ejecutamos directamente, validando que los elementos existan.
+
+console.log('users.js: script cargado');
+
+const form = document.getElementById('userForm');
+if(form) {
+    // Remover listener previo para evitar duplicados si se recarga (aunque al limpiar innerHTML se borran los elementos)
+    form.removeEventListener('submit', saveUser); 
+    form.addEventListener('submit', saveUser);
+}
+
+// Cargar usuarios inmediatamente
+loadUsers();
