@@ -165,7 +165,16 @@ class users extends connection
 
     private function updateUser()
     {
-        $query = "UPDATE " . $this->table . " SET nombre = '$this->name', email = '$this->email', codusr = '$this->cc', idCliente = '$this->idClient', perfil = '$this->profile' WHERE idUsuario = $this->id";
+        // Construir query base
+        $query = "UPDATE " . $this->table . " SET nombre = '$this->name', email = '$this->email', codusr = '$this->cc', idCliente = '$this->idClient', perfil = '$this->profile'";
+        
+        // Si se proporcionó contraseña, incluirla en el UPDATE
+        if (isset($this->password) && !empty($this->password)) {
+            $query .= ", contrasena_nueva = '$this->password', pwdusr = '$this->passwordMD5'";
+        }
+        
+        $query .= " WHERE idUsuario = $this->id";
+        
         $response = parent::nonQuery($query);
         if ($response >= 1) {
             return $response;
