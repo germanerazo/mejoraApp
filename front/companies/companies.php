@@ -167,8 +167,8 @@
                             <label>Tipo de Identificación *</label>
                             <select id="tipIdent" name="tipIdent" required>
                                 <option value="">Seleccione...</option>
-                                <option value="CC">Cédula de Ciudadanía</option>
-                                <option value="CE">Cédula de Extrangería</option>
+                                <option value="0">Cédula de Ciudadanía</option>
+                                <option value="1">Cédula de Extrangería</option>
                             </select>
                         </div>
                         <div class="form-group">

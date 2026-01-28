@@ -28,9 +28,12 @@
   <div class="main-content">
     <div class="header">
       <div class="header-info">
-        <span id="companyName" class="company-name"></span>
-        <span id="userName" class="user-name"></span>
-        <span id="userProfile" class="user-profile"></span>
+        <div class="header-text">
+          <span id="companyName" class="company-name"></span>
+          <span id="userName" class="user-name"></span>
+          <span id="userProfile" class="user-profile"></span>
+        </div>
+        <img id="companyLogo" src="" alt="Logo Empresa" class="company-logo-header" style="display: none;">
       </div>
     </div>
     <div class="content-area">

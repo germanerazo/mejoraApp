@@ -40,7 +40,7 @@ function renderCompanies(companiesList) {
 
     companiesList.forEach(company => {
         const tr = document.createElement('tr');
-        const logoUrl = company.ruta ? `${config.BASE_API_URL}${company.ruta}` : '../assets/logo_mejora.png';
+        const logoUrl = company.ruta ? `${config.ASSETS_URL}${company.ruta}` : '../img/default-logo.png';
         
         tr.innerHTML = `
             <td><img src="${logoUrl}" class="company-logo-thumb" onerror="this.src='../assets/logo_mejora.png'"></td>
@@ -148,7 +148,7 @@ function showFormView(company = null) {
         
         // Show existing logo if available
         if (company.ruta && logoPreview && logoPreviewImg) {
-            logoPreviewImg.src = `${config.BASE_API_URL}${company.ruta}`;
+            logoPreviewImg.src = `${config.ASSETS_URL}${company.ruta}`;
             logoPreview.style.display = 'block';
         }
     } else {

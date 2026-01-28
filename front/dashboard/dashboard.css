@@ -202,9 +202,22 @@ body {
 
 .header-info {
   display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.company-logo-header {
+  height: 50px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+}
+
+.header-text {
+  display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: 2px;
 }
 
 .company-name {

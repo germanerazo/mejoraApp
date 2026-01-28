@@ -68,9 +68,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       const companyResponse = await fetch(`${config.BASE_API_URL}companies.php?id=${user.idClient}`);
       const companyData = await companyResponse.json();
       
-      if (companyData && companyData.length > 0 && companyNameSpan) {
-        const companyName = companyData[0].nomEmpresa;
-        companyNameSpan.textContent = companyName;
+      if (companyData && companyData.length > 0) {
+        const company = companyData[0];
+        if (companyNameSpan) {
+            companyNameSpan.textContent = company.nomEmpresa;
+        }
+        
+        const companyLogo = document.getElementById('companyLogo');
+        if (companyLogo && company.ruta) {
+            companyLogo.src = `${config.ASSETS_URL}${company.ruta}`;
+            companyLogo.style.display = 'block';
+        }
       }
       
       // Set user name

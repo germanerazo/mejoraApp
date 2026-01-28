@@ -1,20 +1,62 @@
 import config from '../js/config.js';
 
-
-// Configuración de la URL base (ajusta según tu entorno)
 const API_URL = `${config.BASE_API_URL}users.php`;
+let currentEditingId = null;
+
+// Inicializa DataTables
+function initDataTable() {
+    $('#usersTable').DataTable({
+        pageLength: 10,
+        language: {
+            search: "Buscar:",
+            lengthMenu: "Mostrar _MENU_ registros por página",
+            zeroRecords: "No se encontraron resultados",
+            info: "Mostrando página _PAGE_ de _PAGES_",
+            infoEmpty: "No hay registros disponibles",
+            infoFiltered: "(filtrado de _MAX_ registros totales)",
+            paginate: {
+                first: "Primero",
+                last: "Último",
+                next: "Siguiente",
+                previous: "Anterior"
+            }
+        },
+         columnDefs: [
+            { targets: [0, -1], orderable: false }
+        ]
+    });
+}
 
 function loadUsers() {
     fetch(`${API_URL}?page=1`)
         .then(res => res.json())
         .then(data => {
-            if (Array.isArray(data)) {
-                renderUsers(data);
-            } else if (data.result) {
-                renderUsers(data.result);
-            } else {
-                Swal.fire('Error', 'No se pudo cargar la lista de usuarios', 'error');
-            }
+            const table = $('#usersTable').DataTable();
+            table.destroy(); // Destruir instancia previa
+
+            const tbody = document.getElementById('usersTbody');
+            tbody.innerHTML = '';
+            
+            const users = Array.isArray(data) ? data : (data.result || []);
+            
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${user.idUsuario}</td>
+                    <td>${user.nombre}</td>
+                    <td>${user.email}</td>
+                    <td>${user.codusr}</td>
+                    <td>${user.nomEmpresa}</td>
+                    <td>${user.perfil == 'ADM' ? 'Administrador' : 'Cliente'}</td>
+                    <td class="actions">
+                        <button class="edit-btn" onclick='openEditUser(${JSON.stringify(user)})'>Editar</button>
+                        <button class="delete-btn" onclick="deleteUser('${user.idUsuario}')">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            initDataTable();
         })
         .catch((e) => {
             console.error('users.js: Error en fetch', e);
@@ -22,185 +64,143 @@ function loadUsers() {
         });
 }
 
-function renderUsers(users) {
-    const tbody = document.getElementById('usersTbody');
-    if (!tbody) {
-        console.error('users.js: No se encontró el tbody');
-        return;
-    }
-    tbody.innerHTML = '';
-    users.forEach(user => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${user.idUsuario}</td>
-            <td>${user.nombre}</td>
-            <td>${user.email}</td>
-            <td>${user.codusr}</td>
-            <td>${user.nomEmpresa}</td>
-            <td>${user.perfil}</td>
-            <td class="actions">
-                <button class="edit-btn" data-user='${JSON.stringify(user)}'>Editar</button>
-                <button class="delete-btn" data-id='${user.idUsuario}'>Eliminar</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
+async function loadCompaniesOptions(selectedId = null) {
+    const select = document.getElementById('idClient');
+    if(select.options.length > 1 && !selectedId) return; // Ya cargado
 
-    // Delegación de eventos para los botones
-    tbody.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const user = JSON.parse(e.currentTarget.getAttribute('data-user'));
-            openUserModal(user);
-        });
-    });
-    tbody.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const userId = e.currentTarget.getAttribute('data-id');
-            deleteUser(userId);
-        });
-    });
-}
-
-async function getCompaniesOptions(selectedId = null) {
-    const url = `${config.BASE_API_URL}companies.php?page=1`;
     try {
+        const url = `${config.BASE_API_URL}companies.php?page=1`;
         const res = await fetch(url);
         const companies = await res.json();
-        let options = '<option value="">Seleccione una empresa...</option>';
+        
+        select.innerHTML = '<option value="">Seleccione...</option>';
         companies.forEach(emp => {
-            options += `<option value="${emp.idEmpresa}" ${selectedId == emp.idEmpresa ? 'selected' : ''}>${emp.nomEmpresa}</option>`;
+            const option = document.createElement('option');
+            option.value = emp.idEmpresa;
+            option.textContent = emp.nomEmpresa;
+            if(selectedId && emp.idEmpresa == selectedId) option.selected = true;
+            select.appendChild(option);
         });
-        return options;
+        
+        // Refrescar Select2 si se usa
+        /*if($.fn.select2 && $('#idClient').data('select2')) {
+             $('#idClient').trigger('change');
+        }*/
     } catch (e) {
-        return '<option value="">Error cargando empresas</option>';
+        console.error('Error cargando empresas', e);
     }
 }
 
-async function openUserModal(user = null) {
-    const isEdit = !!user;
-    const companiesOptions = await getCompaniesOptions(user ? user.idCliente : null);
+function showFormView(user = null) {
+    const formPanel = document.getElementById('formView');
+    const formTitle = document.getElementById('formTitle');
+    const form = document.getElementById('userForm');
+    const tableView = document.getElementById('tableView'); // Assuming you wrap table in a div like companies
 
-    Swal.fire({
-        title: isEdit ? 'Editar Usuario' : 'Nuevo Usuario',
-        html: `
-            <input id="swal-name" class="swal2-input" placeholder="Nombre" value="${user ? user.nombre : ''}">
-            <input id="swal-email" class="swal2-input" placeholder="Email" value="${user ? user.email : ''}">
-            <input id="swal-cc" class="swal2-input" placeholder="CC" value="${user ? user.codusr : ''}">
-            <select id="swal-idClient" class="swal2-input" style="width:100%;">${companiesOptions}</select>
-            <select id="swal-profile" class="swal2-input" style="width:100%;">
-                <option value="">Seleccione perfil...</option>
-                <option value="ADM" ${user && user.perfil === 'ADM' ? 'selected' : ''}>Administrador</option>
-                <option value="CLI" ${user && user.perfil === 'CLI' ? 'selected' : ''}>Cliente</option>
-            </select>
-            ${isEdit ? '<input id="swal-password" class="swal2-input" placeholder="Nueva contraseña (opcional)" type="password">' : '<input id="swal-password" class="swal2-input" placeholder="Contraseña" type="password">'}
-        `,
-        didOpen: () => {
-            // Inicializa select2 para búsqueda
-            $('#swal-idClient').select2({
-                dropdownParent: $('.swal2-popup'),
-                width: '100%'
-            });
-        },
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: isEdit ? 'Actualizar' : 'Crear',
-        preConfirm: () => {
-            const name = document.getElementById('swal-name').value.trim();
-            const email = document.getElementById('swal-email').value.trim();
-            const cc = document.getElementById('swal-cc').value.trim();
-            const idClient = document.getElementById('swal-idClient').value;
-            const profile = document.getElementById('swal-profile').value.trim();
-            const password = document.getElementById('swal-password').value.trim();
-            if (!name || !email || !cc || !idClient || !profile || (!isEdit && !password)) {
-                Swal.showValidationMessage('Todos los campos son obligatorios');
-                return false;
-            }
-            return { name, email, cc, idClient, profile, password };
-        }
-    }).then(result => {
-        if (result.isConfirmed) {
-            if (isEdit) {
-                updateUser(user.idUsuario, result.value);
+    // Reset form
+    form.reset();
+    currentEditingId = null;
+    
+    // Cargar empresas
+    loadCompaniesOptions(user ? user.idCliente : null);
+
+    if (user) {
+        formTitle.innerHTML = '<i class="fas fa-edit"></i> Editar Usuario';
+        currentEditingId = user.idUsuario;
+        
+        document.getElementById('nombre').value = user.nombre || '';
+        document.getElementById('email').value = user.email || '';
+        document.getElementById('codusr').value = user.codusr || '';
+        document.getElementById('perfil').value = user.perfil || '';
+        document.getElementById('password').required = false; // No obligatoria en edit
+        document.getElementById('password').placeholder = "Dejar en blanco para no cambiar";
+    } else {
+        formTitle.innerHTML = '<i class="fas fa-user-plus"></i> Nuevo Usuario';
+        document.getElementById('password').required = true;
+        document.getElementById('password').placeholder = "";
+    }
+    
+    // Animar entrada
+    formPanel.classList.add('active');
+    if(tableView) tableView.classList.add('shifted');
+}
+
+function hideFormView() {
+    const formPanel = document.getElementById('formView');
+    const tableView = document.getElementById('tableView');
+    
+    formPanel.classList.remove('active');
+    if(tableView) tableView.classList.remove('shifted');
+    currentEditingId = null;
+}
+
+function saveUser(e) {
+    e.preventDefault();
+    
+    const form = document.getElementById('userForm');
+    const formData = new FormData(form);
+    
+    const data = {
+        token: sessionStorage.getItem('token') || '',
+        name: formData.get('nombre'),
+        email: formData.get('email'),
+        cc: formData.get('codusr'),
+        idClient: formData.get('idClient'),
+        profile: formData.get('perfil'),
+        password: formData.get('password')
+    };
+
+    if (currentEditingId) {
+        // Update
+        data.userId = currentEditingId;
+        if (!data.password) delete data.password; // No enviar si está vacío
+        
+        fetch(API_URL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(resp => {
+            if (resp.status == "ok") {
+                Swal.fire('Éxito', 'Usuario actualizado correctamente', 'success');
+                hideFormView();
+                loadUsers();
             } else {
-                createUser(result.value);
+                Swal.fire('Error', resp.result.error_message || 'Error al actualizar', 'error');
             }
-        }
-    });
-}
-
-function createUser(data) {
-    const payload = {
-        token: sessionStorage.getItem('token') || '',
-        name: data.name,
-        email: data.email,
-        cc: data.cc,
-        idClient: data.idClient,
-        password: data.password,
-        profile: data.profile
-    };
-    fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(resp => {
-        if (resp.status == "ok") {
-            Swal.fire('Éxito', 'Usuario creado correctamente', 'success');
-            loadUsers();
-        } else {
-            Swal.fire('Error', resp.result.error_message || 'No se pudo crear el usuario valide el numero de cédula', 'error');
-        }
-    })
-    .catch((e) => {
-        console.error('users.js: Error en createUser', e);
-        Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
-    });
-}
-
-function updateUser(userId, data) {
-    console.log('users.js: updateUser', userId, data);
-    const payload = {
-        token: sessionStorage.getItem('token') || '',
-        userId: userId,
-        name: data.name,
-        email: data.email,
-        cc: data.cc,
-        idClient: data.idClient,
-        profile: data.profile
-    };
-    if (data.password) payload.password = data.password;
-    fetch(API_URL, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(resp => {
-        console.log('users.js: updateUser respuesta', resp);
-        if (resp.status == "ok") {
-            Swal.fire('Éxito', 'Usuario actualizado correctamente', 'success');
-            loadUsers();
-        } else {
-            Swal.fire('Error', resp.result.error_message || 'No se pudo actualizar el usuario', 'error');
-        }
-    })
-    .catch((e) => {
-        console.error('users.js: Error en updateUser', e);
-        Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
-    });
+        });
+    } else {
+        // Create
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(resp => {
+            if (resp.status == "ok") {
+                Swal.fire('Éxito', 'Usuario creado correctamente', 'success');
+                hideFormView();
+                loadUsers();
+            } else {
+                Swal.fire('Error', resp.result.error_message || 'Error al crear', 'error');
+            }
+        });
+    }
 }
 
 function deleteUser(userId) {
-    console.log('users.js: deleteUser', userId);
     Swal.fire({
-        title: '¿Estás seguro de eliminar usuario?',
-        text: 'Esta acción no se puede deshacer',
+        title: '¿Estás seguro?',
+        text: "No podrás revertir esto",
         icon: 'warning',
         showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
-    }).then(result => {
+    }).then((result) => {
         if (result.isConfirmed) {
             fetch(API_URL, {
                 method: 'DELETE',
@@ -213,20 +213,28 @@ function deleteUser(userId) {
             .then(res => res.json())
             .then(resp => {
                 if (resp.result) {
-                    Swal.fire('Eliminado', 'Usuario eliminado correctamente', 'success');
+                    Swal.fire('Eliminado', 'El usuario ha sido eliminado.', 'success');
                     loadUsers();
                 } else {
-                    Swal.fire('Error', resp.error || 'No se pudo eliminar el usuario', 'error');
+                    Swal.fire('Error', 'No se pudo eliminar el usuario', 'error');
                 }
-            })
-            .catch((e) => {
-                console.error('users.js: Error en deleteUser', e);
-                Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
             });
         }
     });
 }
 
-// Haz global la función para el botón
-window.openUserModal = openUserModal;
-loadUsers();
+// Expose functions globally
+window.openEditUser = function(user) {
+    showFormView(user);
+};
+window.deleteUser = deleteUser;
+window.showFormView = showFormView;
+window.hideFormView = hideFormView;
+
+// Listeners
+document.addEventListener('DOMContentLoaded', () => {
+    loadUsers();
+    
+    const form = document.getElementById('userForm');
+    if(form) form.addEventListener('submit', saveUser);
+});
