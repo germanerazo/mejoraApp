@@ -1,9 +1,0 @@
-# .htaccess en la carpeta /front
-RewriteEngine On
-
-# Si alguien entra a la raíz, mostrar el login
-RewriteCond %{REQUEST_URI} ^/$
-RewriteRule ^$ login/login.php [L]
-
-# Opcional: Si quieres que las URLs sean limpias
-# RewriteRule ^login$ login/login.php [L]
