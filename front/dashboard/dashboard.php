@@ -21,7 +21,16 @@
 
 <body>
   <div class="sidebar">
-    <button id="menuToggle" title="Menú">☰</button>
+    <div class="sidebar-header">
+      <span class="brand-title">MEJORA</span>
+      <button id="menuToggle" title="Expandir/Contraer">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+    <div class="search-container">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" id="menuSearch" placeholder="Buscar opción..." autocomplete="off">
+    </div>
     <ul id="mainMenu"></ul>
     <button id="logoutBtn">Cerrar sesión</button>
   </div>

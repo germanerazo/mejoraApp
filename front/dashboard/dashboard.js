@@ -44,17 +44,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ====== MAPA DE ICONOS ======
   const iconMap = {
-    // Definir mapeo basado en códigos o nombres (ajustar según DB real)
-    '1': 'fa-solid fa-chart-line', // Ejemplo: Dashboard
-    '2': 'fa-solid fa-users',     // Ejemplo: Usuarios
-    '3': 'fa-solid fa-cogs',      // Ejemplo: Configuración
-    '4': 'fa-solid fa-network-wired',
+    'administracion': 'fa-solid fa-shield-halved',
+    'planear': 'fa-solid fa-compass',
+    'hacer': 'fa-solid fa-gears',
+    'verificar': 'fa-solid fa-chart-line',
+    'actuar': 'fa-solid fa-bolt',
     'default': 'fa-solid fa-folder'
   };
 
-  const getIcon = (code) => {
-    // Intenta mapear por código o devuelve defecto
-    // Se puede mejorar buscando palabras clave en el nombre si el codigo no es suficiente
+  const getIcon = (code, name = '') => {
+    const lowerName = name.toLowerCase();
+    
+    // Primero buscar por palabras clave en el nombre (más flexible)
+    if (lowerName.includes('administracion')) return iconMap['administracion'];
+    if (lowerName.includes('planear')) return iconMap['planear'];
+    if (lowerName.includes('hacer')) return iconMap['hacer'];
+    if (lowerName.includes('verificar')) return iconMap['verificar'];
+    if (lowerName.includes('actuar')) return iconMap['actuar'];
+    
+    // Si no coincide el nombre, buscar por el código original o el default
     return iconMap[code] || iconMap['default'];
   };
 
@@ -155,7 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       // Icono
       const icon = document.createElement('i');
-      icon.className = `menu-icon ${getIcon(parent.code)}`;
+      icon.className = `menu-icon ${getIcon(parent.code, parent.name)}`;
       menuItemDiv.appendChild(icon);
 
       // Texto
@@ -199,10 +207,56 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     inicializarEventosMenu();
+    inicializarBuscador();
 
   } catch (error) {
     console.error('Error al cargar el menú:', error);
     mainMenu.innerHTML = '<li style="padding:20px; color:white;">Error cargando menú</li>';
+  }
+
+  function inicializarBuscador() {
+    const menuSearch = document.getElementById('menuSearch');
+    if (!menuSearch) return;
+
+    menuSearch.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase().trim();
+      const topLevelItems = Array.from(mainMenu.children);
+
+      topLevelItems.forEach(li => {
+        const menuItem = li.querySelector('.menu-item');
+        const submenu = li.querySelector('.submenu');
+        let hasVisibleSubitem = false;
+
+        if (submenu) {
+          const subItems = submenu.querySelectorAll('li');
+          subItems.forEach(subLi => {
+            const text = subLi.textContent.toLowerCase();
+            if (text.includes(term)) {
+              subLi.style.display = 'block';
+              hasVisibleSubitem = true;
+            } else {
+              subLi.style.display = 'none';
+            }
+          });
+        }
+
+        const parentText = menuItem ? menuItem.textContent.toLowerCase() : '';
+        const isParentMatch = parentText.includes(term);
+
+        if (isParentMatch || hasVisibleSubitem) {
+          li.style.display = 'block';
+          if (term !== '' && hasVisibleSubitem && submenu) {
+            menuItem.classList.add('expanded');
+            submenu.style.maxHeight = submenu.scrollHeight + "px";
+          } else if (term === '' && submenu) {
+            menuItem.classList.remove('expanded');
+            submenu.style.maxHeight = null;
+          }
+        } else {
+          li.style.display = 'none';
+        }
+      });
+    });
   }
 
 
