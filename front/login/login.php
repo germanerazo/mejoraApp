@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login Mejora</title>
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles/colors.css">
+  <link rel="stylesheet" href="../styles/colors.css">
   <link rel="stylesheet" href="./login.css">
 </head>
 <body>
@@ -18,7 +18,7 @@
     </form>
   </div>
   <div class="right-container">
-    <img src="assets/animacion_logo.gif" alt="Logo Mejora">
+    <img src="../assets/animacion_logo.gif" alt="Logo Mejora">
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.all.min.js"></script>
