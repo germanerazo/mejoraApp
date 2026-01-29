@@ -7,6 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../styles/colors.css">
   <link rel="stylesheet" href="./login.css">
+  <link rel="icon" href="../assets/favicon.png" type="image/png">
 </head>
 <body>
   <div class="left-container">

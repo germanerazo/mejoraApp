@@ -16,6 +16,7 @@
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
   <script type="module" src="./dashboard.js?v=1.2"></script>
+  <link rel="icon" href="../assets/favicon.png" type="image/png">
 </head>
 
 <body>
