@@ -40,8 +40,8 @@
             </div>
 
             <div style="display: flex; gap: 10px;">
-                <button type="button" class="btn-primary" onclick="saveSheet()">Guardar</button>
-                <button type="button" class="tab-btn" onclick="goBack()" style="border: 1px solid var(--border-color);">Volver</button>
+                <button type="button" class="btn-new-record" onclick="saveSheet()"><i class="fas fa-save"></i> Guardar</button>
+                <button type="button" class="btn-secondary-premium" onclick="goBack()"><i class="fas fa-arrow-left"></i> Volver</button>
             </div>
         </form>
 
@@ -49,7 +49,7 @@
         <div id="detailsSection" class="activities-section" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h2 style="font-size: 18px; margin: 0;">Lista de Actividades</h2>
-                <button class="btn-primary" onclick="addActivity()" style="padding: 8px 15px; font-size: 13px;">+ Nuevo Registro</button>
+                <button class="btn-new-record" onclick="addActivity()" style="padding: 8px 15px; font-size: 13px;" ><i class="fas fa-plus-circle"></i> Nuevo Registro</button>
             </div>
 
             <div class="table-responsive">
@@ -75,7 +75,7 @@
         <div class="activities-section" style="margin-top: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h2 style="font-size: 18px; margin: 0;">Recursos</h2>
-                <button class="btn-primary" onclick="addResource()" style="padding: 8px 15px; font-size: 13px;">+ Nuevo Recurso</button>
+                <button class="btn-new-record" onclick="addResource()" style="padding: 8px 15px; font-size: 13px;" ><i class="fas fa-plus-circle"></i> Nuevo Recurso</button>
             </div>
             <div class="table-responsive">
                 <table class="modern-table" id="resourcesTable">
@@ -94,7 +94,7 @@
         <div class="activities-section" style="margin-top: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h2 style="font-size: 18px; margin: 0;">Insumos</h2>
-                <button class="btn-primary" onclick="addInput()" style="padding: 8px 15px; font-size: 13px;">+ Nuevo Insumo</button>
+                <button class="btn-new-record" onclick="addInput()" style="padding: 8px 15px; font-size: 13px;" ><i class="fas fa-plus-circle"></i> Nuevo Insumo</button>
             </div>
             <div class="table-responsive">
                 <table class="modern-table" id="inputsTable">
@@ -113,7 +113,7 @@
         <div class="activities-section" style="margin-top: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h2 style="font-size: 18px; margin: 0;">Procedimientos</h2>
-                <button class="btn-primary" onclick="addProcedure()" style="padding: 8px 15px; font-size: 13px;">+ Nuevo Procedimiento</button>
+                <button class="btn-new-record" onclick="addProcedure()" style="padding: 8px 15px; font-size: 13px;" ><i class="fas fa-plus-circle"></i> Nuevo Procedimiento</button>
             </div>
             <div class="table-responsive">
                 <table class="modern-table" id="proceduresTable">
@@ -133,7 +133,7 @@
         <div class="activities-section" style="margin-top: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h2 style="font-size: 18px; margin: 0;">Personal del Proceso</h2>
-                <button class="btn-primary" onclick="addPersonnel()" style="padding: 8px 15px; font-size: 13px;">+ Nuevo Personal</button>
+                <button class="btn-new-record" onclick="addPersonnel()" style="padding: 8px 15px; font-size: 13px;" ><i class="fas fa-plus-circle"></i> Nuevo Personal</button>
             </div>
             <div class="table-responsive">
                 <table class="modern-table" id="personnelTable">

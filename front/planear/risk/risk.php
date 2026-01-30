@@ -15,11 +15,13 @@
     <div class="risk-actions" style="display: flex; justify-content: space-between; margin-bottom: 20px;">
         <div style="display: flex; gap: 10px;">
              <!-- Graph Button -->
-             <button class="btn-icon" title="Graficar" onclick="showRiskGraph()" style="background: white; border: 1px solid #ddd; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 1.2rem;">📊</button>
+             <button class="btn-hover-graph" title="Graficar Resultados" onclick="showRiskGraph()">
+                <i class="fas fa-chart-pie"></i> Ver Gráfica de Riesgos
+             </button>
         </div>
         <div>
              <!-- Print Button -->
-             <button class="btn-icon" title="Imprimir" onclick="printRisk()" style="background: white; border: 1px solid #ddd; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 1.2rem;">🖨️</button>
+             <button class="btn-view-premium" title="Imprimir" onclick="printRisk()" style="color: #667eea !important;"><i class="fas fa-print"></i></button>
         </div>
     </div>
 
@@ -30,10 +32,10 @@
             <thead>
                 <tr>
                     <th class="header-main">Peligros</th>
-                    <th class="col-header-danger">No Aceptable</th>
-                    <th class="col-header-warning">No Aceptable o Aceptable con Control Especifico</th>
-                    <th class="col-header-yellow">Mejorable</th>
-                    <th class="col-header-success">Aceptable</th>
+                    <th class="col-header-danger">¡Manos a la obra ya!</th>
+                    <th class="col-header-warning">Cuidado, falta un ajuste</th>
+                    <th class="col-header-yellow">Echémosle un ojo</th>
+                    <th class="col-header-success">¡Relájate, vamos bien!</th>
                 </tr>
             </thead>
             <tbody>
@@ -49,10 +51,10 @@
             <thead>
                 <tr>
                     <th class="header-main">Procesos</th>
-                    <th class="col-header-danger">No Aceptable</th>
-                    <th class="col-header-warning">No Aceptable o Aceptable con Control Especifico</th>
-                    <th class="col-header-yellow">Mejorable</th>
-                    <th class="col-header-success">Aceptable</th>
+                    <th class="col-header-danger">¡Manos a la obra ya!</th>
+                    <th class="col-header-warning">Cuidado, falta un ajuste</th>
+                    <th class="col-header-yellow">Echémosle un ojo</th>
+                    <th class="col-header-success">¡Relájate, vamos bien!</th>
                 </tr>
             </thead>
             <tbody>
@@ -83,8 +85,8 @@
         <h2 class="section-title" style="margin: 0; font-size: 1.5rem; color: #2c3e50;">GRÁFICA DE RIESGOS</h2>
         <div style="display: flex; gap: 10px;">
              <!-- Print Graph Button -->
-             <button class="btn-icon" title="Imprimir Gráfica" onclick="printRiskGraph()" style="background: white; border: 1px solid #ddd; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 1.2rem;">🖨️</button>
-            <button class="btn-secondary" onclick="hideRiskGraph()" style="padding: 8px 15px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px; cursor: pointer;">Volver</button>
+             <button class="btn-view-premium" title="Imprimir Gráfica" onclick="printRiskGraph()" style="color: #667eea !important;"><i class="fas fa-print"></i></button>
+            <button class="btn-secondary-premium" onclick="hideRiskGraph()" style="padding: 8px 15px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px; cursor: pointer;">Volver</button>
         </div>
     </div>
     

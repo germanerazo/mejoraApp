@@ -8,9 +8,9 @@
 
 <!-- List View -->
 <div id="proceduresListView" class="content-card">
-    <div style="margin-bottom: 20px; text-align: center;">
-        <button class="btn-orange" onclick="showCreateProcedures()">
-            Nuevo registro
+    <div style="margin-bottom: 25px; text-align: center;">
+        <button class="btn-new-record" onclick="showCreateProcedures()">
+            <i class="fas fa-file-medical"></i> Nuevo Documento
         </button>
     </div>
 
@@ -36,8 +36,8 @@
     <div class="section-header">
         <h2 class="section-title">Nuevo Documento</h2>
         <div style="display: flex; gap: 10px;">
-            <button class="btn-orange" onclick="saveProcedures()">Guardar</button>
-            <button class="btn-secondary" onclick="hideCreateProcedures()">Volver</button>
+            <button class="btn-new-record" onclick="saveProcedures()"><i class="fas fa-save"></i> Guardar</button>
+            <button class="btn-secondary-premium" onclick="hideCreateProcedures()"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
     </div>
 
@@ -55,7 +55,15 @@
 
             <div class="form-group">
                 <label class="form-label">Cargar archivo:</label>
-                <input type="file" id="fieldProcFile" style="width: 100%;">
+                <div class="file-upload-wrapper">
+                    <input type="file" id="fieldProcFile" class="file-upload-input" onchange="updateProceduresFileName(this)">
+                    <div class="file-upload-content">
+                        <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
+                        <div class="file-upload-text">Haz clic o arrastra el documento aquí</div>
+                        <div class="file-upload-hint">Formatos soportados: PDF, XLS, DOC</div>
+                        <div id="procFileNameDisplay" class="file-upload-filename"></div>
+                    </div>
+                </div>
             </div>
         </form>
     </div>

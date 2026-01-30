@@ -8,7 +8,9 @@
 <div class="content-card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <p style="color: #666; margin: 0;">Gestión de políticas y documentos corporativos.</p>
-        <button class="btn-primary" onclick="addPolicy()">+ Nuevo Registro</button>
+        <button class="btn-new-record" onclick="addPolicy()">
+            <i class="fas fa-plus-circle"></i> Nueva Política
+        </button>
     </div>
 
     <div class="table-responsive">

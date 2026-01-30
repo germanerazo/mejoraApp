@@ -11,11 +11,15 @@
             <label class="input-label">Nombre del cargo:</label>
             <input type="text" id="filterName" class="swal2-input" placeholder="Buscar por nombre..." style="background: white;">
         </div>
-        <button class="btn-primary" onclick="filterProfiles()">Filtrar</button>
+        <button class="btn-filter-premium" onclick="filterProfiles()">
+            <i class="fas fa-filter"></i> Filtrar
+        </button>
     </div>
 
-    <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-        <button class="btn-create-orange" onclick="showCreateProfile()">Nuevo registro</button>
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 25px;">
+        <button class="btn-new-record" onclick="showCreateProfile()">
+            <i class="fas fa-plus-circle"></i> Nuevo Registro de Cargo
+        </button>
     </div>
 
     <div class="table-responsive">
@@ -39,8 +43,8 @@
     <div class="section-header">
         <h2 class="section-title">PERFIL DE CARGO</h2>
         <div style="display: flex; gap: 10px;">
-            <button class="btn-primary" onclick="saveProfile()">Guardar</button>
-            <button class="btn-secondary" onclick="hideCreateProfile()">Volver</button>
+            <button class="btn-new-record" onclick="saveProfile()"><i class="fas fa-save"></i> Guardar</button>
+            <button class="btn-secondary-premium" onclick="hideCreateProfile()"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
     </div>
 
@@ -71,7 +75,7 @@
         <div class="section-container" style="margin-top: 30px;">
             <div class="section-header">
                 <h3 class="section-title" style="font-size: 16px;">RESPONSABILIDADES</h3>
-                <button class="btn-create-orange" onclick="addResponsibility()">+</button>
+                <button class="btn-new-record" onclick="addResponsibility()">+</button>
             </div>
             <div id="responsibilitiesList">
                 <!-- Dynamic Responsibilities -->
@@ -82,7 +86,7 @@
         <div class="section-container">
             <div class="section-header">
                 <h3 class="section-title" style="font-size: 16px;">EDUCACIÓN</h3>
-                <button class="btn-create-orange" onclick="addSubsection('education')">Nuevo registro</button>
+                <button class="btn-new-record" onclick="addSubsection('education')"><i class="fas fa-plus-circle"></i> Nuevo registro</button>
             </div>
             <div class="table-responsive">
                 <table class="modern-table" id="tableEducation">
@@ -96,7 +100,7 @@
         <div class="section-container">
             <div class="section-header">
                 <h3 class="section-title" style="font-size: 16px;">FORMACIÓN</h3>
-                <button class="btn-create-orange" onclick="addSubsection('training')">Nuevo registro</button>
+                <button class="btn-new-record" onclick="addSubsection('training')"><i class="fas fa-plus-circle"></i> Nuevo registro</button>
             </div>
             <div class="table-responsive">
                 <table class="modern-table" id="tableTraining">
@@ -110,7 +114,7 @@
         <div class="section-container">
             <div class="section-header">
                 <h3 class="section-title" style="font-size: 16px;">EXPERIENCIA</h3>
-                <button class="btn-create-orange" onclick="addSubsection('experience')">Nuevo registro</button>
+                <button class="btn-new-record" onclick="addSubsection('experience')"><i class="fas fa-plus-circle"></i> Nuevo registro</button>
             </div>
             <div class="table-responsive">
                 <table class="modern-table" id="tableExperience">
@@ -124,7 +128,7 @@
         <div class="section-container">
             <div class="section-header">
                 <h3 class="section-title" style="font-size: 16px;">PROFESIOGRAMA</h3>
-                <button class="btn-create-orange" onclick="addSubsection('profesiogram')">Nuevo registro</button>
+                <button class="btn-new-record" onclick="addSubsection('profesiogram')"><i class="fas fa-plus-circle"></i> Nuevo registro</button>
             </div>
             <div class="table-responsive">
                 <table class="modern-table" id="tableProfesiogram">
@@ -134,11 +138,56 @@
             </div>
         </div>
 
-        <!-- 5. Elementos de Protección Personal -->
+        <!-- 5. Matriz de Competencias y Habilidades -->
+        <div class="section-container">
+            <div class="section-header">
+                <h3 class="section-title" style="font-size: 16px;">MATRIZ DE COMPETENCIAS Y HABILIDADES</h3>
+                <button class="btn-new-record" onclick="addSubsection('competence')"><i class="fas fa-plus-circle"></i> Nuevo registro</button>
+            </div>
+            <div class="table-responsive">
+                <table class="modern-table" id="tableCompetence">
+                    <thead><tr><th>COMPETENCIA / HABILIDAD</th><th style="width: 100px;">ACCIÓN</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 6. Perfil SST del Cargo -->
+        <div class="section-container">
+            <div class="section-header">
+                <h3 class="section-title" style="font-size: 16px;">PERFIL SST DEL CARGO</h3>
+            </div>
+            
+            <div style="margin-left: 15px; margin-bottom: 20px;">
+                <div class="section-header" style="border-bottom: none; padding: 10px 0;">
+                    <h4 style="margin: 0; color: #f7941d; font-size: 14px;">Identificación de Peligros y Riesgos</h4>
+                    <button class="btn-new-record" onclick="addSubsection('sstRisk')" style="padding: 4px 10px;">+</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="modern-table" id="tableSstRisk">
+                        <thead><tr><th>PELIGROS Y RIESGOS</th><th style="width: 100px;">ACCIÓN</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div class="section-header" style="border-bottom: none; padding: 10px 0; margin-top: 20px;">
+                    <h4 style="margin: 0; color: #f7941d; font-size: 14px;">Responsabilidades SST</h4>
+                    <button class="btn-new-record" onclick="addSubsection('sstResp')" style="padding: 4px 10px;">+</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="modern-table" id="tableSstResp">
+                        <thead><tr><th>RESPONSABILIDAD SST</th><th style="width: 100px;">ACCIÓN</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. Elementos de Protección Personal -->
         <div class="section-container" style="border-bottom: none;">
             <div class="section-header">
                 <h3 class="section-title" style="font-size: 16px;">ELEMENTOS DE PROTECCIÓN PERSONAL</h3>
-                <button class="btn-create-orange" onclick="addSubsection('epp')">Nuevo registro</button>
+                <button class="btn-new-record" onclick="addSubsection('epp')"><i class="fas fa-plus-circle"></i> Nuevo registro</button>
             </div>
             <div class="table-responsive">
                 <table class="modern-table" id="tableEpp">

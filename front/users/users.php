@@ -22,7 +22,7 @@
         <!-- Table View -->
         <div id="tableView" class="view-section">
             <h1>Gestión de Usuarios</h1>
-            <button class="add-btn" onclick="showFormView()">
+            <button class="btn-new-record" onclick="showFormView()">
                 <i class="fas fa-user-plus"></i> Nuevo Usuario
             </button>
             <table id="usersTable" class="display">
@@ -116,10 +116,10 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="hideFormView()">
+                    <button type="button" class="btn-secondary-premium" onclick="hideFormView()">
                         <i class="fas fa-times"></i> Cancelar
                     </button>
-                    <button type="submit" class="btn-save">
+                    <button type="submit" class="btn-new-record">
                         <i class="fas fa-save"></i> Guardar
                     </button>
                 </div>

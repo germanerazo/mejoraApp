@@ -11,6 +11,36 @@ let trainingData = [
     { id: 9, name: 'TRABAJO EN ALTURAS', date: '2024-09-14', file: 'trabajo_alturas.pdf' },
     { id: 10, name: 'AUDITORÍA INTERNA', date: '2024-10-02', file: 'auditoria_interna.pdf' }
 ];
+    
+function updateTrainingFileName(input) {
+    const fileNameDisplay = document.getElementById('trainingFileNameDisplay');
+    const wrapper = input.parentElement;
+    const uploadText = wrapper.querySelector('.file-upload-text');
+    const uploadHint = wrapper.querySelector('.file-upload-hint');
+    const uploadIcon = wrapper.querySelector('.file-upload-icon');
+    
+    if (input.files && input.files.length > 0) {
+        fileNameDisplay.textContent = input.files[0].name;
+        fileNameDisplay.style.display = 'block';
+        if(uploadText) uploadText.style.display = 'none';
+        if(uploadHint) uploadHint.style.display = 'none';
+        if(uploadIcon) {
+            uploadIcon.className = 'fas fa-check-circle file-upload-icon';
+            uploadIcon.style.color = '#2ecc71';
+        }
+    } else {
+        fileNameDisplay.textContent = '';
+        fileNameDisplay.style.display = 'none';
+        if(uploadText) uploadText.style.display = 'block';
+        if(uploadHint) uploadHint.style.display = 'block';
+        if(uploadIcon) {
+            uploadIcon.className = 'fas fa-cloud-upload-alt file-upload-icon';
+            uploadIcon.style.color = '#329bd6';
+        }
+    }
+}
+window.updateTrainingFileName = updateTrainingFileName;
+
 
 function initTraining() {
     renderTrainingList();
@@ -29,12 +59,16 @@ function renderTrainingList() {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>
-                <i class="fas fa-minus-circle action-icon icon-delete" onclick="deleteTraining(${item.id})" title="Eliminar"></i>
+                <button class="btn-delete-premium" onclick="deleteTraining(${item.id})" title="Eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </td>
             <td>${item.name}</td>
             <td>${item.date}</td>
             <td style="text-align: center;">
-                <i class="fas fa-cloud-download-alt action-icon icon-download" onclick="downloadTraining('${item.file}')" title="Descargar"></i>
+                <button class="btn-view-premium" onclick="downloadTraining('${item.file}')" title="Descargar" style="color: #27ae60 !important;">
+                    <i class="fas fa-file-download"></i>
+                </button>
             </td>
         `;
         tbody.appendChild(row);
@@ -47,6 +81,13 @@ function showCreateTraining() {
     
     document.getElementById('trainingForm').reset();
     document.getElementById('trainingDate').valueAsDate = new Date();
+    
+    // Reset file upload display
+    const fileInput = document.getElementById('trainingFile');
+    if (fileInput) {
+        fileInput.value = '';
+        updateTrainingFileName(fileInput);
+    }
 }
 
 function hideCreateTraining() {

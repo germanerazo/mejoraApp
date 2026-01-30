@@ -24,9 +24,13 @@ window.renderBudgetList = () => {
     let html = '';
     window.budgetData.forEach(item => {
         html += `<tr>
-            <td class="table-actions">
-                <button class="btn-icon btn-edit" title="Editar" onclick="editBudget(${item.id})">✏️</button>
-                <button class="btn-icon btn-delete" title="Eliminar" onclick="deleteBudget(${item.id})">➖</button>
+            <td class="table-actions" style="display: flex; gap: 5px;">
+                <button class="btn-edit-premium" title="Editar" onclick="editBudget(${item.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-delete-premium" title="Eliminar" onclick="deleteBudget(${item.id})">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </td>
             <td>${item.year}</td>
         </tr>`;
@@ -84,7 +88,9 @@ window.addItem = () => {
     tr.id = `row_${id}`;
     tr.innerHTML = `
         <td class="table-actions">
-            <button class="btn-icon btn-delete" title="Eliminar" onclick="removeItem('${id}')">➖</button>
+            <button class="btn-delete-premium" title="Eliminar" onclick="removeItem('${id}')" style="width: 28px !important; height: 28px !important;">
+                <i class="fas fa-minus"></i>
+            </button>
         </td>
         <td><input type="text" class="budget-input activity" placeholder="Descripción..."></td>
         <td><input type="number" class="budget-input unit-value" oninput="calculateRow('${id}')" placeholder="0"></td>
@@ -188,7 +194,9 @@ window.editBudget = (id) => {
 
         tr.innerHTML = `
             <td class="table-actions">
-                <button class="btn-icon btn-delete" title="Eliminar" onclick="removeItem('${rowId}')">➖</button>
+                <button class="btn-delete-premium" title="Eliminar" onclick="removeItem('${rowId}')" style="width: 28px !important; height: 28px !important;">
+                    <i class="fas fa-minus"></i>
+                </button>
             </td>
             <td><input type="text" class="budget-input activity" value="${item.activity}"></td>
             <td><input type="number" class="budget-input unit-value" oninput="calculateRow('${rowId}')" value="${item.unitValue}"></td>

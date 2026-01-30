@@ -10,8 +10,8 @@
     <div class="section-container">
         <div class="section-header">
             <h2 class="section-title">Política Integral / Corporativa</h2>
-            <button class="btn-primary" onclick="savePolicy()">Guardar Política</button>
-            <button class="btn-secondary" onclick="printPolicy()" id="btnPrint" style="display: none; margin-left: 10px;">Imprimir Política</button>
+            <button class="btn-new-record" onclick="savePolicy()"><i class="fas fa-save"></i> Guardar Política</button>
+            <button class="btn-secondary-premium" onclick="printPolicy()" id="btnPrint" style="display: none; margin-left: 10px;"><i class="fas fa-print"></i> Imprimir Política</button>
         </div>
 
         <div class="form-grid-3">
@@ -36,7 +36,7 @@
             <label class="input-label">Naturaleza de la Organización (para generación de texto)</label>
             <div class="input-group">
                 <input type="text" id="policyNature" class="swal2-input" placeholder="Ej: la construcción de obras civiles">
-                <button class="btn-secondary" onclick="generatePolicyText()" style="white-space: nowrap;">Generar Texto</button>
+                <button class="btn-new-record" onclick="generatePolicyText()" style="white-space: nowrap;"><i class="fas fa-magic"></i> Generar Texto</button>
             </div>
         </div>
 
@@ -50,7 +50,7 @@
     <div id="principlesSection" class="section-container" style="display: none;">
         <div class="section-header">
             <h2 class="section-title">Principios de la Política</h2>
-            <button class="btn-primary" onclick="addPrinciple()">+ Agregar Principio</button>
+            <button class="btn-new-record" onclick="addPrinciple()"><i class="fas fa-plus-circle"></i> Agregar Principio</button>
         </div>
         <div class="table-responsive">
             <table class="modern-table" id="tablePrinciples">
@@ -69,7 +69,7 @@
     <div id="objectivesSection" class="section-container" style="display: none;">
         <div class="section-header">
             <h2 class="section-title">Objetivos Estratégicos</h2>
-            <button class="btn-primary" onclick="showCreateObjective()">+ Crear Nuevo Objetivo</button>
+            <button class="btn-new-record" onclick="showCreateObjective()"><i class="fas fa-plus-circle"></i> Crear Nuevo Objetivo</button>
         </div>
         <div class="table-responsive">
             <table class="modern-table" id="tableObjectives">
@@ -100,8 +100,8 @@
         </div>
 
         <div class="action-bar" style="justify-content: flex-start; gap: 10px;">
-            <button class="btn-primary" onclick="saveObjective()">Guardar</button>
-            <button class="btn-secondary" onclick="hideCreateObjective()">Volver</button>
+            <button class="btn-new-record" onclick="saveObjective()"><i class="fas fa-save"></i> Guardar</button>
+            <button class="btn-secondary-premium" onclick="hideCreateObjective()"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
     </div>
 
@@ -184,8 +184,8 @@
         </div>
 
         <div class="action-bar" style="justify-content: flex-start; gap: 10px;">
-            <button class="btn-primary" onclick="saveIndicator()">Guardar</button>
-            <button class="btn-secondary" onclick="hideIndicators()">Volver</button>
+            <button class="btn-new-record" onclick="saveIndicator()"><i class="fas fa-save"></i> Guardar</button>
+            <button class="btn-secondary-premium" onclick="hideIndicators()"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
     </div>
 </div>

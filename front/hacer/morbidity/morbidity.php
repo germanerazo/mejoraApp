@@ -10,14 +10,14 @@
             <div class="filter-group">
                 <input type="text" id="filterMorbidityName" placeholder="Nombre" class="filter-input">
                 <input type="text" id="filterMorbidityId" placeholder="Nro Identificacion" class="filter-input">
-                <button class="btn-filter" onclick="filterMorbidity()">
+                <button class="btn-filter-premium" onclick="filterMorbidity()">
                     <i class="fas fa-filter"></i> Filtrar
                 </button>
             </div>
             
             <div style="display: flex; gap: 15px; align-items: center;">
-                <button class="btn-graph" onclick="showMorbidityGraph()">
-                    <i class="fas fa-chart-bar"></i> Graficar
+                <button class="btn-hover-graph" onclick="showMorbidityGraph()">
+                    <i class="fas fa-chart-pie"></i> Ver Gráficas de Morbilidad
                 </button>
                 <button class="btn-add-circle" onclick="showCreateMorbidity()" title="Nuevo Registro">
                     +
@@ -52,14 +52,14 @@
                 <div class="filter-group">
                     <input type="text" id="filterFirstAidName" class="filter-input" placeholder="Nombre..." onkeyup="filterFirstAid()">
                     <input type="text" id="filterFirstAidId" class="filter-input" placeholder="Nro Identificacion..." onkeyup="filterFirstAid()">
-                    <button class="btn-orange" onclick="filterFirstAid()">
-                        <i class="fas fa-search"></i> Filtrar
+                    <button class="btn-filter-premium" onclick="filterFirstAid()">
+                        <i class="fas fa-filter"></i> Filtrar
                     </button>
                 </div>
                 
                 <div style="display: flex; gap: 15px; align-items: center;">
-                    <button class="btn-graph" onclick="showFirstAidGraph()">
-                        <i class="fas fa-chart-bar"></i> Graficar
+                    <button class="btn-hover-graph" onclick="showFirstAidGraph()">
+                        <i class="fas fa-chart-pie"></i> Ver Gráficas Primeros Auxilios
                     </button>
                     <button class="btn-add-circle" onclick="showCreateFirstAid()" title="Nuevo Registro Primeros Auxilios">
                         <i class="fas fa-plus"></i>
@@ -132,8 +132,8 @@
                 </div>
                 
                 <div class="form-actions" style="margin-top: 20px;">
-                    <button type="button" class="btn-secondary" onclick="hideCreateFirstAid()">Volver</button>
-                    <button type="button" class="btn-orange" onclick="saveFirstAid()">Guardar</button>
+                    <button type="button" class="btn-secondary-premium" onclick="hideCreateFirstAid()"><i class="fas fa-arrow-left"></i> Volver</button>
+                    <button type="button" class="btn-new-record" onclick="saveFirstAid()"><i class="fas fa-save"></i> Guardar</button>
                 </div>
             </form>
         </div>
@@ -193,8 +193,8 @@
             </div>
             
             <div class="form-actions" style="margin-top: 20px;">
-                <button type="button" class="btn-secondary" onclick="hideCreateMorbidity()">Volver</button>
-                <button type="button" class="btn-orange" onclick="saveMorbidity()">Guardar</button>
+                <button type="button" class="btn-secondary-premium" onclick="hideCreateMorbidity()"><i class="fas fa-arrow-left"></i> Volver</button>
+                <button type="button" class="btn-new-record" onclick="saveMorbidity()"><i class="fas fa-save"></i> Guardar</button>
             </div>
         </form>
     </div>
@@ -224,7 +224,7 @@
                     <option value="11">Diciembre</option>
                 </select>
 
-                <button class="btn-orange" onclick="generateMorbidityGraphs()">
+                <button class="btn-hover-graph" onclick="generateMorbidityGraphs()">
                     <i class="fas fa-chart-pie"></i> Generar
                 </button>
             </div>
@@ -270,7 +270,7 @@
                     <option value="11">Diciembre</option>
                 </select>
 
-                <button class="btn-orange" onclick="generateFirstAidGraphs()">
+                <button class="btn-hover-graph" onclick="generateFirstAidGraphs()">
                     <i class="fas fa-chart-pie"></i> Generar
                 </button>
             </div>

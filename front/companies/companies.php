@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="../companies/companies.css?v=1.4">
+    <link rel="stylesheet" href="../styles/colors.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
@@ -18,8 +19,8 @@
         <!-- Table View -->
         <div id="tableView" class="view-section">
             <h1>Gestión de clientes</h1>
-            <button class="add-btn" onclick="showFormView()">
-                <i class="fas fa-plus"></i> Nuevo cliente
+            <button class="btn-new-record" onclick="showFormView()">
+                <i class="fas fa-plus-circle"></i> Nuevo cliente
             </button>
             <table id="companiesTable" class="display">
                 <thead>
@@ -217,9 +218,14 @@
                     <div class="form-row single">
                         <div class="form-group">
                             <label>Logo de la Empresa</label>
-                            <input type="file" id="logoFile" name="logoFile" accept="image/*">
-                            <div id="logoPreview" style="margin-top: 10px; display: none;">
-                                <img id="logoPreviewImg" src="" alt="Vista previa del logo" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #ddd;">
+                            <div class="file-upload-wrapper" style="height: 180px;">
+                                <input type="file" id="logoFile" name="logoFile" class="file-upload-input" accept="image/*">
+                                <div class="file-upload-content">
+                                    <i class="fas fa-cloud-upload-alt file-upload-icon" id="logoUploadIcon"></i>
+                                    <div class="file-upload-text" id="logoUploadText">Haz clic o arrastra el logo aquí</div>
+                                    <div class="file-upload-hint" id="logoUploadHint">Formatos: PNG, JPG, JPEG</div>
+                                    <img id="logoPreviewImg" src="" alt="Vista previa" style="max-height: 140px; max-width: 90%; margin-top: 10px; display: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -249,10 +255,10 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="hideFormView()">
+                    <button type="button" class="btn-secondary-premium" onclick="hideFormView()">
                         <i class="fas fa-times"></i> Cancelar
                     </button>
-                    <button type="submit" class="btn-save">
+                    <button type="submit" class="btn-new-record">
                         <i class="fas fa-save"></i> Guardar
                     </button>
                 </div>

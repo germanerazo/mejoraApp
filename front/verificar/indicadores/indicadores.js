@@ -206,8 +206,8 @@ function cargarDatosSimulados() {
             <td>${ind.tipoLimite}</td>
             <td>${ind.dirigido}</td>
             <td style="text-align:center;">
-                <button class="btn-action view" onclick="verDetalleIndicador(${ind.id})" title="Ver Gráfica">
-                    <i class="fas fa-chart-bar"></i>
+                <button class="btn-view-premium" onclick="verDetalleIndicador(${ind.id})" title="Ver Gráfica">
+                    <i class="fas fa-chart-line"></i>
                 </button>
             </td>
         `;

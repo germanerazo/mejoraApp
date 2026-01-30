@@ -3,6 +3,34 @@ let proceduresData = [
     { id: 1, name: 'SST-MA-02 MANUAL DE SELECCION', date: '2024-03-10' },
     { id: 2, name: 'SST-PR-05 PROCEDIMIENTO DE COMPRAS', date: '2024-02-15' }
 ];
+    
+window.updateProceduresFileName = (input) => {
+    const fileNameDisplay = document.getElementById('procFileNameDisplay');
+    const wrapper = input.parentElement;
+    const uploadText = wrapper.querySelector('.file-upload-text');
+    const uploadHint = wrapper.querySelector('.file-upload-hint');
+    const uploadIcon = wrapper.querySelector('.file-upload-icon');
+    
+    if (input.files && input.files.length > 0) {
+        fileNameDisplay.textContent = input.files[0].name;
+        fileNameDisplay.style.display = 'block';
+        if(uploadText) uploadText.style.display = 'none';
+        if(uploadHint) uploadHint.style.display = 'none';
+        if(uploadIcon) {
+            uploadIcon.className = 'fas fa-check-circle file-upload-icon';
+            uploadIcon.style.color = '#2ecc71';
+        }
+    } else {
+        fileNameDisplay.textContent = '';
+        fileNameDisplay.style.display = 'none';
+        if(uploadText) uploadText.style.display = 'block';
+        if(uploadHint) uploadHint.style.display = 'block';
+        if(uploadIcon) {
+            uploadIcon.className = 'fas fa-cloud-upload-alt file-upload-icon';
+            uploadIcon.style.color = '#329bd6';
+        }
+    }
+};
 
 const initProcedures = () => {
     renderProceduresList();
@@ -21,12 +49,16 @@ window.renderProceduresList = () => {
     proceduresData.forEach(item => {
         html += `<tr>
             <td style="text-align: center;">
-                <div class="icon-delete" onclick="deleteProcedures(${item.id})" title="Eliminar" style="margin: 0 auto;">➖</div>
+                <button class="btn-delete-premium" onclick="deleteProcedures(${item.id})" title="Eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </td>
             <td>${item.name}</td>
             <td>${item.date}</td>
             <td style="text-align: center;">
-                <div class="icon-download" title="Descargar" onclick="downloadProcedures(${item.id})">⬇️</div>
+                <button class="btn-view-premium" title="Descargar" onclick="downloadProcedures(${item.id})" style="color: #27ae60 !important;">
+                    <i class="fas fa-file-download"></i>
+                </button>
             </td>
         </tr>`;
     });
@@ -41,7 +73,9 @@ window.showCreateProcedures = () => {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('fieldProcDate').value = today;
     document.getElementById('fieldProcName').value = '';
-    document.getElementById('fieldProcFile').value = '';
+    const fileIn = document.getElementById('fieldProcFile');
+    fileIn.value = '';
+    window.updateProceduresFileName(fileIn);
 };
 
 window.hideCreateProcedures = () => {

@@ -240,8 +240,8 @@ function renderActivities() {
         html += `
             <tr>
                 <td>
-                    <button class="btn-icon btn-edit" title="Editar" onclick="editActivity(${act.id})">✏️</button>
-                    <button class="btn-icon btn-delete" title="Eliminar">🗑️</button>
+                    <button class="btn-edit-premium" title="Editar" onclick="editActivity(${act.id})"><i class="fas fa-edit"></i></button>
+                    <button class="btn-delete-premium" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
                 </td>
                 <td>${act.name}</td>
                 <td>${act.area}</td>
@@ -314,8 +314,8 @@ function renderResources() {
     resources.forEach(item => {
         html += `<tr>
             <td>
-                <button class="btn-icon btn-edit" title="Editar" onclick="editResource(${item.id})">✏️</button>
-                <button class="btn-icon btn-delete" title="Eliminar">🗑️</button>
+                <button class="btn-edit-premium" title="Editar" onclick="editResource(${item.id})"><i class="fas fa-edit"></i></button>
+                <button class="btn-delete-premium" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
             </td>
             <td>${item.name}</td>
         </tr>`;
@@ -384,8 +384,8 @@ function renderInputs() {
     inputs.forEach(item => {
         html += `<tr>
             <td>
-                <button class="btn-icon btn-edit" title="Editar" onclick="editInput(${item.id})">✏️</button>
-                <button class="btn-icon btn-delete" title="Eliminar">🗑️</button>
+                <button class="btn-edit-premium" title="Editar" onclick="editInput(${item.id})"><i class="fas fa-edit"></i></button>
+                <button class="btn-delete-premium" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
             </td>
             <td>${item.name}</td>
         </tr>`;
@@ -400,7 +400,7 @@ window.addProcedure = async function() {
         html: `
             <input id="swal-proc-name" class="swal2-input" placeholder="Nombre del Procedimiento">
             <div class="file-upload-wrapper" style="margin-top: 15px;">
-                <label for="swal-proc-file" class="btn-secondary" style="cursor: pointer; display: inline-block; padding: 10px; border: 1px dashed #ccc; width: 80%;">
+                <label for="swal-proc-file" class="btn-secondary-premium" style="cursor: pointer; display: inline-block; padding: 10px; border: 1px dashed #ccc; width: 80%;">
                     📂 Seleccionar Archivo
                 </label>
                 <input type="file" id="swal-proc-file" style="display: none;" onchange="document.getElementById('file-name-display').innerText = this.files[0] ? this.files[0].name : ''">
@@ -436,7 +436,7 @@ window.editProcedure = async function(id) {
         html: `
             <input id="swal-proc-name" class="swal2-input" placeholder="Nombre del Procedimiento" value="${item.name}">
             <div class="file-upload-wrapper" style="margin-top: 15px;">
-                <label for="swal-proc-file" class="btn-secondary" style="cursor: pointer; display: inline-block; padding: 10px; border: 1px dashed #ccc; width: 80%;">
+                <label for="swal-proc-file" class="btn-secondary-premium" style="cursor: pointer; display: inline-block; padding: 10px; border: 1px dashed #ccc; width: 80%;">
                     📂 Actualizar Archivo
                 </label>
                 <input type="file" id="swal-proc-file" style="display: none;" onchange="document.getElementById('file-name-display-edit').innerText = this.files[0] ? this.files[0].name : ''">
@@ -473,8 +473,8 @@ function renderProcedures() {
     procedures.forEach(item => {
         html += `<tr>
             <td>
-                <button class="btn-icon btn-edit" title="Editar" onclick="editProcedure(${item.id})">✏️</button>
-                <button class="btn-icon btn-delete" title="Eliminar">🗑️</button>
+                <button class="btn-edit-premium" title="Editar" onclick="editProcedure(${item.id})"><i class="fas fa-edit"></i></button>
+                <button class="btn-delete-premium" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
             </td>
             <td>${item.name}</td>
             <td><a href="#" onclick="return false;">📄 ${item.file}</a></td>
@@ -552,7 +552,7 @@ window.managePersonnelDetails = async function(id) {
                     <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 10px;">Responsabilidades</h3>
                     <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                         <input id="input-resp" class="swal2-input" placeholder="Nueva responsabilidad" style="margin: 0; height: 35px; flex-grow: 1; font-size: 13px;">
-                        <button id="btn-add-resp" class="btn-primary" style="padding: 0 10px;">+</button>
+                        <button id="btn-add-resp" class="btn-new-record" style="padding: 0 10px; border-radius: 4px !important; width: 35px; height: 35px; min-width: 0;">+</button>
                     </div>
                     <ul id="list-resp" style="list-style: none; padding: 0; max-height: 200px; overflow-y: auto;"></ul>
                 </div>
@@ -562,7 +562,7 @@ window.managePersonnelDetails = async function(id) {
                     <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 10px;">Rendición de Cuentas</h3>
                     <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                         <input id="input-acc" class="swal2-input" placeholder="Nueva rendición" style="margin: 0; height: 35px; flex-grow: 1; font-size: 13px;">
-                        <button id="btn-add-acc" class="btn-primary" style="padding: 0 10px;">+</button>
+                        <button id="btn-add-acc" class="btn-new-record" style="padding: 0 10px; border-radius: 4px !important; width: 35px; height: 35px; min-width: 0;">+</button>
                     </div>
                     <ul id="list-acc" style="list-style: none; padding: 0; max-height: 200px; overflow-y: auto;"></ul>
                 </div>
@@ -661,14 +661,14 @@ function renderPersonnel() {
 
         html += `<tr>
             <td>
-                <button class="btn-icon btn-edit" title="Editar" onclick="editPersonnel(${item.id})">✏️</button>
-                <button class="btn-icon btn-delete" title="Eliminar">🗑️</button>
+                <button class="btn-edit-premium" title="Editar" onclick="editPersonnel(${item.id})"><i class="fas fa-edit"></i></button>
+                <button class="btn-delete-premium" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
             </td>
             <td>${item.role}</td>
             <td>${item.reportsTo}</td>
             <td>${item.quantity}</td>
             <td style="text-align: center;">
-                <button class="btn-secondary" onclick="managePersonnelDetails(${item.id})" style="padding: 5px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #f0f0f0; cursor: pointer;">
+                <button class="btn-secondary-premium" onclick="managePersonnelDetails(${item.id})" style="padding: 5px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #f0f0f0; cursor: pointer;">
                     Gestionar Detalles
                 </button>
             </td>

@@ -44,9 +44,13 @@ window.renderLegalList = (data = legalData) => {
     let html = '';
     data.forEach(item => {
         html += `<tr>
-            <td class="col-action">
-                <button class="btn-icon" title="Editar" onclick="editLegal(${item.id})">✏️</button>
-                <button class="btn-icon" title="Eliminar" onclick="deleteLegal(${item.id})">➖</button>
+            <td class="col-action" style="display: flex; gap: 5px; justify-content: center;">
+                <button class="btn-edit-premium" title="Editar" onclick="editLegal(${item.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-delete-premium" title="Eliminar" onclick="deleteLegal(${item.id})">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </td>
             <td class="col-id">${item.id}</td>
             <td>${item.classification}</td>

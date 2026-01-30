@@ -192,7 +192,7 @@
     cursor: pointer;
 }
 
-.btn-orange {
+.btn-new-record {
     background: var(--fondo);
     color: white;
     border: none;
@@ -205,6 +205,6 @@
     background: #bbb;
 }
 
-.btn-orange:hover {
+.btn-new-record:hover {
     background: #e56000;
 }

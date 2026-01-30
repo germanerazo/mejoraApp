@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Using relative path to same directory CSS -->
     <link rel="stylesheet" href="../planear/training/trainingPlan.css">
+    <link rel="stylesheet" href="../styles/colors.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
@@ -21,8 +22,8 @@
     <div id="trainingListView" class="content-card">
         <div class="training-toolbar">
             <h2 class="section-title" style="border: none; margin: 0;">Lista de Documentos</h2>
-            <button class="btn-add-circle" onclick="showCreateTraining()" title="Nuevo Registro">
-                <i class="fas fa-plus"></i>
+            <button class="btn-new-record" onclick="showCreateTraining()">
+                <i class="fas fa-plus-circle"></i> Nuevo Registro
             </button>
         </div>
 
@@ -57,12 +58,20 @@
 
             <div class="form-group">
                 <label class="form-label">Cargar archivo</label>
-                <input type="file" id="trainingFile" class="form-input">
+                <div class="file-upload-wrapper">
+                    <input type="file" id="trainingFile" class="file-upload-input" onchange="updateTrainingFileName(this)">
+                    <div class="file-upload-content">
+                        <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
+                        <div class="file-upload-text">Haz clic o arrastra un archivo aquí</div>
+                        <div class="file-upload-hint">Formatos soportados: PDF, XLS, DOC</div>
+                        <div id="trainingFileNameDisplay" class="file-upload-filename"></div>
+                    </div>
+                </div>
             </div>
 
             <div style="margin-top: 20px;">
-                <button type="button" class="btn-secondary" onclick="hideCreateTraining()">Volver</button>
-                <button type="button" class="btn-orange" onclick="saveTraining()">Guardar</button>
+                <button type="button" class="btn-secondary-premium" onclick="hideCreateTraining()"><i class="fas fa-arrow-left"></i> Volver</button>
+                <button type="button" class="btn-new-record" onclick="saveTraining()"><i class="fas fa-save"></i> Guardar</button>
             </div>
         </form>
     </div>

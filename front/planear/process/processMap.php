@@ -25,8 +25,8 @@
 
     <div class="content-card">
         <div class="action-bar">
-            <button class="btn-primary" onclick="createNewProcess()">
-                <span>+</span> Nuevo Registro
+            <button class="btn-new-record" onclick="createNewProcess()">
+                <i class="fas fa-plus-circle"></i> Nuevo Registro de Proceso
             </button>
         </div>
 

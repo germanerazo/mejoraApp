@@ -3,6 +3,36 @@ let copasstData = [
     { id: 1, date: '2024-02-26', name: 'Acta reuniones COPASST Febrero 2024' },
     { id: 2, date: '2024-01-15', name: 'Acta conformación COPASST 2024' }
 ];
+    
+window.updateCopasstFileName = (input) => {
+    const fileNameDisplay = document.getElementById('copasstFileNameDisplay');
+    // Find these within the parent wrapper to avoid global query selector issues if multiple exists, 
+    // although updateCopasstFileName is specific. Using scoped selection is safer.
+    const wrapper = input.parentElement;
+    const uploadText = wrapper.querySelector('.file-upload-text');
+    const uploadHint = wrapper.querySelector('.file-upload-hint');
+    const uploadIcon = wrapper.querySelector('.file-upload-icon');
+    
+    if (input.files && input.files.length > 0) {
+        fileNameDisplay.textContent = input.files[0].name;
+        fileNameDisplay.style.display = 'block';
+        if(uploadText) uploadText.style.display = 'none';
+        if(uploadHint) uploadHint.style.display = 'none';
+        if(uploadIcon) {
+            uploadIcon.className = 'fas fa-check-circle file-upload-icon';
+            uploadIcon.style.color = '#2ecc71';
+        }
+    } else {
+        fileNameDisplay.textContent = '';
+        fileNameDisplay.style.display = 'none';
+        if(uploadText) uploadText.style.display = 'block';
+        if(uploadHint) uploadHint.style.display = 'block';
+        if(uploadIcon) {
+            uploadIcon.className = 'fas fa-cloud-upload-alt file-upload-icon';
+            uploadIcon.style.color = '#329bd6';
+        }
+    }
+};
 
 const initCopasst = () => {
     renderCopasstList();
@@ -21,12 +51,16 @@ window.renderCopasstList = () => {
     copasstData.forEach(item => {
         html += `<tr>
             <td style="text-align: center;">
-                <div class="icon-delete" onclick="deleteCopasst(${item.id})" title="Eliminar">➖</div>
+                <button class="btn-delete-premium" onclick="deleteCopasst(${item.id})" title="Eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </td>
             <td>${item.date}</td>
             <td>${item.name}</td>
             <td style="text-align: center;">
-                <div class="icon-download" title="Descargar" onclick="downloadCopasst(${item.id})">☁️</div>
+                <button class="btn-view-premium" title="Descargar" onclick="downloadCopasst(${item.id})" style="color: #27ae60 !important;">
+                    <i class="fas fa-file-download"></i>
+                </button>
             </td>
         </tr>`;
     });
@@ -41,7 +75,9 @@ window.showCreateCopasst = () => {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('fieldCopasstDate').value = today;
     document.getElementById('fieldCopasstName').value = '';
-    document.getElementById('fieldCopasstFile').value = '';
+    const fileIn = document.getElementById('fieldCopasstFile');
+    fileIn.value = '';
+    window.updateCopasstFileName(fileIn);
 };
 
 window.hideCreateCopasst = () => {

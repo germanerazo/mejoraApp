@@ -20,12 +20,16 @@ window.renderAnnualList = () => {
     let html = '';
     annualData.forEach(item => {
         html += `<tr>
-            <td>
-                <button class="btn-icon-delete" title="Eliminar" onclick="deleteAnnual(${item.id})">➖</button>
+            <td style="display: flex; gap: 5px;">
+                <button class="btn-delete-premium" title="Eliminar" onclick="deleteAnnual(${item.id})">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </td>
             <td>Desde: ${item.startDate}- Hasta: ${item.endDate}</td>
             <td>
-                <button class="btn-icon-view" title="Ver detalle" onclick="viewAnnual(${item.id})">🔍</button>
+                <button class="btn-view-premium" title="Ver detalle" onclick="viewAnnual(${item.id})">
+                    <i class="fas fa-eye"></i>
+                </button>
             </td>
         </tr>`;
     });
@@ -218,9 +222,13 @@ const renderObjectiveTable = (planId, category, tableId) => {
     } else {
         relevant.forEach(item => {
             html += `<tr>
-                <td>
-                    <button class="btn-icon-delete" onclick="deleteObjective(${item.id})">➖</button>
-                    <button class="btn-icon" onclick="editObjective(${item.id})">✏️</button>
+                <td style="display: flex; gap: 5px;">
+                    <button class="btn-delete-premium" onclick="deleteObjective(${item.id})" title="Eliminar">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <button class="btn-edit-premium" onclick="editObjective(${item.id})" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
                 </td>
                 <td>${item.objective}</td>
                 <td>${item.meta}</td>
@@ -242,9 +250,13 @@ const renderActivityTable = (planId, category, tableId) => {
     } else {
         relevant.forEach(item => {
             html += `<tr>
-                <td>
-                    <button class="btn-icon-delete" onclick="deleteActivity(${item.id})">➖</button>
-                    <button class="btn-icon" onclick="editActivity(${item.id})">✏️</button>
+                <td style="display: flex; gap: 5px;">
+                    <button class="btn-delete-premium" onclick="deleteActivity(${item.id})" title="Eliminar">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <button class="btn-edit-premium" onclick="editActivity(${item.id})" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
                 </td>
                 <td>${item.name}</td>
                 <td>${item.activity}</td>

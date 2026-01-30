@@ -162,7 +162,9 @@ function renderEntryList(data = entryData) {
             <td><span style="padding: 4px 8px; border-radius: 4px; background: ${item.status === 'Activo' ? '#d4edda' : '#f8d7da'}; color: ${item.status === 'Activo' ? '#155724' : '#721c24'}">${item.status}</span></td>
             <td>${item.date}</td>
             <td style="text-align: center;">
-                <div class="icon-download" title="Ver Detalle" onclick="viewEntry(${item.id})" style="margin: 0 auto; color: var(--color6);">👁️</div>
+                <button class="btn-view-premium" title="Ver Detalle" onclick="viewEntry(${item.id})">
+                    <i class="fas fa-eye"></i>
+                </button>
             </td>
         </tr>`;
     });
@@ -402,7 +404,9 @@ function addRecommendationFromModal() {
         <td></td> <!-- Seguimiento empty initially -->
         <td>${status}</td>
         <td style="text-align: center;">
-            <div class="icon-delete" onclick="this.closest('tr').remove()" style="margin: 0 auto; width: 20px; height: 20px; font-size: 1rem;">x</div>
+            <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar">
+                <i class="fas fa-trash-alt"></i>
+            </button>
         </td>
     `;
     tbody.appendChild(tr);
@@ -438,7 +442,7 @@ function addRestricFromModal() {
         <td></td> <!-- Seguimiento empty initially -->
         <td>${status}</td>
         <td style="text-align: center;">
-            <div class="icon-delete" onclick="this.closest('tr').remove()" style="margin: 0 auto; width: 20px; height: 20px; font-size: 1rem;">x</div>
+            <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
         </td>
     `;
     tbody.appendChild(tr);
@@ -487,7 +491,7 @@ function viewEntry(id) {
                 <td>${reco.follow || ''}</td>
                 <td>${reco.status}</td>
                 <td style="text-align: center;">
-                    <div class="icon-delete" onclick="this.closest('tr').remove()" style="margin: 0 auto; width: 20px; height: 20px; font-size: 1rem;">x</div>
+                    <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -506,7 +510,7 @@ function viewEntry(id) {
                 <td>${res.follow || ''}</td>
                 <td>${res.status}</td>
                 <td style="text-align: center;">
-                    <div class="icon-delete" onclick="this.closest('tr').remove()" style="margin: 0 auto; width: 20px; height: 20px; font-size: 1rem;">x</div>
+                    <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -525,7 +529,7 @@ function viewEntry(id) {
                 <td>${reco.follow || ''}</td>
                 <td>${reco.status}</td>
                 <td style="text-align: center;">
-                    <div class="icon-delete" onclick="this.closest('tr').remove()" style="margin: 0 auto; width: 20px; height: 20px; font-size: 1rem;">➖</div>
+                    <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -544,7 +548,7 @@ function viewEntry(id) {
                 <td>${res.follow || ''}</td>
                 <td>${res.status}</td>
                 <td style="text-align: center;">
-                    <div class="icon-delete" onclick="this.closest('tr').remove()" style="margin: 0 auto; width: 20px; height: 20px; font-size: 1rem;">➖</div>
+                    <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -592,8 +596,12 @@ function addMedicalExamRow(date, fileName) {
         <td><a href="#" style="color: var(--color6); text-decoration: underline;">${fileName}</a></td>
         <td style="text-align: center;">
             <div style="display: flex; justify-content: center; gap: 5px;">
-                <div class="icon-download" onclick="alert('Descargando documento...')" style="width: 20px; height: 20px; font-size: 1rem; cursor: pointer;" title="Descargar">⬇️</div>
-                <div class="icon-delete" onclick="this.closest('tr').remove()" style="width: 20px; height: 20px; font-size: 1rem; cursor: pointer;" title="Eliminar">➖</div>
+                <button class="btn-view-premium" onclick="alert('Descargando documento...')" title="Descargar" style="color: #27ae60 !important;">
+                    <i class="fas fa-file-download"></i>
+                </button>
+                <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </div>
         </td>
     `;
@@ -705,7 +713,7 @@ function addPeriodicRecoFromModal() {
         <td></td> <!-- Seguimiento empty initially -->
         <td>${status}</td>
         <td style="text-align: center;">
-            <div class="icon-delete" onclick="this.closest('tr').remove()" style="margin: 0 auto; width: 20px; height: 20px; font-size: 1rem;">➖</div>
+            <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
         </td>
     `;
     tbody.appendChild(tr);
@@ -741,7 +749,7 @@ function addPeriodicRestricFromModal() {
         <td></td> <!-- Seguimiento empty initially -->
         <td>${status}</td>
         <td style="text-align: center;">
-            <div class="icon-delete" onclick="this.closest('tr').remove()" style="margin: 0 auto; width: 20px; height: 20px; font-size: 1rem;">➖</div>
+            <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
         </td>
     `;
     tbody.appendChild(tr);

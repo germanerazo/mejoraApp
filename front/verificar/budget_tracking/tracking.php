@@ -1,5 +1,6 @@
-<!-- CSS Import -->
 <link rel="stylesheet" href="../verificar/budget_tracking/tracking.css?v=1.0">
+<link rel="stylesheet" href="../styles/colors.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <!-- Chart.js CDN (v4.4.1) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <!-- Chart.js DataLabels Plugin (v2.2.0) -->
@@ -30,10 +31,14 @@
 <div id="trackingDetailView" class="content-card" style="display: none;">
     <div class="section-header">
         <h2 class="section-title" id="trackingDetailTitle">SEGUIMIENTO DE PRESUPUESTO</h2>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn-primary" onclick="saveTracking()">Guardar</button>
-            <button class="btn-create-orange" onclick="showGraphView()">Graficar</button>
-            <button class="btn-secondary" onclick="hideDetailView()">Volver</button>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="btn-new-record" onclick="saveTracking()" style="padding: 8px 20px !important;">
+                <i class="fas fa-save"></i> Guardar
+            </button>
+            <button class="btn-hover-graph" onclick="showGraphView()" style="padding: 8px 15px !important;">
+                <i class="fas fa-chart-line"></i> Graficar Resultados
+            </button>
+            <button class="btn-secondary-premium" onclick="hideDetailView()"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
     </div>
 
@@ -68,8 +73,10 @@
     <div class="section-header">
         <h2 class="section-title">GRÁFICA DE CUMPLIMIENTO</h2>
         <div style="display: flex; gap: 10px;">
-            <button class="btn-icon" title="Imprimir Gráfica" onclick="printGraph()" style="background: white; border: 1px solid #ddd; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 1.2rem;">🖨️</button>
-            <button class="btn-secondary" onclick="hideGraphView()">Volver</button>
+            <button class="btn-view-premium" title="Imprimir Gráfica" onclick="printGraph()" style="color: #667eea !important;">
+                <i class="fas fa-print"></i>
+            </button>
+            <button class="btn-secondary-premium" onclick="hideGraphView()"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
     </div>
     

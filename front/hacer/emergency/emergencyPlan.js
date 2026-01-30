@@ -11,6 +11,31 @@ let emergencyData = [
     { id: 9, name: 'CAPACITACIÓN BRIGADA DE PRIMEROS AUXILIOS', date: '2024-06-01', file: 'capacitacion_brigada.pdf' },
     { id: 10, name: 'INSPECCIÓN DE EXTINTORES', date: '2024-06-15', file: 'inspeccion_extintores_junio.xls' }
 ];
+    
+function updateFileName(input) {
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const uploadText = document.querySelector('.file-upload-text');
+    const uploadHint = document.querySelector('.file-upload-hint');
+    const uploadIcon = document.querySelector('.file-upload-icon');
+    
+    if (input.files && input.files.length > 0) {
+        fileNameDisplay.textContent = input.files[0].name;
+        fileNameDisplay.style.display = 'block';
+        uploadText.style.display = 'none';
+        uploadHint.style.display = 'none';
+        uploadIcon.className = 'fas fa-check-circle file-upload-icon';
+        uploadIcon.style.color = '#2ecc71';
+    } else {
+        fileNameDisplay.textContent = '';
+        fileNameDisplay.style.display = 'none';
+        uploadText.style.display = 'block';
+        uploadHint.style.display = 'block';
+        uploadIcon.className = 'fas fa-cloud-upload-alt file-upload-icon';
+        uploadIcon.style.color = '#329bd6';
+    }
+}
+window.updateFileName = updateFileName;
+
 
 function initEmergency() {
     renderEmergencyList();
@@ -29,12 +54,16 @@ function renderEmergencyList() {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>
-                <i class="fas fa-minus-circle action-icon icon-delete" onclick="deleteEmergency(${item.id})" title="Eliminar"></i>
+                <button class="btn-delete-premium" onclick="deleteEmergency(${item.id})" title="Eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </td>
             <td>${item.name}</td>
             <td>${item.date}</td>
             <td style="text-align: center;">
-                <i class="fas fa-cloud-download-alt action-icon icon-download" onclick="downloadEmergency('${item.file}')" title="Descargar"></i>
+                <button class="btn-view-premium" onclick="downloadEmergency('${item.file}')" title="Descargar" style="color: #27ae60 !important;">
+                    <i class="fas fa-file-download"></i>
+                </button>
             </td>
         `;
         tbody.appendChild(row);
@@ -47,6 +76,13 @@ function showCreateEmergency() {
     
     document.getElementById('emergencyForm').reset();
     document.getElementById('planDate').valueAsDate = new Date();
+    
+    // Reset file upload display
+    const fileInput = document.getElementById('planFile');
+    if (fileInput) {
+        fileInput.value = '';
+        updateFileName(fileInput);
+    }
 }
 
 function hideCreateEmergency() {

@@ -57,15 +57,19 @@ function loadUsers() {
                 // Celda de acciones con botones DOM para evitar problemas de quotes en JSON
                 const tdActions = document.createElement('td');
                 tdActions.className = 'actions';
+                tdActions.style.display = 'flex';
+                tdActions.style.gap = '5px';
                 
                 const btnEdit = document.createElement('button');
-                btnEdit.className = 'edit-btn';
-                btnEdit.textContent = 'Editar';
+                btnEdit.className = 'btn-edit-premium';
+                btnEdit.title = 'Editar';
+                btnEdit.innerHTML = '<i class="fas fa-edit"></i>';
                 btnEdit.onclick = () => openEditUser(user);
                 
                 const btnDelete = document.createElement('button');
-                btnDelete.className = 'delete-btn';
-                btnDelete.textContent = 'Eliminar';
+                btnDelete.className = 'btn-delete-premium';
+                btnDelete.title = 'Eliminar';
+                btnDelete.innerHTML = '<i class="fas fa-trash-alt"></i>';
                 btnDelete.onclick = () => deleteUser(user.idUsuario);
                 
                 tdActions.appendChild(btnEdit);

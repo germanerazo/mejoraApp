@@ -58,10 +58,16 @@ function renderEmployeesList(data = employeesData) {
             <td>${item.position}</td>
             <td>${item.date}</td>
             <td style="text-align: center;">
-                <div style="display: flex; gap: 5px; justify-content: center;">
-                    <button class="btn-secondary" style="background-color: #17a2b8; padding: 5px 10px; font-size: 12px;" onclick="generateExam(${item.id}, 'Ingreso')" title="Examen de Ingreso">Ingreso</button>
-                    <button class="btn-secondary" style="background-color: #ffc107; color: #000; padding: 5px 10px; font-size: 12px;" onclick="generateExam(${item.id}, 'Periodico')" title="Examen Periódico">Periódico</button>
-                    <button class="btn-secondary" style="background-color: #dc3545; padding: 5px 10px; font-size: 12px;" onclick="generateExam(${item.id}, 'Retiro')" title="Examen de Retiro">Retiro</button>
+                <div style="display: flex; gap: 8px; justify-content: center;">
+                    <button class="btn-view-premium" onclick="generateExam(${item.id}, 'Ingreso')" title="Examen de Ingreso" style="background-color: #17a2b8; color: white;">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </button>
+                    <button class="btn-view-premium" onclick="generateExam(${item.id}, 'Periodico')" title="Examen Periódico" style="background-color: #ffc107; color: #000;">
+                        <i class="fas fa-history"></i>
+                    </button>
+                    <button class="btn-delete-premium" onclick="generateExam(${item.id}, 'Retiro')" title="Examen de Retiro">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
                 </div>
             </td>
         </tr>`;

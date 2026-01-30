@@ -1,5 +1,6 @@
-<!-- CSS Import -->
 <link rel="stylesheet" href="../planear/personal/personal.css?v=1.0">
+<link rel="stylesheet" href="../styles/colors.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <div class="page-header">
     <h1 class="page-title">CONSOLIDADO PERSONAL DEL PROCESO</h1>

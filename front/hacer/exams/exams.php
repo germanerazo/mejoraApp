@@ -1,5 +1,6 @@
-<!-- CSS Import -->
 <link rel="stylesheet" href="../hacer/exams/exams.css?v=1.0">
+<link rel="stylesheet" href="../styles/colors.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <!-- List View Header -->
 <div id="examsListHeader" class="page-header">
@@ -12,7 +13,9 @@
     <!-- Filter Section -->
     <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
         <input type="text" id="filterSearch" class="form-input" placeholder="Buscar por Nombre o Cédula..." style="width: 300px;">
-        <button class="btn-orange" onclick="filterEmployees()">Buscar</button>
+        <button class="btn-filter-premium" onclick="filterEmployees()">
+            <i class="fas fa-search"></i> Buscar
+        </button>
     </div>
 
     <!-- Table -->
@@ -39,8 +42,10 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
         <h2 class="section-title" style="margin: 0; font-size: 1.2rem; color: var(--fondo);">REGISTRAR EXAMEN MÉDICO</h2>
         <div style="display: flex; gap: 10px;">
-            <button class="btn-secondary" onclick="hideCreateExam()">Cancelar</button>
-            <button class="btn-orange" onclick="generateDocument()">Generar Examen</button>
+            <button class="btn-secondary-premium" onclick="hideCreateExam()"><i class="fas fa-times"></i> Cancelar</button>
+            <button class="btn-new-record" onclick="generateDocument()">
+                <i class="fas fa-file-medical"></i> Generar Examen
+            </button>
         </div>
     </div>
 
@@ -81,8 +86,8 @@
 <!-- Print View (Hidden) -->
 <div id="examsPrintView" class="content-card" style="display: none;">
     <div class="print-actions">
-        <button class="btn-secondary" onclick="hidePrintView()">Volver</button>
-        <button class="btn-orange" onclick="printExam()">Imprimir</button>
+        <button class="btn-secondary-premium" onclick="hidePrintView()"><i class="fas fa-arrow-left"></i> Volver</button>
+        <button class="btn-new-record" onclick="printExam()">Imprimir</button>
     </div>
 
     <div class="print-document" id="printContent">

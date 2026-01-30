@@ -34,7 +34,9 @@ window.renderTrackingList = () => {
     trackingYears.forEach(item => {
         html += `<tr>
             <td style="text-align: center;">
-                <button class="btn-icon" title="Ver Seguimiento" onclick="viewTracking(${item.year})" style="cursor: pointer;">🔍</button>
+                <button class="btn-view-premium" title="Ver Seguimiento" onclick="viewTracking(${item.year})">
+                    <i class="fas fa-eye"></i>
+                </button>
             </td>
             <td>${item.year}</td>
         </tr>`;

@@ -50,9 +50,13 @@ function renderCompanies(companiesList) {
             <td>${company.email}</td>
             <td>${company.telFijo}</td>
             <td>${company.codCiudad}</td>
-            <td class="actions">
-                <button class="edit-btn" data-company='${JSON.stringify(company)}'>Editar</button>
-                <button class="delete-btn" data-id='${company.idEmpresa}'>Eliminar</button>
+            <td class="actions" style="display: flex; gap: 5px;">
+                <button class="btn-edit-premium edit-btn" data-company='${JSON.stringify(company)}'>
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-delete-premium delete-btn" data-id='${company.idEmpresa}'>
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -109,13 +113,34 @@ function showFormView(company = null) {
     form.reset();
     currentEditingId = null;
     
-    // Reset logo preview
-    const logoPreview = document.getElementById('logoPreview');
+    // Show existing logo if available
+    const lt = document.getElementById('logoUploadText');
+    const lh = document.getElementById('logoUploadHint');
+    const li = document.getElementById('logoUploadIcon');
     const logoPreviewImg = document.getElementById('logoPreviewImg');
-    if (logoPreview) logoPreview.style.display = 'none';
-    if (logoPreviewImg) logoPreviewImg.src = '';
-    
-    // Update title
+
+    if (company && company.ruta && logoPreviewImg) {
+        // Construct full URL
+        let fullPath = company.ruta;
+        if (!fullPath.startsWith('http')) {
+            fullPath = `${config.ASSETS_URL}${company.ruta}`;
+        }
+        logoPreviewImg.src = fullPath;
+        logoPreviewImg.style.display = 'block';
+        if(lt) lt.style.display = 'none';
+        if(lh) lh.style.display = 'none';
+        if(li) li.style.display = 'none';
+    } else {
+        // No existing logo or new client
+        if(logoPreviewImg) {
+            logoPreviewImg.style.display = 'none';
+            logoPreviewImg.src = '';
+        }
+        if(lt) lt.style.display = 'block';
+        if(lh) lh.style.display = 'block';
+        if(li) li.style.display = 'block';
+    }
+
     if (company) {
         formTitle.innerHTML = '<i class="fas fa-edit"></i> Editar Cliente';
         currentEditingId = company.idEmpresa;
@@ -145,12 +170,6 @@ function showFormView(company = null) {
         document.getElementById('fecVincula').value = company.fecVincula || '';
         document.getElementById('fecFin').value = company.fecFin || '';
         document.getElementById('fechaEntrega').value = company.fechaEntrega || '';
-        
-        // Show existing logo if available
-        if (company.ruta && logoPreview && logoPreviewImg) {
-            logoPreviewImg.src = `${config.ASSETS_URL}${company.ruta}`;
-            logoPreview.style.display = 'block';
-        }
     } else {
         formTitle.innerHTML = '<i class="fas fa-building"></i> Nuevo Cliente';
     }
@@ -279,11 +298,18 @@ function initializeCompanies() {
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    const logoPreview = document.getElementById('logoPreview');
+                    // Update preview references
                     const logoPreviewImg = document.getElementById('logoPreviewImg');
-                    if (logoPreviewImg && logoPreview) {
+                    const lt = document.getElementById('logoUploadText');
+                    const lh = document.getElementById('logoUploadHint');
+                    const li = document.getElementById('logoUploadIcon');
+                    
+                    if (logoPreviewImg) {
                         logoPreviewImg.src = event.target.result;
-                        logoPreview.style.display = 'block';
+                        logoPreviewImg.style.display = 'block';
+                        if(lt) lt.style.display = 'none';
+                        if(lh) lh.style.display = 'none';
+                        if(li) li.style.display = 'none';
                     }
                 };
                 reader.readAsDataURL(file);

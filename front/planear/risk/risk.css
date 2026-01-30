@@ -143,6 +143,8 @@
 }
 
 /* Print Styles */
+
+/* Print Styles */
 @media print {
     body * {
         visibility: hidden;

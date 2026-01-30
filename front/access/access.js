@@ -50,9 +50,13 @@ function renderAccess(accessList) {
             <td>${access.idUsuario}</td>
             <td>${access.acceso}</td>
             <td style="${estadoColor}">${estadoTexto}</td>
-            <td class="actions">
-              <button class="edit-btn" data-access='${JSON.stringify(access)}'>Editar</button>
-              <button class="delete-btn" data-id='${access.idAcceso}'>Eliminar</button>
+            <td class="actions" style="display: flex; gap: 5px;">
+                <button class="btn-edit-premium edit-btn" data-access='${JSON.stringify(access)}' title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-delete-premium delete-btn" data-id='${access.idAcceso}' title="Eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </td>
         `;
         tbody.appendChild(tr);

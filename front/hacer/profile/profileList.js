@@ -26,12 +26,12 @@ window.renderProfiles = (data) => {
     data.forEach(item => {
         html += `<tr>
             <td class="table-actions">
-                <button class="btn-icon btn-edit" title="Editar" onclick="editProfile(${item.id})">✏️</button>
-                <button class="btn-icon btn-delete" title="Eliminar/Desactivar" onclick="deleteProfile(${item.id})">➖</button>
+                <button class="btn-edit-premium" title="Editar" onclick="editProfile(${item.id})"><i class="fas fa-edit"></i></button>
+                <button class="btn-delete-premium" title="Eliminar/Desactivar" onclick="deleteProfile(${item.id})"><i class="fas fa-minus-circle"></i></button>
             </td>
             <td>${item.name}</td>
             <td class="table-actions">
-                <button class="btn-icon btn-view" title="Ver Detalle" onclick="viewProfile(${item.id})">🔍</button>
+                <button class="btn-view-premium" title="Ver Detalle" onclick="viewProfile(${item.id})"><i class="fas fa-search"></i></button>
             </td>
         </tr>`;
     });
@@ -55,6 +55,12 @@ window.showCreateProfile = () => {
     document.getElementById('profileReportTo').value = '';
     document.getElementById('profileDetails').style.display = 'none';
     document.getElementById('responsibilitiesList').innerHTML = ''; // Clear responsibilities
+    
+    // Clear all subsection tables
+    ['Education', 'Training', 'Experience', 'Profesiogram', 'Competence', 'SstRisk', 'SstResp', 'Epp'].forEach(tbl => {
+        const tbody = document.querySelector(`#table${tbl} tbody`);
+        if (tbody) tbody.innerHTML = '';
+    });
 };
 
 window.hideCreateProfile = () => {
@@ -103,9 +109,21 @@ window.editProfile = (id) => {
     // Populate Mock Responsibilities
     const respList = document.getElementById('responsibilitiesList');
     respList.innerHTML = '';
-    // Add a few mock responsibilities
-    addResponsibility('Responsabilidad de prueba 1');
-    addResponsibility('Responsabilidad de prueba 2');
+    window.addResponsibility('Cumplir con el horario establecido');
+    window.addResponsibility('Elaborar reportes de gestión mensual');
+
+    // Populate Mock Subsections
+    const mockRows = {
+        tableEducation: '<tr><td>Profesional en áreas administrativas</td><td style="text-align:center;"><button class="btn-delete-premium"><i class="fas fa-trash-alt"></i></button></td></tr>',
+        tableCompetence: '<tr><td>Liderazgo y trabajo en equipo</td><td style="text-align:center;"><button class="btn-delete-premium"><i class="fas fa-trash-alt"></i></button></td></tr>',
+        tableSstRisk: '<tr><td>Riesgo Biomecánico (Postura prolongada)</td><td style="text-align:center;"><button class="btn-delete-premium"><i class="fas fa-trash-alt"></i></button></td></tr>',
+        tableSstResp: '<tr><td>Reportar actos e condiciones inseguras</td><td style="text-align:center;"><button class="btn-delete-premium"><i class="fas fa-trash-alt"></i></button></td></tr>'
+    };
+
+    Object.keys(mockRows).forEach(tableId => {
+        const tbody = document.querySelector(`#${tableId} tbody`);
+        if (tbody) tbody.innerHTML = mockRows[tableId];
+    });
 
     // Show Details immediately for Edit Mode
     document.getElementById('profileDetails').style.display = 'block';
@@ -118,7 +136,7 @@ window.addResponsibility = (text = '') => {
     const html = `
         <div id="resp_${id}" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
             <input type="text" class="swal2-input" style="margin: 0; background: white;" value="${text}" placeholder="Describa la responsabilidad...">
-            <button class="btn-icon btn-delete" title="Eliminar" onclick="removeResponsibility('resp_${id}')">➖</button>
+            <button class="btn-delete-premium" title="Eliminar" onclick="removeResponsibility('resp_${id}')"><i class="fas fa-trash-alt"></i></button>
         </div>
     `;
     container.insertAdjacentHTML('beforeend', html);
@@ -136,6 +154,9 @@ window.addSubsection = async (type) => {
         case 'training': title = 'Formación'; break;
         case 'experience': title = 'Experiencia'; break;
         case 'profesiogram': title = 'Profesiograma'; break;
+        case 'competence': title = 'Matriz de Competencias y Habilidades'; break;
+        case 'sstRisk': title = 'Identificación de Peligros y Riesgos'; break;
+        case 'sstResp': title = 'Responsabilidad SST'; break;
         case 'epp': title = 'EPP'; break;
     }
 
@@ -157,7 +178,7 @@ window.addSubsection = async (type) => {
             const row = `<tr>
                 <td>${text}</td>
                 <td style="text-align: center;">
-                     <button class="btn-icon btn-delete" title="Eliminar">➖</button>
+                     <button class="btn-delete-premium" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
                 </td>
             </tr>`;
            tbody.insertAdjacentHTML('beforeend', row);

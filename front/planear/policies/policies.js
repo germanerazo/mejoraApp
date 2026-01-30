@@ -31,9 +31,13 @@ function renderPolicies() {
     let html = '';
     policies.forEach(item => {
         html += `<tr>
-            <td>
-                <button class="btn-icon btn-edit" title="Editar" onclick="editPolicy(${item.id})">✏️</button>
-                <button class="btn-icon btn-delete" title="Eliminar" onclick="deletePolicy(${item.id})">🗑️</button>
+            <td style="display: flex; gap: 5px;">
+                <button class="btn-edit-premium" title="Editar" onclick="editPolicy(${item.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-delete-premium" title="Eliminar" onclick="deletePolicy(${item.id})">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </td>
             <td>${item.name}</td>
             <td>${item.date}</td>
@@ -51,7 +55,7 @@ window.addPolicy = async function() {
             <input id="swal-pol-name" class="swal2-input" placeholder="Nombre de la Política">
             <input type="date" id="swal-pol-date" class="swal2-input" value="${new Date().toISOString().split('T')[0]}">
             <div class="file-upload-wrapper" style="margin-top: 15px;">
-                <label for="swal-pol-file" class="btn-secondary" style="cursor: pointer; display: inline-block; padding: 10px; border: 1px dashed #ccc; width: 80%;">
+                <label for="swal-pol-file" class="btn-secondary-premium" style="cursor: pointer; display: inline-block; padding: 10px; border: 1px dashed #ccc; width: 80%;">
                     📂 Seleccionar Archivo
                 </label>
                 <input type="file" id="swal-pol-file" style="display: none;" onchange="document.getElementById('file-name-display').innerText = this.files[0] ? this.files[0].name : ''">
@@ -95,7 +99,7 @@ window.editPolicy = async function(id) {
             <input id="swal-pol-name" class="swal2-input" placeholder="Nombre de la Política" value="${item.name}">
             <input type="date" id="swal-pol-date" class="swal2-input" value="${item.date}">
             <div class="file-upload-wrapper" style="margin-top: 15px;">
-                <label for="swal-pol-file" class="btn-secondary" style="cursor: pointer; display: inline-block; padding: 10px; border: 1px dashed #ccc; width: 80%;">
+                <label for="swal-pol-file" class="btn-secondary-premium" style="cursor: pointer; display: inline-block; padding: 10px; border: 1px dashed #ccc; width: 80%;">
                     📂 Actualizar Archivo
                 </label>
                 <input type="file" id="swal-pol-file" style="display: none;" onchange="document.getElementById('file-name-display-edit').innerText = this.files[0] ? this.files[0].name : ''">

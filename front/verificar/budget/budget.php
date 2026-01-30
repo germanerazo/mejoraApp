@@ -8,7 +8,7 @@
 <!-- List View -->
 <div id="budgetListView" class="content-card">
     <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-        <button class="btn-create-orange" onclick="showCreateBudget()">Nuevo registro</button>
+        <button class="btn-new-record" onclick="showCreateBudget()"><i class="fas fa-plus-circle"></i> Nuevo registro</button>
     </div>
 
     <div class="table-responsive">
@@ -31,9 +31,9 @@
     <div class="section-header">
         <h2 class="section-title">DETALLE PRESUPUESTO</h2>
         <div style="display: flex; gap: 10px;">
-            <button class="btn-primary" onclick="saveBudget()">Guardar</button>
-            <button class="btn-secondary" onclick="hideCreateBudget()">Volver</button>
-            <button class="btn-icon" title="Imprimir" onclick="printBudget()" style="background: white; border: 1px solid #ddd; padding: 5px 10px; border-radius: 4px; cursor: pointer;">🖨️</button>
+            <button class="btn-new-record" onclick="saveBudget()"><i class="fas fa-save"></i> Guardar</button>
+            <button class="btn-secondary-premium" onclick="hideCreateBudget()"><i class="fas fa-arrow-left"></i> Volver</button>
+            <button class="btn-view-premium" title="Imprimir" onclick="printBudget()" style="color: #667eea !important;"><i class="fas fa-print"></i></button>
         </div>
     </div>
 
@@ -42,13 +42,13 @@
             <label class="input-label">Año Presupuesto</label>
             <input type="number" id="budgetYear" class="swal2-input" placeholder="Ej: 2025" style="margin: 0; background: white; width: 150px;">
         </div>
-        <button id="btnInitBudget" class="btn-primary" onclick="initBudgetYear()" style="height: 48px; margin-bottom: 1px;">Crear</button>
+        <button id="btnInitBudget" class="btn-new-record" onclick="initBudgetYear()" style="height: 48px; margin-bottom: 1px;">Crear</button>
     </div>
 
     <div id="budgetDetailSection" class="section-container" style="display: none;">
         <div class="section-header">
             <h3 class="section-title" style="font-size: 16px;">PRESUPUESTO</h3>
-            <button class="btn-create-orange" onclick="addItem()">Nuevo registro</button>
+            <button class="btn-new-record" onclick="addItem()"><i class="fas fa-plus-circle"></i> Nuevo registro</button>
         </div>
         <div class="table-responsive">
             <table class="modern-table" id="tableBudgetItems">

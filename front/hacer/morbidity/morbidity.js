@@ -31,9 +31,13 @@ function renderMorbidityList(data = morbidityData) {
     data.forEach(item => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>
-                <i class="fas fa-pencil-alt action-icon icon-edit" onclick="editMorbidity(${item.id})" title="Editar"></i>
-                <i class="fas fa-minus-circle action-icon icon-delete" onclick="deleteMorbidity(${item.id})" title="Eliminar"></i>
+            <td style="display: flex; gap: 5px;">
+                <button class="btn-edit-premium" onclick="editMorbidity(${item.id})" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-delete-premium" onclick="deleteMorbidity(${item.id})" title="Eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </td>
             <td>${item.idNum}</td>
             <td>${item.name}</td>
@@ -368,9 +372,13 @@ function renderFirstAidList(data = firstAidData) {
     data.forEach(item => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>
-                <i class="fas fa-pencil-alt action-icon icon-edit" onclick="editFirstAid(${item.id})" title="Editar"></i>
-                <i class="fas fa-minus-circle action-icon icon-delete" onclick="deleteFirstAid(${item.id})" title="Eliminar"></i>
+            <td style="display: flex; gap: 5px;">
+                <button class="btn-edit-premium" onclick="editFirstAid(${item.id})" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-delete-premium" onclick="deleteFirstAid(${item.id})" title="Eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </td>
             <td>${item.idNum}</td>
             <td>${item.name}</td>

@@ -13,10 +13,14 @@
     <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
         <input type="text" id="filterName" class="form-input" placeholder="Nombre..." style="width: 200px;">
         <input type="text" id="filterId" class="form-input" placeholder="Nro Identificación..." style="width: 150px;">
-        <button class="btn-orange" onclick="filterEntry()">Filtrar</button>
+        <button class="btn-filter-premium" onclick="filterEntry()">
+            <i class="fas fa-filter"></i> Filtrar
+        </button>
         <div style="flex: 1;"></div>
         <button class="btn-secondary" onclick="showSociodemographicProfile()">Perfil Sociodemografico</button>
-        <button class="btn-orange" onclick="showCreateEntry()">Nuevo Empleado</button>
+        <button class="btn-new-record" onclick="showCreateEntry()">
+            <i class="fas fa-user-plus"></i> Nuevo Empleado
+        </button>
     </div>
 
     <!-- Table -->
@@ -43,7 +47,7 @@
 <div id="entryGraphView" class="content-card" style="display: none;">
     <div class="section-header">
         <h2 class="section-title">PERFIL SOCIODEMOGRÁFICO</h2>
-        <button class="btn-secondary" onclick="hideSociodemographicProfile()">Volver</button>
+        <button class="btn-secondary-premium" onclick="hideSociodemographicProfile()"><i class="fas fa-arrow-left"></i> Volver</button>
     </div>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px;">
         <div style="background: white; padding: 10px; border-radius: 8px; border: 1px solid #eee; height: 300px;">
@@ -86,8 +90,8 @@
     <div class="section-header">
         <h2 class="section-title">MEDICINA PREVENTIVA DEL TRABAJO</h2>
         <div style="display: flex; gap: 10px;">
-            <button class="btn-orange" onclick="saveEntry()">Guardar</button>
-            <button class="btn-secondary" onclick="hideCreateEntry()">Volver</button>
+            <button class="btn-new-record" onclick="saveEntry()"><i class="fas fa-save"></i> Guardar</button>
+            <button class="btn-secondary-premium" onclick="hideCreateEntry()"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
     </div>
 
@@ -248,7 +252,7 @@
                                 <input type="file" id="fieldExamFile" class="form-input" style="font-size: 13px;">
                             </div>
                             <div style="display: flex; align-items: flex-end;">
-                                <button type="button" class="btn-orange" onclick="addMedicalExam()" style="padding: 6px 12px; font-size: 13px;">+ Cargar</button>
+                                <button type="button" class="btn-new-record" onclick="addMedicalExam()" style="padding: 6px 12px; font-size: 13px;">+ Cargar</button>
                             </div>
                         </div>
                         
@@ -314,7 +318,7 @@
                             <input type="file" id="fieldPeriodicFile" class="form-input" style="font-size: 13px;">
                         </div>
                         <div style="display: flex; align-items: flex-end;">
-                            <button type="button" class="btn-orange" onclick="addPeriodicExam()" style="padding: 6px 12px; font-size: 13px;">+ Cargar</button>
+                            <button type="button" class="btn-new-record" onclick="addPeriodicExam()" style="padding: 6px 12px; font-size: 13px;">+ Cargar</button>
                         </div>
                     </div>
                     
@@ -333,7 +337,7 @@
                 <!-- 8. Recomendaciones Médicas Periódicas -->
                 <div class="form-section-title">8. RECOMENDACIONES PERIÓDICAS</div>
                 <div style="text-align: right; margin-bottom: 10px;">
-                    <button type="button" class="btn-orange" onclick="showPeriodicRecoModal()">+ Agregar Recomendación</button>
+                    <button type="button" class="btn-new-record" onclick="showPeriodicRecoModal()">+ Agregar Recomendación</button>
                 </div>
                 
                 <table class="recommendations-table" id="periodicRecoTable">
@@ -352,7 +356,7 @@
                 <!-- 9. Restricciones Médicas Periódicas -->
                 <div class="form-section-title">9. RESTRICCIONES PERIÓDICAS</div>
                 <div style="text-align: right; margin-bottom: 10px;">
-                    <button type="button" class="btn-orange" onclick="showPeriodicRestricModal()">+ Agregar Restricción</button>
+                    <button type="button" class="btn-new-record" onclick="showPeriodicRestricModal()">+ Agregar Restricción</button>
                 </div>
                 
                 <table class="recommendations-table" id="periodicRestricTable">
@@ -381,7 +385,7 @@
                             <input type="file" id="fieldRetirementFile" class="form-input" style="font-size: 13px;">
                         </div>
                         <div style="display: flex; align-items: flex-end;">
-                            <button type="button" class="btn-orange" onclick="addRetirementExam()" style="padding: 6px 12px; font-size: 13px;">+ Cargar</button>
+                            <button type="button" class="btn-new-record" onclick="addRetirementExam()" style="padding: 6px 12px; font-size: 13px;">+ Cargar</button>
                         </div>
                     </div>
                     
@@ -426,8 +430,8 @@
         </div>
 
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-            <button class="btn-secondary" onclick="hideRecommendationModal()">Cancelar</button>
-            <button class="btn-orange" onclick="addRecommendationFromModal()">Guardar</button>
+            <button class="btn-secondary-premium" onclick="hideRecommendationModal()"><i class="fas fa-times"></i> Cancelar</button>
+            <button class="btn-new-record" onclick="addRecommendationFromModal()">Guardar</button>
         </div>
     </div>
 </div>
@@ -456,8 +460,8 @@
         </div>
 
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-            <button class="btn-secondary" onclick="hideRestricModal()">Cancelar</button>
-            <button class="btn-orange" onclick="addRestricFromModal()">Guardar</button>
+            <button class="btn-secondary-premium" onclick="hideRestricModal()"><i class="fas fa-times"></i> Cancelar</button>
+            <button class="btn-new-record" onclick="addRestricFromModal()">Guardar</button>
         </div>
     </div>
 </div>
@@ -486,8 +490,8 @@
         </div>
 
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-            <button class="btn-secondary" onclick="hidePeriodicRecoModal()">Cancelar</button>
-            <button class="btn-orange" onclick="addPeriodicRecoFromModal()">Guardar</button>
+            <button class="btn-secondary-premium" onclick="hidePeriodicRecoModal()"><i class="fas fa-times"></i> Cancelar</button>
+            <button class="btn-new-record" onclick="addPeriodicRecoFromModal()">Guardar</button>
         </div>
     </div>
 </div>
@@ -516,8 +520,8 @@
         </div>
 
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-            <button class="btn-secondary" onclick="hidePeriodicRestricModal()">Cancelar</button>
-            <button class="btn-orange" onclick="addPeriodicRestricFromModal()">Guardar</button>
+            <button class="btn-secondary-premium" onclick="hidePeriodicRestricModal()"><i class="fas fa-times"></i> Cancelar</button>
+            <button class="btn-new-record" onclick="addPeriodicRestricFromModal()">Guardar</button>
         </div>
     </div>
 </div>

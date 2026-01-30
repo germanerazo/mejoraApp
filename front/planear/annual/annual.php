@@ -1,5 +1,6 @@
-<!-- CSS Import -->
 <link rel="stylesheet" href="../planear/annual/annual.css?v=1.0">
+<link rel="stylesheet" href="../styles/colors.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <div class="page-header">
     <h1 class="page-title">PLAN DE TRABAJO ANUAL</h1>
@@ -8,7 +9,9 @@
 <!-- List View -->
 <div id="annualListView" class="content-card">
     <div style="text-align: center; margin-bottom: 20px;">
-        <button class="btn-create-orange" onclick="showCreateAnnual()">Nuevo Registro</button>
+        <button class="btn-new-record" onclick="showCreateAnnual()">
+            <i class="fas fa-plus-circle"></i> Nuevo Registro
+        </button>
     </div>
 
     <div class="table-container">
@@ -32,8 +35,10 @@
     <div class="section-header">
         <h2 class="section-title">Nuevo Registro</h2>
         <div style="display: flex; gap: 10px;">
-            <button class="btn-create-orange" onclick="saveAnnual()">Guardar</button>
-            <button class="btn-secondary" onclick="hideCreateAnnual()">Volver</button>
+            <button class="btn-new-record" onclick="saveAnnual()">
+                <i class="fas fa-save"></i> Guardar
+            </button>
+            <button class="btn-secondary-premium" onclick="hideCreateAnnual()"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
     </div>
 
@@ -59,8 +64,10 @@
             <div id="detailPeriod" style="color: #666; font-weight: bold; margin-top: 5px;"></div>
         </div>
         <div>
-            <button class="btn-create-orange" style="margin-right: 10px;" onclick="printAnnual()">Imprimir</button>
-            <button class="btn-secondary" onclick="hideAnnualDetail()">Volver</button>
+            <button class="btn-hover-graph" style="margin-right: 10px;" onclick="printAnnual()">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+            <button class="btn-secondary-premium" onclick="hideAnnualDetail()"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
     </div>
 
@@ -71,7 +78,9 @@
     
     <!-- Objectives (Organizational) -->
     <div style="margin-bottom: 20px;">
-        <button class="btn-create-orange" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('organizational')">Agregar Objetivo y Meta</button>
+        <button class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 15px;" onclick="addObjective('organizational')">
+            <i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta
+        </button>
         <table class="annual-table" id="tableObjectivesOrganizational" style="margin-top: 5px;">
             <thead>
                 <tr>
@@ -86,7 +95,7 @@
 
     <!-- Activities (Organizational) -->
     <div style="margin-bottom: 10px;">
-        <button class="btn-create-orange" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('organizational')">Nuevo Registro</button>
+        <button class="btn-new-record" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('organizational')"><i class="fas fa-plus-circle"></i> Nuevo Registro</button>
     </div>
     <div class="table-container">
         <table class="annual-table" id="tableOrganizational">
@@ -112,7 +121,7 @@
 
     <!-- Objectives (Programs) -->
     <div style="margin-bottom: 20px;">
-        <button class="btn-create-orange" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('programs')">Agregar Objetivo y Meta</button>
+        <button class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('programs')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
         <table class="annual-table" id="tableObjectivesPrograms" style="margin-top: 5px;">
             <thead>
                 <tr>
@@ -126,7 +135,7 @@
     </div>
 
     <div style="margin-bottom: 10px;">
-        <button class="btn-create-orange" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('programs')">Nuevo Registro</button>
+        <button class="btn-new-record" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('programs')"><i class="fas fa-plus-circle"></i> Nuevo Registro</button>
     </div>
     <div class="table-container">
         <table class="annual-table" id="tablePrograms">
@@ -152,7 +161,7 @@
 
     <!-- Objectives (Inspections) -->
     <div style="margin-bottom: 20px;">
-        <button class="btn-create-orange" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('inspections')">Agregar Objetivo y Meta</button>
+        <button class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('inspections')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
         <table class="annual-table" id="tableObjectivesInspections" style="margin-top: 5px;">
             <thead>
                 <tr>
@@ -166,7 +175,7 @@
     </div>
 
     <div style="margin-bottom: 10px;">
-        <button class="btn-create-orange" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('inspections')">Nuevo Registro</button>
+        <button class="btn-new-record" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('inspections')"><i class="fas fa-plus-circle"></i> Nuevo Registro</button>
     </div>
     <div class="table-container">
         <table class="annual-table" id="tableInspections">
@@ -192,7 +201,7 @@
 
     <!-- Objectives (Audits) -->
     <div style="margin-bottom: 20px;">
-        <button class="btn-create-orange" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('audits')">Agregar Objetivo y Meta</button>
+        <button class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('audits')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
         <table class="annual-table" id="tableObjectivesAudits" style="margin-top: 5px;">
             <thead>
                 <tr>
@@ -206,7 +215,7 @@
     </div>
 
     <div style="margin-bottom: 10px;">
-        <button class="btn-create-orange" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('audits')">Nuevo Registro</button>
+        <button class="btn-new-record" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('audits')"><i class="fas fa-plus-circle"></i> Nuevo Registro</button>
     </div>
     <div class="table-container">
         <table class="annual-table" id="tableAudits">
@@ -232,7 +241,7 @@
 
     <!-- Objectives (Vulnerability) -->
     <div style="margin-bottom: 20px;">
-        <button class="btn-create-orange" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('vulnerability')">Agregar Objetivo y Meta</button>
+        <button class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('vulnerability')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
         <table class="annual-table" id="tableObjectivesVulnerability" style="margin-top: 5px;">
             <thead>
                 <tr>
@@ -246,7 +255,7 @@
     </div>
 
     <div style="margin-bottom: 10px;">
-        <button class="btn-create-orange" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('vulnerability')">Nuevo Registro</button>
+        <button class="btn-new-record" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('vulnerability')"><i class="fas fa-plus-circle"></i> Nuevo Registro</button>
     </div>
     <div class="table-container">
         <table class="annual-table" id="tableVulnerability">
@@ -272,7 +281,7 @@
 
     <!-- Objectives (Management Review) -->
     <div style="margin-bottom: 20px;">
-        <button class="btn-create-orange" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('managementRelease')">Agregar Objetivo y Meta</button>
+        <button class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('managementRelease')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
         <table class="annual-table" id="tableObjectivesManagementReview" style="margin-top: 5px;">
             <thead>
                 <tr>
@@ -286,7 +295,7 @@
     </div>
 
     <div style="margin-bottom: 10px;">
-        <button class="btn-create-orange" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('managementRelease')">Nuevo Registro</button>
+        <button class="btn-new-record" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('managementRelease')"><i class="fas fa-plus-circle"></i> Nuevo Registro</button>
     </div>
     <div class="table-container">
         <table class="annual-table" id="tableManagementReview">
@@ -312,7 +321,7 @@
 
     <!-- Objectives (Medical) -->
     <div style="margin-bottom: 20px;">
-        <button class="btn-create-orange" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('medical')">Agregar Objetivo y Meta</button>
+        <button class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('medical')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
         <table class="annual-table" id="tableObjectivesMedicalExams" style="margin-top: 5px;">
             <thead>
                 <tr>
@@ -326,7 +335,9 @@
     </div>
 
     <div style="margin-bottom: 10px;">
-        <button class="btn-create-orange" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('medical')">Nuevo Registro</button>
+        <button class="btn-new-record" style="font-size: 0.9rem; padding: 5px 15px;" onclick="addActivity('medical')">
+            <i class="fas fa-plus-circle"></i> Nuevo Registro
+        </button>
     </div>
     <div class="table-container">
         <table class="annual-table" id="tableMedicalExams">
@@ -356,7 +367,7 @@
             <div style="text-align: center; flex: 1; max-width: 300px;">
                 <div style="margin-bottom: 10px; border: 1px dashed #ccc; height: 100px; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="document.getElementById('fileSig1').click()">
                     <img id="previewSig1" src="" alt="Firma" style="max-height: 100%; max-width: 100%; display: none;">
-                    <span id="placeholderSig1" style="color: #999; font-size: 0.8rem;">Clic para agregar firma</span>
+                    <span id="placeholderSig1" style="color: #999; font-size: 0.8rem;"><i class="fas fa-signature"></i> Clic para agregar firma</span>
                 </div>
                 <input type="file" id="fileSig1" style="display: none;" accept="image/*" onchange="handleSignatureSelect(this, 'previewSig1', 'placeholderSig1')">
                 
@@ -370,7 +381,7 @@
             <div style="text-align: center; flex: 1; max-width: 300px;">
                 <div style="margin-bottom: 10px; border: 1px dashed #ccc; height: 100px; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="document.getElementById('fileSig2').click()">
                     <img id="previewSig2" src="" alt="Firma" style="max-height: 100%; max-width: 100%; display: none;">
-                    <span id="placeholderSig2" style="color: #999; font-size: 0.8rem;">Clic para agregar firma</span>
+                    <span id="placeholderSig2" style="color: #999; font-size: 0.8rem;"><i class="fas fa-signature"></i> Clic para agregar firma</span>
                 </div>
                 <input type="file" id="fileSig2" style="display: none;" accept="image/*" onchange="handleSignatureSelect(this, 'previewSig2', 'placeholderSig2')">
                 
@@ -382,7 +393,7 @@
 
         </div>
         <div style="text-align: center; margin-top: 30px;">
-            <button class="btn-create-orange" onclick="saveSignatures()">Guardar Firmas</button>
+            <button class="btn-new-record" onclick="saveSignatures()"><i class="fas fa-save"></i> Guardar Firmas</button>
         </div>
     </div>
 </div>
@@ -392,8 +403,8 @@
     <div class="section-header">
         <h2 class="section-title">OBJETIVOS Y METAS</h2>
         <div style="display: flex; gap: 10px;">
-            <button class="btn-create-orange" onclick="saveObjective()">Guardar</button>
-            <button class="btn-secondary" onclick="hideObjectiveView()">Volver</button>
+            <button class="btn-new-record" onclick="saveObjective()"><i class="fas fa-save"></i> Guardar</button>
+            <button class="btn-secondary-premium" onclick="hideObjectiveView()"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
     </div>
 
@@ -418,8 +429,8 @@
     <div class="section-header">
         <h2 class="section-title">NUEVA ACTIVIDAD</h2>
         <div style="display: flex; gap: 10px;">
-            <button class="btn-create-orange" onclick="saveActivity()">Guardar</button>
-            <button class="btn-secondary" onclick="hideActivityView()">Volver</button>
+            <button class="btn-new-record" onclick="saveActivity()"><i class="fas fa-save"></i> Guardar</button>
+            <button class="btn-secondary-premium" onclick="hideActivityView()"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
     </div>
 

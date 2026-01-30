@@ -1,5 +1,6 @@
-<!-- CSS Import -->
 <link rel="stylesheet" href="../hacer/copasst/copasst.css?v=1.0">
+<link rel="stylesheet" href="../styles/colors.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <div class="page-header">
     <h1 class="page-title">CONFORMACION COPASST</h1>
@@ -8,8 +9,8 @@
 <!-- List View -->
 <div id="copasstListView" class="content-card">
     <div style="margin-bottom: 20px;">
-        <button class="btn-orange" onclick="showCreateCopasst()">
-            <span>+</span> Cargar acta
+        <button class="btn-new-record" onclick="showCreateCopasst()">
+            <i class="fas fa-file-upload"></i> Cargar acta
         </button>
     </div>
 
@@ -35,8 +36,8 @@
     <div class="section-header">
         <h2 class="section-title">Cargar Nueva Acta</h2>
         <div style="display: flex; gap: 10px;">
-            <button class="btn-orange" onclick="saveCopasst()">Guardar</button>
-            <button class="btn-secondary" onclick="hideCreateCopasst()">Volver</button>
+            <button class="btn-new-record" onclick="saveCopasst()"><i class="fas fa-save"></i> Guardar</button>
+            <button class="btn-secondary-premium" onclick="hideCreateCopasst()"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
     </div>
 
@@ -54,7 +55,15 @@
 
             <div class="form-group">
                 <label class="form-label">Archivo (PDF):</label>
-                <input type="file" id="fieldCopasstFile" accept=".pdf,.doc,.docx" style="width: 100%;">
+                <div class="file-upload-wrapper">
+                    <input type="file" id="fieldCopasstFile" class="file-upload-input" accept=".pdf,.doc,.docx" onchange="updateCopasstFileName(this)">
+                    <div class="file-upload-content">
+                        <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
+                        <div class="file-upload-text">Haz clic o arrastra el acta aquí</div>
+                        <div class="file-upload-hint">Formatos soportados: PDF, DOC</div>
+                        <div id="copasstFileNameDisplay" class="file-upload-filename"></div>
+                    </div>
+                </div>
             </div>
         </form>
     </div>

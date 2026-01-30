@@ -4,7 +4,7 @@
 
 /* Specific styles for Legal Management */
 
-.btn-create-orange {
+.btn-new-record {
     background-color: var(--fondo);
     color: white;
     border: none;
@@ -20,7 +20,7 @@
     transition: background 0.2s;
 }
 
-.btn-create-orange:hover {
+.btn-new-record:hover {
     background-color: var(--color6);
 }
 

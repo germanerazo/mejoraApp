@@ -132,7 +132,7 @@ window.renderRiskChart = () => {
     riskChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['No Aceptable', 'Control Específico', 'Mejorable', 'Aceptable'],
+            labels: ['¡Manos a la obra ya!', 'Cuidado, falta un ajuste', 'Echémosle un ojo', '¡Relájate, vamos bien!'],
             datasets: [{
                 label: 'Cantidad de Riesgos',
                 data: [totalNoAceptable, totalConControl, totalMejorable, totalAceptable],

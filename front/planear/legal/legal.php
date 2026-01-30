@@ -28,15 +28,21 @@
             <label for="filterNorma">Norma</label>
             <input type="text" id="filterNorma" class="filter-input" placeholder="Buscar por norma...">
         </div>
-        <button class="btn-create-orange" onclick="filterLegal()" style="height: 35px; margin-bottom: 2px;">Filtrar</button>
+        <button class="btn-filter-premium" onclick="filterLegal()">
+            <i class="fas fa-filter"></i> Filtrar
+        </button>
     </div>
 
     <!-- Actions -->
-    <div style="margin-bottom: 15px; display: flex; gap: 10px;">
-        <button class="btn-create-orange" onclick="showCreateLegal()">Nuevo Registro</button>
-        <button class="btn-create-orange" onclick="deleteSelected()" style="background-color: #e74c3c;">Eliminar Gestión legal</button>
+    <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+        <button class="btn-new-record" onclick="showCreateLegal()">
+            <i class="fas fa-plus-circle"></i> Nuevo Registro Legal
+        </button>
+        <button class="btn-new-record" onclick="deleteSelected()" style="background-color: #e74c3c;">Eliminar Gestión legal</button>
         <!-- Graph Button -->
-        <button class="btn-icon" title="Graficar" onclick="showLegalGraph()" style="background: white; border: 1px solid #ddd; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 1.2rem;">📊</button>
+        <button class="btn-hover-graph" title="Graficar Cumplimiento" onclick="showLegalGraph()">
+            <i class="fas fa-chart-pie"></i> Ver Gráfica de Cumplimiento
+        </button>
     </div>
 
     <!-- Table -->
@@ -72,8 +78,8 @@
     <div class="section-header">
         <h2 class="section-title" id="legalFormTitle">NUEVO REGISTRO MATRIZ LEGAL</h2>
         <div style="display: flex; gap: 10px;">
-            <button class="btn-create-orange" onclick="saveLegal()">Guardar</button>
-            <button class="btn-secondary" onclick="hideCreateLegal()">Volver</button>
+            <button class="btn-new-record" onclick="saveLegal()"><i class="fas fa-save"></i> Guardar</button>
+            <button class="btn-secondary-premium" onclick="hideCreateLegal()"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
     </div>
 
@@ -148,8 +154,8 @@
         <h2 class="section-title">GRÁFICA DE CUMPLIMIENTO LEGAL (Existe Actividad)</h2>
         <div style="display: flex; gap: 10px;">
              <!-- Print Button -->
-             <button class="btn-icon" title="Imprimir Gráfica" onclick="printLegalGraph()" style="background: white; border: 1px solid #ddd; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 1.2rem;">🖨️</button>
-            <button class="btn-secondary" onclick="hideLegalGraph()">Volver</button>
+             <button class="btn-view-premium" title="Imprimir Gráfica" onclick="printLegalGraph()" style="color: #667eea !important;"><i class="fas fa-print"></i></button>
+            <button class="btn-secondary-premium" onclick="hideLegalGraph()"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
     </div>
     

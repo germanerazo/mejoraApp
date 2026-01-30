@@ -4,12 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Gestión de Accesos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles/colors.css">
 </head>
 
 <body>
     <div class="container">
         <h1>Gestión de Accesos</h1>
-        <button class="add-btn" onclick="openAccessModal()">+ Nuevo Acceso</button>
+        <button class="btn-new-record" onclick="openAccessModal()">
+            <i class="fas fa-plus-circle"></i> Nuevo Acceso
+        </button>
         <table id="accessTable" class="display">
             <thead>
                 <tr>

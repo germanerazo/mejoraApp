@@ -221,12 +221,16 @@ function renderObjectives() {
     let html = '';
     strategicData.objectives.forEach(item => {
         html += `<tr>
-            <td style="white-space: nowrap;">
-                <button class="btn-icon btn-delete" title="Eliminar" onclick="deleteObjective(${item.id})">🗑️</button>
+            <td style="white-space: nowrap; display: flex; gap: 5px;">
+                <button class="btn-delete-premium" title="Eliminar" onclick="deleteObjective(${item.id})">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </td>
             <td>${item.text}</td>
             <td>
-                 <button class="btn-icon btn-view" title="Ver Indicadores" onclick="showIndicators(${item.id})">👁️</button>
+                 <button class="btn-view-premium" title="Ver Indicadores" onclick="showIndicators(${item.id})">
+                    <i class="fas fa-chart-line"></i>
+                 </button>
             </td>
         </tr>`;
     });
@@ -365,9 +369,13 @@ function renderPrinciples() {
     let html = '';
     strategicData.principles.forEach(item => {
         html += `<tr>
-            <td style="white-space: nowrap;">
-                <button class="btn-icon btn-edit" title="Editar" onclick="editPrinciple(${item.id})" style="margin-right: 5px;">✏️</button>
-                <button class="btn-icon btn-delete" title="Eliminar" onclick="deletePrinciple(${item.id})">🗑️</button>
+            <td style="white-space: nowrap; display: flex; gap: 5px;">
+                <button class="btn-edit-premium" title="Editar" onclick="editPrinciple(${item.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-delete-premium" title="Eliminar" onclick="deletePrinciple(${item.id})">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </td>
             <td>${item.text}</td>
         </tr>`;

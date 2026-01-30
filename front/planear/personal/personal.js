@@ -79,7 +79,9 @@ window.renderPersonalTable = (data) => {
             <td>${item.rendicion}</td>
             <td>${item.frecuencia}</td>
             <td style="text-align: center;">
-                 <button class="btn-icon" title="Imprimir" onclick="printPersonal('${item.cargo}')" style="background: none; border: none; cursor: pointer; color: orange; font-size: 1.2rem;">🖨️</button>
+                 <button class="btn-view-premium" title="Imprimir" onclick="printPersonal('${item.cargo}')" style="color: #667eea !important;">
+                    <i class="fas fa-print"></i>
+                 </button>
             </td>
         </tr>`;
     });

@@ -323,15 +323,15 @@ function renderTable(data) {
                 <td><span class="badge ${badgeClass}">${item.status}</span></td>
                 <td>${item.created}</td>
                 <td>${item.modified}</td>
-                <td class="actions-cell">
-                    <button class="btn-icon btn-view" onclick="viewDetails('${item.code}')" title="Ver">
-                        👁️
+                <td class="actions-cell" style="display: flex; gap: 8px; justify-content: center;">
+                    <button class="btn-view-premium" onclick="viewDetails('${item.code}')" title="Ver Detalle">
+                        <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn-icon btn-edit" onclick="editProcess('${item.code}')" title="Editar">
-                        ✏️
+                    <button class="btn-edit-premium" onclick="editProcess('${item.code}')" title="Editar">
+                        <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn-icon btn-delete" onclick="deleteProcess('${item.code}')" title="Eliminar">
-                        🗑️
+                    <button class="btn-delete-premium" onclick="deleteProcess('${item.code}')" title="Eliminar">
+                        <i class="fas fa-trash-alt"></i>
                     </button>
                 </td>
             </tr>

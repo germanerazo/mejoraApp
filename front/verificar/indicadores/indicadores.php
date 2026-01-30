@@ -44,7 +44,7 @@
     <div id="view-indicadores" class="card-container" style="display:none;">
         <div class="section-header flex-header">
             <h2 id="titulo-indicadores"><i class="fas fa-chart-line"></i> Listado de Indicadores</h2>
-            <button class="btn-secondary" onclick="mostrarPeriodos()">
+            <button class="btn-secondary-premium" onclick="mostrarPeriodos()"><i class="fas fa-arrow-left"></i> Volver a Periodos
                 <i class="fas fa-arrow-left"></i> Cambiar Periodo
             </button>
         </div>
@@ -77,7 +77,7 @@
     <div id="view-detalle-indicador" class="card-container" style="display:none;">
         <div class="section-header flex-header">
             <h2><i class="fas fa-edit"></i> Detalle del Indicador</h2>
-            <button class="btn-secondary" onclick="volverAListado()">
+            <button class="btn-secondary-premium" onclick="volverAListado()"><i class="fas fa-arrow-left"></i> Volver al Listado
                 <i class="fas fa-arrow-left"></i> Volver al Listado
             </button>
         </div>
@@ -129,8 +129,8 @@
             <div class="results-section">
                 <div class="results-header-actions">
                     <h3><i class="fas fa-table"></i> Resultados por Periodo</h3>
-                    <button type="button" class="btn-action view" onclick="generarGrafica()">
-                        <i class="fas fa-chart-line"></i> Graficar
+                    <button type="button" class="btn-hover-graph" onclick="generarGrafica()">
+                        <i class="fas fa-chart-line"></i> Graficar Resultados
                     </button>
                 </div>
                 <div class="table-responsive">
