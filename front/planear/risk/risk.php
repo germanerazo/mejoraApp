@@ -14,14 +14,14 @@
     <!-- Actions -->
     <div class="risk-actions" style="display: flex; justify-content: space-between; margin-bottom: 20px;">
         <div style="display: flex; gap: 10px;">
-             <!-- Graph Button -->
-             <button class="btn-hover-graph" title="Graficar Resultados" onclick="showRiskGraph()">
+            <!-- Graph Button -->
+            <button class="btn-hover-graph" title="Graficar Resultados" onclick="showRiskGraph()">
                 <i class="fas fa-chart-pie"></i> Ver Gráfica de Riesgos
-             </button>
+            </button>
         </div>
         <div>
-             <!-- Print Button -->
-             <button class="btn-view-premium" title="Imprimir" onclick="printRisk()" style="color: #667eea !important;"><i class="fas fa-print"></i></button>
+            <!-- Print Button -->
+            <button class="btn-view-premium" title="Imprimir" onclick="printRisk()" style="color: #667eea !important;"><i class="fas fa-print"></i></button>
         </div>
     </div>
 
@@ -67,7 +67,7 @@
     <h3 class="risk-section-title">Medidas de Prevención y de Control</h3>
     <div class="table-responsive">
         <table class="risk-matrix-table" id="tableRiskPrevention">
-             <thead>
+            <thead>
                 <tr>
                     <th style="text-align: left;">Nombre</th>
                 </tr>
@@ -84,12 +84,12 @@
     <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
         <h2 class="section-title" style="margin: 0; font-size: 1.5rem; color: #2c3e50;">GRÁFICA DE RIESGOS</h2>
         <div style="display: flex; gap: 10px;">
-             <!-- Print Graph Button -->
-             <button class="btn-view-premium" title="Imprimir Gráfica" onclick="printRiskGraph()" style="color: #667eea !important;"><i class="fas fa-print"></i></button>
+            <!-- Print Graph Button -->
+            <button class="btn-view-premium" title="Imprimir Gráfica" onclick="printRiskGraph()" style="color: #667eea !important;"><i class="fas fa-print"></i></button>
             <button class="btn-secondary-premium" onclick="hideRiskGraph()" style="padding: 8px 15px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px; cursor: pointer;">Volver</button>
         </div>
     </div>
-    
+
     <div style="width: 100%; height: 500px; display: flex; justify-content: center;">
         <canvas id="riskChart"></canvas>
     </div>

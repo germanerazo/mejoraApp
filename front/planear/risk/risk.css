@@ -194,3 +194,110 @@
         print-color-adjust: exact;
     }
 }
+
+/* Consolidation Table Styles */
+.tag-simple {
+    display: inline-block;
+    padding: 3px 8px;
+    background-color: #f1f2f6;
+    color: #57606f;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.badge-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.badge-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.badge-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Programa de Gestión Styles */
+.section-subtitle {
+    font-size: 1.1rem;
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.form-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: #329bd6;
+    box-shadow: 0 0 0 3px rgba(50, 155, 214, 0.1);
+}
+
+.peligro-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: #856404;
+    font-weight: 500;
+}
+
+.peligro-tag:hover {
+    background-color: #ffe8a1;
+}
+
+.empty-state {
+    text-align: center;
+    color: #999;
+    padding: 30px;
+    font-style: italic;
+}
