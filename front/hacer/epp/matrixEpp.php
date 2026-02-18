@@ -15,37 +15,96 @@
             display: flex;
             justify-content: flex-end;
             margin-bottom: 20px;
+            gap: 15px;
+            align-items: center;
         }
 
         .filter-select {
             padding: 10px;
             border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-right: 15px;
-            min-width: 200px;
+            border-radius: 6px;
+            min-width: 250px;
+            font-size: 0.95rem;
+            background-color: white;
+            color: #333;
         }
 
-        .matrix-table {
+        .btn-add {
+            background-color: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .btn-add:hover {
+            background-color: #219150;
+            transform: translateY(-1px);
+        }
+
+        .modern-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.9rem;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
         }
 
-        .matrix-table th, .matrix-table td {
-            padding: 12px;
-            border: 1px solid #e0e0e0;
+        .modern-table th, .modern-table td {
+            padding: 15px;
             text-align: left;
-            vertical-align: top;
+            border-bottom: 1px solid #f0f0f0;
         }
 
-        .matrix-table th {
-            background-color: #ecf0f1;
-            color: #2c3e50;
-            font-weight: 600;
+        .modern-table th {
+            background-color: #34495e;
+            color: white;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.9rem;
         }
 
-        .matrix-table tr:hover {
-            background-color: #fafafa;
+        .modern-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .action-btn {
+            border: none;
+            border-radius: 4px;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 0 2px;
+            color: white;
+        }
+
+        .action-btn.edit {
+            background-color: #3498db;
+        }
+
+        .action-btn.edit:hover {
+            background-color: #2980b9;
+        }
+
+        .action-btn.delete {
+            background-color: #e74c3c;
+        }
+
+        .action-btn.delete:hover {
+            background-color: #c0392b;
         }
     </style>
 </head>
@@ -73,7 +132,7 @@
         </div>
 
         <div style="overflow-x: auto;">
-            <table class="matrix-table" id="matrixTable">
+            <table class="modern-table" id="matrixTable">
                 <thead>
                     <tr>
                         <th style="width: 15%;">Cargo</th>

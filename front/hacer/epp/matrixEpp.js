@@ -187,24 +187,63 @@ window.editMatrixEntry = (id) => {
     const item = matrixData.find(m => m.id === id);
     if (!item) return;
 
+    // Generate options with selected state
+    const eppOptions = eppList.map(e => `<option value="${e.id}" data-norma="${e.standard}" ${e.name === item.epp ? 'selected' : ''}>${e.name}</option>`).join('');
+    const cargoOptions = cargosList.map(c => `<option value="${c}" ${c === item.cargo ? 'selected' : ''}>${c}</option>`).join('');
+
     Swal.fire({
         title: 'Editar Asignación',
+        width: '700px',
         html: `
-            <div style="text-align: left;">
-                <label>Frecuencia</label>
-                <input id="swal-freq" class="swal2-input" value="${item.frecuencia}">
-                <label>Almacenamiento</label>
-                <input id="swal-storage" class="swal2-input" value="${item.almacenamiento}">
-                <label>Mantenimiento</label>
-                <input id="swal-maint" class="swal2-input" value="${item.mantenimiento}">
-                <label>Disposición</label>
-                <input id="swal-disposal" class="swal2-input" value="${item.disposicion}">
+            <div style="text-align: left; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label>Cargo</label>
+                    <select id="swal-cargo" class="swal2-input" style="margin: 5px 0; width: 100%;">${cargoOptions}</select>
+                </div>
+                <div>
+                    <label>Elemento (EPP)</label>
+                    <select id="swal-epp" class="swal2-input" style="margin: 5px 0; width: 100%;">${eppOptions}</select>
+                </div>
+                <div style="grid-column: span 2;">
+                    <label>Frecuencia de Reposición</label>
+                    <select id="swal-freq" class="swal2-input" style="margin: 5px 0; width: 100%;">
+                        <option ${item.frecuencia === 'Diaria' ? 'selected' : ''}>Diaria</option>
+                        <option ${item.frecuencia === 'Semanal' ? 'selected' : ''}>Semanal</option>
+                        <option ${item.frecuencia === 'Mensual' ? 'selected' : ''}>Mensual</option>
+                        <option ${item.frecuencia === 'Bimestral' ? 'selected' : ''}>Bimestral</option>
+                        <option ${item.frecuencia === 'Trimestral' ? 'selected' : ''}>Trimestral</option>
+                        <option ${item.frecuencia === 'Semestral' ? 'selected' : ''}>Semestral</option>
+                        <option ${item.frecuencia === 'Anual' ? 'selected' : ''}>Anual</option>
+                        <option ${item.frecuencia === 'Según deteriorio' ? 'selected' : ''}>Según deteriorio</option>
+                    </select>
+                </div>
+                <div style="grid-column: span 2;">
+                    <label>Almacenamiento</label>
+                    <input id="swal-storage" class="swal2-input" style="margin: 5px 0; width: 100%;" value="${item.almacenamiento}">
+                </div>
+                <div style="grid-column: span 2;">
+                    <label>Mantenimiento</label>
+                    <input id="swal-maint" class="swal2-input" style="margin: 5px 0; width: 100%;" value="${item.mantenimiento}">
+                </div>
+                <div style="grid-column: span 2;">
+                    <label>Disposición Final</label>
+                    <input id="swal-disposal" class="swal2-input" style="margin: 5px 0; width: 100%;" value="${item.disposicion}">
+                </div>
             </div>
         `,
         showCancelButton: true,
         confirmButtonText: 'Actualizar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#3498db',
         preConfirm: () => {
+            const eppSelect = document.getElementById('swal-epp');
+            const eppName = eppSelect.options[eppSelect.selectedIndex].text;
+            const norma = eppSelect.options[eppSelect.selectedIndex].getAttribute('data-norma');
+
             return {
+                cargo: document.getElementById('swal-cargo').value,
+                epp: eppName,
+                norma: norma,
                 frecuencia: document.getElementById('swal-freq').value,
                 almacenamiento: document.getElementById('swal-storage').value,
                 mantenimiento: document.getElementById('swal-maint').value,

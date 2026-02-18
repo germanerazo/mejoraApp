@@ -10,6 +10,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const userProfileSpan = document.getElementById('userProfile');
   let collapsed = false;
 
+  // Fix Swal layout shift
+  if (typeof Swal !== 'undefined') {
+      window.Swal = Swal.mixin({
+          heightAuto: false
+      });
+  }
+
   const resetExpiration = () => {
     const newExpiration = Date.now() + config.EXPIRATION_MINUTES * 60 * 1000;
     sessionStorage.setItem('expiresAt', newExpiration);

@@ -66,6 +66,42 @@
         .btn-download:hover {
             background-color: #2980b9;
         }
+
+        .btn-add {
+            background-color: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+
+        .btn-add:hover {
+            background-color: #219150;
+        }
+
+        .btn-delete-card {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-delete-card:hover {
+            background-color: #c0392b;
+        }
     </style>
 </head>
 <body>

@@ -27,7 +27,7 @@ const renderProcedures = () => {
                 <a href="#" class="btn-download" title="Descargar" onclick="event.preventDefault(); window.downloadProcedure('${proc.file}')">
                     <i class="fas fa-download"></i> Descargar
                 </a>
-                <button class="action-btn delete" onclick="window.deleteProcedure(${proc.id})" title="Eliminar">
+                <button class="btn-delete-card" onclick="window.deleteProcedure(${proc.id})" title="Eliminar">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </div>
