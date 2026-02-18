@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Gestión de Entregas EPP</title>
     <!-- Common CSS -->
-    <link rel="stylesheet" href="/mejoraApp/front/styles/colors.css">
+    <link rel="stylesheet" href="../styles/colors.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .epp-delivery-container {
