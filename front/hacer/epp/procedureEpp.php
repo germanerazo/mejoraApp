@@ -127,7 +127,7 @@
     </div>
 
     <!-- Script -->
-    <script type="module" src="/mejoraApp/front/hacer/epp/procedureEpp.js?v=1.0"></script>
+    <script type="module" src="../epp/procedureEpp.js?v=1.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
