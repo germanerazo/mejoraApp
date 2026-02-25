@@ -106,12 +106,17 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Departamento *</label>
-                            <input type="text" id="codDepto" name="codDepto" required>
+                            <select id="codDepto" name="codDepto" required class="form-control">
+                                <option value="">Seleccione Departamento</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>Ciudad *</label>
-                            <input type="text" id="codCiudad" name="codCiudad" required>
+                            <select id="codCiudad" name="codCiudad" required class="form-control" disabled>
+                                <option value="">Seleccione Ciudad</option>
+                            </select>
                         </div>
+
                     </div>
                     <div class="form-row single">
                         <div class="form-group">
@@ -264,9 +269,14 @@
                             </div>
                             <!-- Muestra el archivo guardado al editar -->
                             <div id="evalExistingFile" style="display:none; margin-top: 10px;">
-                                <a id="evalExistingLink" href="#" target="_blank" class="eval-existing-link">
-                                    <i class="fas fa-paperclip"></i> <span id="evalExistingName">Ver archivo guardado</span>
-                                </a>
+                                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                    <a id="evalExistingLink" href="#" target="_blank" class="eval-existing-link">
+                                        <i class="fas fa-paperclip"></i> <span id="evalExistingName">Ver archivo guardado</span>
+                                    </a>
+                                    <button type="button" id="evalReplaceBtn" class="eval-replace-btn">
+                                        <i class="fas fa-sync-alt"></i> Reemplazar
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

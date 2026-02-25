@@ -1,6 +1,73 @@
 import config from "../js/config.js";
 
 const API_URL = `${config.BASE_API_URL}companies.php`;
+const DEPTS_API_URL = `${config.BASE_API_URL}departments.php`;
+const CITIES_API_URL = `${config.BASE_API_URL}cities.php`;
+
+function loadDepartments() {
+    fetch(DEPTS_API_URL)
+        .then(res => res.json())
+        .then(data => {
+            const select = document.getElementById('codDepto');
+            if (select) {
+                // Keep the default option
+                let html = '<option value="">Seleccione Departamento</option>';
+                const depts = Array.isArray(data) ? data : data.result;
+                if (depts) {
+                    depts.forEach(d => {
+                        html += `<option value="${d.codDepto}">${d.nomDepto}</option>`;
+                    });
+                }
+                select.innerHTML = html;
+            }
+        })
+        .catch(console.error);
+}
+
+function loadCities(codDepto, selectedCiudad = null) {
+    const select = document.getElementById('codCiudad');
+    if (!select) return;
+    
+    if (!codDepto) {
+        select.innerHTML = '<option value="">Seleccione Ciudad</option>';
+        select.disabled = true;
+        return;
+    }
+
+    select.innerHTML = '<option value="">Cargando...</option>';
+    select.disabled = true;
+
+    fetch(`${CITIES_API_URL}?depto=${codDepto}`)
+        .then(res => res.json())
+        .then(data => {
+            let html = '<option value="">Seleccione Ciudad</option>';
+            const cities = Array.isArray(data) ? data : data.result;
+            if (cities) {
+                cities.forEach(c => {
+                    html += `<option value="${c.codCiudad}">${c.nomCiudad}</option>`;
+                });
+            }
+            select.innerHTML = html;
+            select.disabled = false;
+            
+            if (selectedCiudad) {
+                select.value = selectedCiudad;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            select.innerHTML = '<option value="">Error al cargar</option>';
+        });
+}
+
+function initDeptoCity() {
+    const deptoSelect = document.getElementById('codDepto');
+    if (deptoSelect) {
+        deptoSelect.addEventListener('change', (e) => {
+            loadCities(e.target.value);
+        });
+    }
+}
 
 function loadCompanies() {
     fetch(`${API_URL}?page=1`)
@@ -49,7 +116,7 @@ function renderCompanies(companiesList) {
             <td>${company.gerente}</td>
             <td>${company.email}</td>
             <td>${company.telFijo}</td>
-            <td>${company.codCiudad}</td>
+            <td>${company.nomCiudad || company.codCiudad}</td>
             <td class="actions" style="display: flex; gap: 5px;">
                 <button class="btn-edit-premium edit-btn" data-company='${JSON.stringify(company)}'>
                     <i class="fas fa-edit"></i>
@@ -156,7 +223,17 @@ function showFormView(company = null) {
         document.getElementById('naturaleza').value = company.naturaleza || '';
         document.getElementById('tipRegimenEmp').value = company.tipRegimenEmp || '';
         document.getElementById('codDepto').value = company.codDepto || '';
-        document.getElementById('codCiudad').value = company.codCiudad || '';
+        
+        if (company.codDepto) {
+            loadCities(company.codDepto, company.codCiudad);
+        } else {
+            const citySelect = document.getElementById('codCiudad');
+            if (citySelect) {
+                citySelect.innerHTML = '<option value="">Seleccione Ciudad</option>';
+                citySelect.disabled = true;
+            }
+        }
+        
         document.getElementById('direccion').value = company.direccion || '';
         document.getElementById('email').value = company.email || '';
         document.getElementById('telFijo').value = company.telFijo || '';
@@ -174,18 +251,42 @@ function showFormView(company = null) {
         document.getElementById('fecFin').value = company.fecFin || '';
         document.getElementById('fechaEntrega').value = company.fechaEntrega || '';
 
-        // Mostrar archivo de evaluación existente si lo hay
-        const evalExistingDiv = document.getElementById('evalExistingFile');
+        // Evaluación: si ya tiene archivo, ocultar el área de subida y solo mostrar el enlace
+        const evalSection      = document.getElementById('seccionEvaluacion');
+        const evalUploadArea   = document.getElementById('evalUploadArea');
+        const evalExistingDiv  = document.getElementById('evalExistingFile');
         const evalExistingLink = document.getElementById('evalExistingLink');
         const evalExistingName = document.getElementById('evalExistingName');
-        if (company.rutaEval && evalExistingDiv) {
-            const fileName = company.rutaEval.split('/').pop();
-            evalExistingName.textContent = fileName;
-            evalExistingLink.href = `${config.ASSETS_URL}${company.rutaEval}`;
-            evalExistingDiv.style.display = 'block';
+
+        if (company.rutaEval) {
+            // Ya tiene archivo → ocultar zona de subida, mostrar enlace
+            if (evalUploadArea)  evalUploadArea.style.display  = 'none';
+            if (evalExistingDiv) {
+                const fileName = company.rutaEval.split('/').pop();
+                evalExistingName.textContent = fileName;
+                evalExistingLink.href = `${config.ASSETS_URL}${company.rutaEval}`;
+                evalExistingDiv.style.display = 'block';
+                evalExistingDiv.dataset.hasFile = '1'; // marcar que hay archivo previo
+            }
+        } else {
+            // Sin archivo aún → mostrar área de subida normalmente
+            if (evalUploadArea)  evalUploadArea.style.display  = '';
+            if (evalExistingDiv) evalExistingDiv.style.display = 'none';
         }
+
     } else {
         formTitle.innerHTML = '<i class="fas fa-building"></i> Nuevo Cliente';
+        const citySelect = document.getElementById('codCiudad');
+        if (citySelect) {
+            citySelect.innerHTML = '<option value="">Seleccione Ciudad</option>';
+            citySelect.disabled = true;
+        }
+        
+        // Crear: mostrar área de subida, ocultar enlace
+        const evalUploadArea  = document.getElementById('evalUploadArea');
+        const evalExistingDiv = document.getElementById('evalExistingFile');
+        if (evalUploadArea)  evalUploadArea.style.display  = '';
+        if (evalExistingDiv) evalExistingDiv.style.display = 'none';
     }
     
     // Show panel
@@ -340,11 +441,13 @@ function resetEvalUpload() {
     const placeholder = document.getElementById('evalUploadPlaceholder');
     const preview     = document.getElementById('evalFilePreview');
     const existingDiv = document.getElementById('evalExistingFile');
+    const uploadArea  = document.getElementById('evalUploadArea');
     const fileInput   = document.getElementById('evaluacionFile');
-    if (placeholder) placeholder.style.display = 'flex';
-    if (preview)     preview.style.display = 'none';
-    if (existingDiv) existingDiv.style.display = 'none';
-    if (fileInput)   fileInput.value = '';
+    if (placeholder)  placeholder.style.display = 'flex';
+    if (preview)      preview.style.display     = 'none';
+    if (existingDiv)  existingDiv.style.display  = 'none';
+    if (uploadArea)   uploadArea.style.display   = '';
+    if (fileInput)    fileInput.value            = '';
 }
 
 window.resetEvalUpload = resetEvalUpload;
@@ -352,6 +455,9 @@ window.resetEvalUpload = resetEvalUpload;
 // ── Inicialización principal ─────────────────────────────────────────────────
 
 function initializeCompanies() {
+    loadDepartments();
+    initDeptoCity();
+
     // Setup logo preview handler
     const logoFileInput = document.getElementById('logoFile');
     if (logoFileInput) {
@@ -386,10 +492,42 @@ function initializeCompanies() {
         });
     }
 
-    // Botón para quitar el archivo seleccionado
+    // Botón para quitar el archivo seleccionado (nuevo preview)
     const evalRemoveBtn = document.getElementById('evalFileRemove');
     if (evalRemoveBtn) {
-        evalRemoveBtn.addEventListener('click', () => resetEvalUpload());
+        evalRemoveBtn.addEventListener('click', () => {
+            // Si hay un archivo guardado existente, volver a mostrarlo en lugar de dejar en blanco
+            const existingDiv = document.getElementById('evalExistingFile');
+            const uploadArea  = document.getElementById('evalUploadArea');
+            const placeholder = document.getElementById('evalUploadPlaceholder');
+            const preview     = document.getElementById('evalFilePreview');
+            const fileInput   = document.getElementById('evaluacionFile');
+            if (fileInput) fileInput.value = '';
+            if (preview)   preview.style.display = 'none';
+            if (existingDiv && existingDiv.dataset.hasFile === '1') {
+                // Restaurar el bloque del archivo existente
+                if (uploadArea)  uploadArea.style.display  = 'none';
+                if (existingDiv) existingDiv.style.display = 'block';
+            } else {
+                // No hay archivo previo, simplemente limpiar
+                if (placeholder) placeholder.style.display = 'flex';
+                if (uploadArea)  uploadArea.style.display  = '';
+            }
+        });
+    }
+
+    // Botón Reemplazar archivo existente
+    const evalReplaceBtn = document.getElementById('evalReplaceBtn');
+    if (evalReplaceBtn) {
+        evalReplaceBtn.addEventListener('click', () => {
+            const existingDiv = document.getElementById('evalExistingFile');
+            const uploadArea  = document.getElementById('evalUploadArea');
+            // Ocultar el bloque del enlace y desplegar el área de subida
+            if (existingDiv) existingDiv.style.display = 'none';
+            if (uploadArea)  uploadArea.style.display  = '';
+            // Marcar que había un archivo existente (para el botón Cancel)
+            if (existingDiv) existingDiv.dataset.hasFile = '1';
+        });
     }
 
     // Drag & Drop en el área de evaluación

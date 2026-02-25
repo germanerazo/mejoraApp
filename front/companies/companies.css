@@ -352,10 +352,21 @@ table.display {
     color: #667eea;
 }
 
-.eval-file-icon.pdf   { color: #e74c3c; }
-.eval-file-icon.word  { color: #2980b9; }
-.eval-file-icon.excel { color: #27ae60; }
-.eval-file-icon.img   { color: #e67e22; }
+.eval-file-icon.pdf {
+    color: #e74c3c;
+}
+
+.eval-file-icon.word {
+    color: #2980b9;
+}
+
+.eval-file-icon.excel {
+    color: #27ae60;
+}
+
+.eval-file-icon.img {
+    color: #e67e22;
+}
 
 .eval-file-name {
     font-weight: 600;
@@ -413,4 +424,26 @@ table.display {
 .eval-existing-link:hover {
     background: #dde1ff;
     text-decoration: underline;
+}
+
+/* Botón reemplazar archivo */
+.eval-replace-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff4e6;
+    color: #e67e22;
+    border: 1px solid #f0c080;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.eval-replace-btn:hover {
+    background: #e67e22;
+    color: #fff;
+    border-color: #e67e22;
 }

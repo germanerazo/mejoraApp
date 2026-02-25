@@ -45,13 +45,21 @@ class companies extends connection {
             $initial = (($page - 1) * $limit) + 1;
             $limit = $limit * $page;
         }
-        $query = "SELECT * FROM ". $this->table." LIMIT $initial, $limit";
+        $query = "SELECT c.*, ci.nomCiudad, d.nomDepto 
+                  FROM " . $this->table . " c
+                  LEFT JOIN cities ci ON c.codCiudad = ci.codCiudad
+                  LEFT JOIN departments d ON c.codDepto = d.codDepto
+                  LIMIT $initial, $limit";
         $data = parent::getData($query);
         return $data;
     }
 
     public function getCompany($id) {
-        $query = "SELECT * FROM ". $this->table." WHERE idEmpresa = $id";
+        $query = "SELECT c.*, ci.nomCiudad, d.nomDepto 
+                  FROM " . $this->table . " c
+                  LEFT JOIN cities ci ON c.codCiudad = ci.codCiudad
+                  LEFT JOIN departments d ON c.codDepto = d.codDepto
+                  WHERE c.idEmpresa = $id";
         $data = parent::getData($query);
         return $data;
     }
