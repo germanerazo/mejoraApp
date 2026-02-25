@@ -329,7 +329,7 @@ function saveCompany(formData, companyId = null) {
     })
     .then(res => res.json())
     .then(response => {
-        if (response.success || response.message) {
+        if (response.status === 'ok' || response.result) {
             Swal.fire({
                 icon: 'success',
                 title: companyId ? '¡Actualizado!' : '¡Creado!',
@@ -340,7 +340,7 @@ function saveCompany(formData, companyId = null) {
             loadCompanies();
             hideFormView();
         } else {
-            Swal.fire('Error', 'No se pudo guardar el cliente', 'error');
+            Swal.fire('Error', response.result?.error_message || 'No se pudo guardar el cliente', 'error');
         }
     })
     .catch(err => {
