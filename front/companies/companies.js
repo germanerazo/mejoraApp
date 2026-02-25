@@ -141,6 +141,9 @@ function showFormView(company = null) {
         if(li) li.style.display = 'block';
     }
 
+    // Reset evaluación inicial UI
+    resetEvalUpload();
+
     if (company) {
         formTitle.innerHTML = '<i class="fas fa-edit"></i> Editar Cliente';
         currentEditingId = company.idEmpresa;
@@ -170,6 +173,17 @@ function showFormView(company = null) {
         document.getElementById('fecVincula').value = company.fecVincula || '';
         document.getElementById('fecFin').value = company.fecFin || '';
         document.getElementById('fechaEntrega').value = company.fechaEntrega || '';
+
+        // Mostrar archivo de evaluación existente si lo hay
+        const evalExistingDiv = document.getElementById('evalExistingFile');
+        const evalExistingLink = document.getElementById('evalExistingLink');
+        const evalExistingName = document.getElementById('evalExistingName');
+        if (company.rutaEval && evalExistingDiv) {
+            const fileName = company.rutaEval.split('/').pop();
+            evalExistingName.textContent = fileName;
+            evalExistingLink.href = `${config.ASSETS_URL}${company.rutaEval}`;
+            evalExistingDiv.style.display = 'block';
+        }
     } else {
         formTitle.innerHTML = '<i class="fas fa-building"></i> Nuevo Cliente';
     }
@@ -289,6 +303,54 @@ if (document.readyState === 'loading') {
     initializeCompanies();
 }
 
+// ── Helpers de Evaluación Inicial ──────────────────────────────────────────
+
+function getEvalFileIcon(fileName) {
+    const ext = fileName.split('.').pop().toLowerCase();
+    if (ext === 'pdf') return { cls: 'fa-file-pdf pdf', label: 'PDF' };
+    if (['doc','docx'].includes(ext)) return { cls: 'fa-file-word word', label: 'Word' };
+    if (['xls','xlsx'].includes(ext)) return { cls: 'fa-file-excel excel', label: 'Excel' };
+    if (['png','jpg','jpeg'].includes(ext)) return { cls: 'fa-file-image img', label: 'Imagen' };
+    return { cls: 'fa-file-alt', label: 'Archivo' };
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function showEvalPreview(file) {
+    const placeholder = document.getElementById('evalUploadPlaceholder');
+    const preview     = document.getElementById('evalFilePreview');
+    const nameEl      = document.getElementById('evalFileName');
+    const sizeEl      = document.getElementById('evalFileSize');
+    const iconEl      = document.getElementById('evalFileTypeIcon');
+
+    if (!preview) return;
+    const info = getEvalFileIcon(file.name);
+    iconEl.className = `fas ${info.cls} eval-file-icon`;
+    nameEl.textContent = file.name;
+    sizeEl.textContent = formatFileSize(file.size);
+    placeholder.style.display = 'none';
+    preview.style.display = 'flex';
+}
+
+function resetEvalUpload() {
+    const placeholder = document.getElementById('evalUploadPlaceholder');
+    const preview     = document.getElementById('evalFilePreview');
+    const existingDiv = document.getElementById('evalExistingFile');
+    const fileInput   = document.getElementById('evaluacionFile');
+    if (placeholder) placeholder.style.display = 'flex';
+    if (preview)     preview.style.display = 'none';
+    if (existingDiv) existingDiv.style.display = 'none';
+    if (fileInput)   fileInput.value = '';
+}
+
+window.resetEvalUpload = resetEvalUpload;
+
+// ── Inicialización principal ─────────────────────────────────────────────────
+
 function initializeCompanies() {
     // Setup logo preview handler
     const logoFileInput = document.getElementById('logoFile');
@@ -298,12 +360,10 @@ function initializeCompanies() {
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    // Update preview references
                     const logoPreviewImg = document.getElementById('logoPreviewImg');
                     const lt = document.getElementById('logoUploadText');
                     const lh = document.getElementById('logoUploadHint');
                     const li = document.getElementById('logoUploadIcon');
-                    
                     if (logoPreviewImg) {
                         logoPreviewImg.src = event.target.result;
                         logoPreviewImg.style.display = 'block';
@@ -316,22 +376,74 @@ function initializeCompanies() {
             }
         });
     }
-    
-    // Setup form submission handler
+
+    // ── Evaluación Inicial: input change ─────────────────────────────────────
+    const evalInput = document.getElementById('evaluacionFile');
+    if (evalInput) {
+        evalInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) showEvalPreview(file);
+        });
+    }
+
+    // Botón para quitar el archivo seleccionado
+    const evalRemoveBtn = document.getElementById('evalFileRemove');
+    if (evalRemoveBtn) {
+        evalRemoveBtn.addEventListener('click', () => resetEvalUpload());
+    }
+
+    // Drag & Drop en el área de evaluación
+    const evalArea = document.getElementById('evalUploadArea');
+    if (evalArea) {
+        evalArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            evalArea.classList.add('drag-over');
+        });
+        evalArea.addEventListener('dragleave', () => {
+            evalArea.classList.remove('drag-over');
+        });
+        evalArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            evalArea.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                // Verificar tipo permitido
+                const allowed = ['pdf','doc','docx','xls','xlsx','png','jpg','jpeg'];
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (!allowed.includes(ext)) {
+                    Swal.fire('Formato no válido', 'Solo se permiten: PDF, Word, Excel, PNG, JPG', 'warning');
+                    return;
+                }
+                if (file.size > 10 * 1024 * 1024) {
+                    Swal.fire('Archivo muy grande', 'El archivo no debe superar los 10 MB', 'warning');
+                    return;
+                }
+                // Asignar al input para que FormData lo tome
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                evalInput.files = dt.files;
+                showEvalPreview(file);
+            }
+        });
+    }
+
+    // ── Form submission ────────────────────────────────────────────────────────
     const form = document.getElementById('companyForm');
     if (form) {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             const formData = new FormData(form);
             const logoFile = document.getElementById('logoFile').files[0];
-            
-            // Map field names for FormData/JSON
+            const evalFile = evalInput ? evalInput.files[0] : null;
+
+            // Mapear nombres de campos del representante
             const n1 = form.nombre1 ? form.nombre1.value : '';
             const n2 = form.nombre2 ? form.nombre2.value : '';
-            const a1 = form.apel1 ? form.apel1.value : '';
-            const a2 = form.apel2 ? form.apel2.value : '';
+            const a1 = form.apel1   ? form.apel1.value   : '';
+            const a2 = form.apel2   ? form.apel2.value   : '';
 
-            if (logoFile) {
+            // Siempre usar FormData cuando hay logo o archivo de evaluación
+            if (logoFile || evalFile) {
                 formData.delete('nombre1');
                 formData.delete('nombre2');
                 formData.delete('apel1');
@@ -340,12 +452,11 @@ function initializeCompanies() {
                 formData.append('2nombre', n2);
                 formData.append('1apel', a1);
                 formData.append('2apel', a2);
-                
                 saveCompany(formData, currentEditingId);
             } else {
                 const data = Object.fromEntries(formData.entries());
                 delete data.logoFile;
-                
+                delete data.evaluacionFile;
                 const mappedData = {
                     ...data,
                     '1nombre': n1,
@@ -353,17 +464,15 @@ function initializeCompanies() {
                     '1apel': a1,
                     '2apel': a2
                 };
-                
                 delete mappedData.nombre1;
                 delete mappedData.nombre2;
                 delete mappedData.apel1;
                 delete mappedData.apel2;
-                
                 saveCompany(mappedData, currentEditingId);
             }
         });
     }
-    
+
     // Load companies data
     loadCompanies();
 }

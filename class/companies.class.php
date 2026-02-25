@@ -35,6 +35,7 @@ class companies extends connection {
     private $naturaleza;
     private $ruta;
     private $fechaEntrega;
+    private $rutaEval;
     private $token;
 
     public function listCompanies($page = 1) {
@@ -101,6 +102,7 @@ class companies extends connection {
                 $this->naturaleza = $data['naturaleza'];
                 $this->ruta = isset($data['ruta']) ? $data['ruta'] : null;
                 $this->fechaEntrega = isset($data['fechaEntrega']) ? $data['fechaEntrega'] : null;
+                $this->rutaEval = isset($data['rutaEval']) ? $data['rutaEval'] : null;
                 $res = $this->setCompany();
                 if ($res) {
                     $logoPath = $this->processLogo($res);
@@ -109,11 +111,18 @@ class companies extends connection {
                         $this->ruta = $logoPath;
                         $this->updateRuta();
                     }
+                    $evalPath = $this->processEvaluacion($res);
+                    if ($evalPath) {
+                        $this->idEmpresa = $res;
+                        $this->rutaEval = $evalPath;
+                        $this->updateRutaEval();
+                    }
                     $response = $_answers->response;
                     $response['result'] = array(
-                        'idEmpresa' => $res,
+                        'idEmpresa'  => $res,
                         'nomEmpresa' => $this->nomEmpresa,
-                        'ruta' => $logoPath
+                        'ruta'       => $logoPath ?? null,
+                        'rutaEval'   => $evalPath ?? null
                     );
                     return $response;
                 } else {
@@ -151,18 +160,45 @@ class companies extends connection {
         return parent::nonQuery($query);
     }
 
+    private function processEvaluacion($idEmpresa) {
+        if (isset($_FILES['evaluacionFile']) && $_FILES['evaluacionFile']['error'] === UPLOAD_ERR_OK) {
+            $file      = $_FILES['evaluacionFile'];
+            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $filename  = "eval_" . time() . "." . strtolower($extension);
+
+            $rootPath  = dirname(__DIR__) . "/";
+            $targetDir = "dataClients/" . $idEmpresa . "/evaluacion_inicial/";
+            $fullPath  = $rootPath . $targetDir;
+
+            if (!is_dir($fullPath)) {
+                mkdir($fullPath, 0777, true);
+            }
+
+            if (move_uploaded_file($file['tmp_name'], $fullPath . $filename)) {
+                return $targetDir . $filename;
+            }
+        }
+        return null;
+    }
+
+    private function updateRutaEval() {
+        $query = "UPDATE " . $this->table . " SET rutaEval = '$this->rutaEval' WHERE idEmpresa = $this->idEmpresa";
+        return parent::nonQuery($query);
+    }
+
     private function setCompany() {
         $query = "INSERT INTO ". $this->table." (
             tipIdentEmp, nroIdentEmp, nomEmpresa, tipRegimenEmp, tipIdent, nroIdent,
             `1apel`, `2apel`, `1nombre`, `2nombre`, gerente, profesional, representante,
             fecVincula, codDepto, codCiudad, direccion, sigla, telFijo, email, fecFin,
-            estado, naturaleza, ruta, fechaEntrega
+            estado, naturaleza, ruta, fechaEntrega, rutaEval
         ) VALUES (
             '$this->tipIdentEmp', '$this->nroIdentEmp', '$this->nomEmpresa', '$this->tipRegimenEmp', '$this->tipIdent', '$this->nroIdent',
             '$this->apel1', '$this->apel2', '$this->nombre1', '$this->nombre2', '$this->gerente', '$this->profesional', '$this->representante',
             '$this->fecVincula', '$this->codDepto', '$this->codCiudad', '$this->direccion', '$this->sigla', '$this->telFijo', " . 
             ($this->email ? "'$this->email'" : "NULL") . ", '$this->fecFin', '$this->estado', '$this->naturaleza', " . 
-            ($this->ruta ? "'$this->ruta'" : "NULL") . ", " . ($this->fechaEntrega ? "'$this->fechaEntrega'" : "NULL") . "
+            ($this->ruta ? "'$this->ruta'" : "NULL") . ", " . ($this->fechaEntrega ? "'$this->fechaEntrega'" : "NULL") . ", " .
+            ($this->rutaEval ? "'$this->rutaEval'" : "NULL") . "
         )";
         $response = parent::nonQueryId($query);
         if ($response) {
@@ -211,10 +247,16 @@ class companies extends connection {
                     if(isset($data['naturaleza'])) { $this->naturaleza = $data['naturaleza']; }
                     if(array_key_exists('ruta', $data)) { $this->ruta = $data['ruta']; }
                     if(array_key_exists('fechaEntrega', $data)) { $this->fechaEntrega = $data['fechaEntrega']; }
+                    if(array_key_exists('rutaEval', $data)) { $this->rutaEval = $data['rutaEval']; }
 
                     $logoPath = $this->processLogo($this->idEmpresa);
                     if ($logoPath) {
                         $this->ruta = $logoPath;
+                    }
+
+                    $evalPath = $this->processEvaluacion($this->idEmpresa);
+                    if ($evalPath) {
+                        $this->rutaEval = $evalPath;
                     }
 
                     $res = $this->updateCompany();
@@ -235,12 +277,25 @@ class companies extends connection {
     }
 
     private function updateCompany() {
-        // En caso de que no se haya subido una nueva imagen, intentamos mantener la actual
+        // Preservar ruta (logo) existente si no se subió nueva imagen
         if (is_null($this->ruta)) {
-            $query_ruta = "SELECT ruta FROM " . $this->table . " WHERE idEmpresa = $this->idEmpresa";
+            $query_ruta = "SELECT ruta, rutaEval FROM " . $this->table . " WHERE idEmpresa = $this->idEmpresa";
             $res_ruta = parent::getData($query_ruta);
             if (isset($res_ruta[0]['ruta'])) {
                 $this->ruta = $res_ruta[0]['ruta'];
+            }
+            // Preservar rutaEval existente si no se subió archivo nuevo
+            if (is_null($this->rutaEval) && isset($res_ruta[0]['rutaEval'])) {
+                $this->rutaEval = $res_ruta[0]['rutaEval'];
+            }
+        } else {
+            // Si sí hay logo nuevo pero no archivo eval, preservar eval existente
+            if (is_null($this->rutaEval)) {
+                $q = "SELECT rutaEval FROM " . $this->table . " WHERE idEmpresa = $this->idEmpresa";
+                $r = parent::getData($q);
+                if (isset($r[0]['rutaEval'])) {
+                    $this->rutaEval = $r[0]['rutaEval'];
+                }
             }
         }
 
@@ -269,14 +324,15 @@ class companies extends connection {
             estado = '$this->estado',
             naturaleza = '$this->naturaleza',
             ruta = " . ($this->ruta ? "'$this->ruta'" : "NULL") . ",
-            fechaEntrega = " . ($this->fechaEntrega ? "'$this->fechaEntrega'" : "NULL") . "
+            fechaEntrega = " . ($this->fechaEntrega ? "'$this->fechaEntrega'" : "NULL") . ",
+            rutaEval = " . ($this->rutaEval ? "'$this->rutaEval'" : "NULL") . "
             WHERE idEmpresa = $this->idEmpresa";
+        // nonQuery devuelve affected_rows: -1=error SQL, 0=sin cambios (OK), >0=filas modificadas
         $response = parent::nonQuery($query);
-        if ($response) {
-            return $response;
-        } else {
-            return 0;
+        if ($response < 0) {
+            error_log("[companies.class] updateCompany FAILED. Query: " . $query);
         }
+        return ($response >= 0); // -1 significa error real de SQL
     }
 
     public function delete($json) {

@@ -231,6 +231,47 @@
                     </div>
                 </div>
 
+                <!-- Evaluación Inicial -->
+                <div class="form-section" id="seccionEvaluacion">
+                    <div class="form-section-title">
+                        <i class="fas fa-file-medical-alt"></i> Evaluación Inicial
+                    </div>
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label>Subir archivo de Evaluación Inicial</label>
+                            <div class="eval-upload-area" id="evalUploadArea">
+                                <input type="file" id="evaluacionFile" name="evaluacionFile"
+                                    accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+                                    style="display:none;">
+                                <div class="eval-upload-placeholder" id="evalUploadPlaceholder"
+                                    onclick="document.getElementById('evaluacionFile').click()">
+                                    <i class="fas fa-cloud-upload-alt eval-upload-icon"></i>
+                                    <p class="eval-upload-text">Arrastra tu archivo aquí o <span class="eval-upload-link">haz clic para seleccionar</span></p>
+                                    <p class="eval-upload-hint">PDF, Word, Excel, PNG, JPG &mdash; máx. 10 MB</p>
+                                </div>
+                                <div class="eval-file-preview" id="evalFilePreview" style="display:none;">
+                                    <div class="eval-file-info">
+                                        <i class="fas fa-file-alt eval-file-icon" id="evalFileTypeIcon"></i>
+                                        <div>
+                                            <p class="eval-file-name" id="evalFileName"></p>
+                                            <p class="eval-file-size" id="evalFileSize"></p>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="eval-file-remove" id="evalFileRemove" title="Quitar archivo">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Muestra el archivo guardado al editar -->
+                            <div id="evalExistingFile" style="display:none; margin-top: 10px;">
+                                <a id="evalExistingLink" href="#" target="_blank" class="eval-existing-link">
+                                    <i class="fas fa-paperclip"></i> <span id="evalExistingName">Ver archivo guardado</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Vigencia del Contrato -->
                 <div class="form-section">
                     <div class="form-section-title">
