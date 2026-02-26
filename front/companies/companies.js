@@ -152,14 +152,14 @@ function renderCompanies(companiesList) {
 
 tbody.querySelectorAll('.edit-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
-        const company = JSON.parse(e.target.getAttribute('data-company'));
+        const company = JSON.parse(btn.getAttribute('data-company'));
         openEditModal(company);
     });
 }
 );
 tbody.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
-        const id = e.target.getAttribute('data-id');
+        const id = btn.getAttribute('data-id');
         openDeleteModal(id);
     });
 }
@@ -391,12 +391,22 @@ function openDeleteModal(id) {
         cancelButtonText: '<i class="fas fa-times"></i> Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            fetch(`${API_URL}?id=${id}`, {
-                method: 'DELETE'
+            const token = sessionStorage.getItem('token');
+            const data = {
+                token: token,
+                idEmpresa: id
+            };
+
+            fetch(API_URL, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
             })
             .then(res => res.json())
             .then(response => {
-                if (response.success) {
+                if (response.status === 'ok' || response.result) {
                     Swal.fire({
                         icon: 'success',
                         title: '¡Eliminado!',

@@ -1,15 +1,19 @@
-// Mock Data
-let policies = [
-    { id: 1, name: "Política de Calidad", date: "2024-01-15", file: "politica_calidad_v3.pdf" },
-    { id: 2, name: "Política de Seguridad y Salud en el Trabajo", date: "2024-02-10", file: "politica_sst_2024.pdf" },
-    { id: 3, name: "Política de Tratamiento de Datos", date: "2023-11-05", file: "tratamiento_datos.pdf" },
-    { id: 4, name: "Política de Uso Responsable de Recursos", date: "2024-03-20", file: "uso_recursos.docx" },
-    { id: 5, name: "Política Ambiental", date: "2024-01-20", file: "politica_ambiental.pdf" }
-];
+import config from "../../js/config.js";
+
+const API_URL = `${config.BASE_API_URL}policies.php`;
+
+let policies = [];
+let idEmpresa = null;
 
 // Initialization
 const initPolicies = () => {
-    renderPolicies();
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    if (user && user.idClient) {
+        idEmpresa = user.idClient;
+        loadPolicies();
+    } else {
+        Swal.fire('Error', 'No se ha encontrado la sesión de la empresa.', 'error');
+    }
 };
 
 // Check if DOM is ready
@@ -19,30 +23,60 @@ if (document.readyState === 'loading') {
     initPolicies();
 }
 
+function loadPolicies() {
+    fetch(`${API_URL}?idEmpresa=${idEmpresa}`)
+        .then(res => res.json())
+        .then(data => {
+            if (Array.isArray(data)) {
+                policies = data;
+            } else if (data.result) {
+                policies = data.result;
+            } else {
+                policies = [];
+            }
+            renderPolicies();
+        })
+        .catch(err => {
+            console.error('Error loading policies:', err);
+            policies = [];
+            renderPolicies();
+        });
+}
+
 function renderPolicies() {
     const tbody = document.querySelector('#policiesTable tbody');
     if (!tbody) return;
 
-    if (policies.length === 0) {
+    if (!policies || policies.length === 0) {
         tbody.innerHTML = `<tr><td colspan="4" class="empty-state">No hay políticas registradas.</td></tr>`;
         return;
     }
 
     let html = '';
     policies.forEach(item => {
+        const fileLink = item.rutaArchivo ? `${config.ASSETS_URL}${item.rutaArchivo}` : '#';
+        const fileName = item.rutaArchivo ? item.rutaArchivo.split('/').pop() : 'Sin archivo';
+        
         html += `<tr>
             <td style="display: flex; gap: 5px;">
-                <button class="btn-edit-premium" title="Editar" onclick="editPolicy(${item.id})">
+                <button class="btn-edit-premium" title="Editar" onclick="editPolicy(${item.idPolitica})">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn-delete-premium" title="Eliminar" onclick="deletePolicy(${item.id})">
+                <button class="btn-delete-premium" title="Eliminar" onclick="deletePolicy(${item.idPolitica})">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </td>
-            <td>${item.name}</td>
-            <td>${item.date}</td>
-            <td><a href="#" onclick="return false;" style="color: var(--primary-color); text-decoration: none;">⬇️ ${item.file}</a></td>
-        </tr>`;
+            <td>${item.nomPolitica}</td>
+            <td>${item.fechaCreacion}</td>
+            <td>`;
+            
+        if (item.rutaArchivo) {
+            html += `<a href="${fileLink}" target="_blank" style="color: var(--primary-color); text-decoration: none;">⬇️ ${fileName}</a>`;
+        } else {
+            html += `N/A`;
+        }
+        
+        html += `</td></tr>`;
     });
     tbody.innerHTML = html;
 }
@@ -58,89 +92,189 @@ window.addPolicy = async function() {
                 <label for="swal-pol-file" class="btn-secondary-premium" style="cursor: pointer; display: inline-block; padding: 10px; border: 1px dashed #ccc; width: 80%;">
                     📂 Seleccionar Archivo
                 </label>
-                <input type="file" id="swal-pol-file" style="display: none;" onchange="document.getElementById('file-name-display').innerText = this.files[0] ? this.files[0].name : ''">
+                <input type="file" id="swal-pol-file" style="display: none;" onchange="document.getElementById('file-name-display').innerText = this.files[0] ? this.files[0].name : ''" accept=".pdf,.doc,.docx,.xls,.xlsx">
                 <div id="file-name-display" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
             </div>
         `,
         focusConfirm: false,
         showCancelButton: true,
-        confirmButtonText: 'Agregar',
+        confirmButtonText: 'Guardar',
         preConfirm: () => {
+            const name = document.getElementById('swal-pol-name').value;
+            const date = document.getElementById('swal-pol-date').value;
+            if (!name || !date) {
+                Swal.showValidationMessage('El nombre y la fecha son obligatorios');
+                return false;
+            }
+            
             const fileInput = document.getElementById('swal-pol-file');
-            const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : 'Sin archivo';
             return {
-                name: document.getElementById('swal-pol-name').value,
-                date: document.getElementById('swal-pol-date').value,
-                file: fileName
+                name: name,
+                date: date,
+                file: fileInput.files.length > 0 ? fileInput.files[0] : null
             }
         }
     });
 
-    if (formValues && formValues.name) {
-        policies.push({ id: policies.length + 1, ...formValues });
-        renderPolicies();
-        Swal.fire({
-            icon: 'success',
-            title: 'Agregada',
-            text: 'La política ha sido registrada exitosamente.',
-            timer: 1500,
-            showConfirmButton: false
+    if (formValues) {
+        const formData = new FormData();
+        formData.append('token', sessionStorage.getItem('token'));
+        formData.append('idEmpresa', idEmpresa);
+        formData.append('nomPolitica', formValues.name);
+        formData.append('fechaCreacion', formValues.date);
+        
+        if (formValues.file) {
+            formData.append('archivo', formValues.file);
+        }
+
+        fetch(API_URL, {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(response => {
+            if (response.status === 'ok' || response.result) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Guardado',
+                    text: 'La política ha sido registrada exitosamente.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                loadPolicies();
+            } else {
+                Swal.fire('Error', response.result?.error_message || 'No se pudo guardar la política', 'error');
+            }
+        })
+        .catch(err => {
+            console.error('Error saving:', err);
+            Swal.fire('Error', 'Ocurrió un error al conectar con el servidor', 'error');
         });
     }
 }
 
-window.editPolicy = async function(id) {
-    const item = policies.find(p => p.id === id);
+window.editPolicy = async function(idPolitica) {
+    const item = policies.find(p => p.idPolitica == idPolitica);
     if (!item) return;
+
+    const currentFileName = item.rutaArchivo ? item.rutaArchivo.split('/').pop() : 'Sin archivo actual';
 
     const { value: formValues } = await Swal.fire({
         title: 'Editar Política',
         html: `
-            <input id="swal-pol-name" class="swal2-input" placeholder="Nombre de la Política" value="${item.name}">
-            <input type="date" id="swal-pol-date" class="swal2-input" value="${item.date}">
+            <input id="swal-pol-name" class="swal2-input" placeholder="Nombre de la Política" value="${item.nomPolitica}">
+            <input type="date" id="swal-pol-date" class="swal2-input" value="${item.fechaCreacion}">
             <div class="file-upload-wrapper" style="margin-top: 15px;">
                 <label for="swal-pol-file" class="btn-secondary-premium" style="cursor: pointer; display: inline-block; padding: 10px; border: 1px dashed #ccc; width: 80%;">
-                    📂 Actualizar Archivo
+                    📂 Reemplazar Archivo
                 </label>
-                <input type="file" id="swal-pol-file" style="display: none;" onchange="document.getElementById('file-name-display-edit').innerText = this.files[0] ? this.files[0].name : ''">
-                <div id="file-name-display-edit" style="margin-top: 5px; font-size: 12px; color: #666;">${item.file}</div>
+                <input type="file" id="swal-pol-file" style="display: none;" onchange="document.getElementById('file-name-display-edit').innerText = this.files[0] ? 'Nuevo: ' + this.files[0].name : ''">
+                <div id="file-name-display-edit" style="margin-top: 5px; font-size: 12px; color: #666;">Actual: ${currentFileName}</div>
             </div>
         `,
         focusConfirm: false,
         showCancelButton: true,
         confirmButtonText: 'Actualizar',
         preConfirm: () => {
+            const name = document.getElementById('swal-pol-name').value;
+            const date = document.getElementById('swal-pol-date').value;
+            if (!name || !date) {
+                Swal.showValidationMessage('El nombre y la fecha son obligatorios');
+                return false;
+            }
             const fileInput = document.getElementById('swal-pol-file');
             return {
-                name: document.getElementById('swal-pol-name').value,
-                date: document.getElementById('swal-pol-date').value,
-                file: fileInput.files.length > 0 ? fileInput.files[0].name : item.file
+                name: name,
+                date: date,
+                file: fileInput.files.length > 0 ? fileInput.files[0] : null
             }
         }
     });
 
-    if (formValues && formValues.name) {
-        Object.assign(item, formValues);
-        renderPolicies();
-        Swal.fire('Actualizado', 'La política ha sido actualizada.', 'success');
+    if (formValues) {
+        const formData = new FormData();
+        formData.append('token', sessionStorage.getItem('token'));
+        formData.append('idPolitica', idPolitica);
+        formData.append('idEmpresa', idEmpresa);
+        formData.append('nomPolitica', formValues.name);
+        formData.append('fechaCreacion', formValues.date);
+        
+        if (formValues.file) {
+            formData.append('archivo', formValues.file);
+        }
+
+        // Aunque es una actualización (PUT lógico), usamos POST porque hay subida de archivos (FormData)
+        fetch(`${API_URL}?_method=PUT`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(response => {
+            if (response.status === 'ok' || response.result) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Actualizado',
+                    text: 'La política ha sido actualizada exitosamente.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                loadPolicies();
+            } else {
+                Swal.fire('Error', response.result?.error_message || 'No se pudo actualizar', 'error');
+            }
+        })
+        .catch(err => {
+            console.error('Error updating:', err);
+            Swal.fire('Error', 'Ocurrió un error al actualizar', 'error');
+        });
     }
 }
 
-window.deletePolicy = function(id) {
+window.deletePolicy = function(idPolitica) {
     Swal.fire({
         title: '¿Estás seguro?',
         text: "No podrás revertir esto",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: '<i class="fas fa-trash"></i> Sí, eliminar',
+        cancelButtonText: '<i class="fas fa-times"></i> Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            policies = policies.filter(p => p.id !== id);
-            renderPolicies();
-            Swal.fire('Eliminado', 'El registro ha sido eliminado.', 'success');
+            const token = sessionStorage.getItem('token');
+            const data = {
+                token: token,
+                idPolitica: idPolitica,
+                idEmpresa: idEmpresa
+            };
+
+            fetch(API_URL, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === 'ok' || response.result) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: 'La política ha sido eliminada.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    loadPolicies();
+                } else {
+                    Swal.fire('Error', response.result?.error_message || 'No se pudo eliminar', 'error');
+                }
+            })
+            .catch(err => {
+                console.error('Error deleting:', err);
+                Swal.fire('Error', 'Ocurrió un error al eliminar', 'error');
+            });
         }
     });
 }
