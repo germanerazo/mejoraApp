@@ -10,7 +10,7 @@
     <div class="section-container">
         <div class="section-header">
             <h2 class="section-title">Política Integral / Corporativa</h2>
-            <button class="btn-new-record" onclick="savePolicy()"><i class="fas fa-save"></i> Guardar Política</button>
+            <button id="btnSavePolicy" class="btn-new-record" onclick="savePolicy()"><i class="fas fa-save"></i> Guardar Política</button>
             <button class="btn-secondary-premium" onclick="printPolicy()" id="btnPrint" style="display: none; margin-left: 10px;"><i class="fas fa-print"></i> Imprimir Política</button>
         </div>
 
@@ -26,6 +26,7 @@
             <div>
                 <label class="input-label">Estado</label>
                 <select id="policyStatus" class="swal2-select">
+                    <option value="">Seleccione...</option>
                     <option value="Activo">Activo</option>
                     <option value="Inactivo">Inactivo</option>
                 </select>

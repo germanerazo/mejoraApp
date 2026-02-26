@@ -16,8 +16,14 @@ class strategic extends connection {
         $qPolicy = "SELECT * FROM strategic_plan WHERE idEmpresa = $idEmpresa LIMIT 1";
         $policyData = parent::getData($qPolicy);
 
+        // Fetch Company Nature
+        $qCompany = "SELECT naturaleza FROM companies WHERE idEmpresa = $idEmpresa LIMIT 1";
+        $companyData = parent::getData($qCompany);
+        $companyNature = ($companyData && count($companyData) > 0) ? $companyData[0]['naturaleza'] : "";
+
         $response = [
             "policy" => null,
+            "companyNature" => $companyNature,
             "principles" => [],
             "objectives" => []
         ];

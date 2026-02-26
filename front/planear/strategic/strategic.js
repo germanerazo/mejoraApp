@@ -3,6 +3,7 @@ import config from "../../js/config.js";
 const API_URL = `${config.BASE_API_URL}strategic.php`;
 
 let idEmpresa = null;
+let loadedCompanyName = "La Empresa";
 let strategicData = {
     policy: {
         idPlan: null,
@@ -34,52 +35,71 @@ if (document.readyState === 'loading') {
 }
 
 function loadStrategicData() {
-    fetch(`${API_URL}?idEmpresa=${idEmpresa}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data && data.policy) {
-                strategicData.policy = data.policy;
-                strategicData.principles = data.principles || [];
-                strategicData.objectives = data.objectives || [];
-            } else {
-                // If it doesn't exist yet for the company, initialize empty structure
-                strategicData.policy = {
-                    idPlan: null,
-                    name: "",
-                    date: new Date().toISOString().split('T')[0],
-                    status: "Activo",
-                    nature: "",
-                    content: ""
-                };
-                strategicData.principles = [];
-                strategicData.objectives = [];
+    // 1. Fetch Company Nature directly from companies.php
+    // 2. Fetch Strategic Data
+    Promise.all([
+        fetch(`${config.BASE_API_URL}companies.php?id=${idEmpresa}`).then(res => res.json()),
+        fetch(`${API_URL}?idEmpresa=${idEmpresa}`).then(res => res.json())
+    ])
+    .then(([companyData, data]) => {
+        let defaultNature = "";
+        if (companyData && Array.isArray(companyData) && companyData.length > 0) {
+            defaultNature = companyData[0].naturaleza || "";
+            loadedCompanyName = companyData[0].nomEmpresa || "La Empresa";
+        } else if (companyData && companyData.naturaleza) {
+            defaultNature = companyData.naturaleza;
+            loadedCompanyName = companyData.nomEmpresa || "La Empresa";
+        }
+
+        if (data && data.policy) {
+            strategicData.policy = data.policy;
+            if (!strategicData.policy.nature && defaultNature) {
+                strategicData.policy.nature = defaultNature;
             }
-            populateForm();
-        })
-        .catch(err => {
-            console.error('Error loading strategic data:', err);
-            Swal.fire('Error', 'Ocurrió un error al cargar la información', 'error');
-        });
+            strategicData.principles = data.principles || [];
+            strategicData.objectives = data.objectives || [];
+        } else {
+            // If it doesn't exist yet for the company, initialize empty structure
+            strategicData.policy = {
+                idPlan: null,
+                name: "",
+                date: "",
+                status: "",
+                nature: defaultNature,
+                content: ""
+            };
+            strategicData.principles = [];
+            strategicData.objectives = [];
+        }
+        populateForm();
+    })
+    .catch(err => {
+        console.error('Error loading strategic data:', err);
+        Swal.fire('Error', 'Ocurrió un error al cargar la información', 'error');
+    });
 }
 
 function populateForm() {
     const polName = document.getElementById('policyName');
     if (polName && strategicData.policy) {
         polName.value = strategicData.policy.name || "";
-        document.getElementById('policyDate').value = strategicData.policy.date || new Date().toISOString().split('T')[0];
-        document.getElementById('policyStatus').value = strategicData.policy.status || "Activo";
+        document.getElementById('policyDate').value = strategicData.policy.date || "";
+        document.getElementById('policyStatus').value = strategicData.policy.status || "";
         document.getElementById('policyNature').value = strategicData.policy.nature || "";
         document.getElementById('policyContent').value = strategicData.policy.content || "";
         
         // Show sections if policy has an ID (already saved in DB)
+        const btnSave = document.getElementById('btnSavePolicy');
         if (strategicData.policy.idPlan) {
             document.getElementById('principlesSection').style.display = 'block';
             document.getElementById('objectivesSection').style.display = 'block';
             document.getElementById('btnPrint').style.display = 'inline-block';
+            if (btnSave) btnSave.innerHTML = '<i class="fas fa-sync"></i> Actualizar Política';
         } else {
             document.getElementById('principlesSection').style.display = 'none';
             document.getElementById('objectivesSection').style.display = 'none';
             document.getElementById('btnPrint').style.display = 'none';
+            if (btnSave) btnSave.innerHTML = '<i class="fas fa-save"></i> Guardar Política';
         }
 
         renderPrinciples();
@@ -89,11 +109,9 @@ function populateForm() {
 
 // Global Functions
 window.generatePolicyText = function() {
-    const user = JSON.parse(sessionStorage.getItem('user'));
-    const companyName = user ? (user.nomEmpresa || "La Empresa") : "La Empresa";
     const nature = document.getElementById('policyNature').value || "{Naturaleza}";
 
-    const text = `${companyName}, es una organizacion dedicada a ${nature}; incluyendo contratistas y subcontratistas. En su compromiso permanente, por desarrollar sus actividades de una manera segura mediante la implementacion del SG - SST, reduciendo al mínimo posibles impactos ambientales y buscando la satisfaccion del cliente, ${companyName}, ha establecido los siguientes principios:`;
+    const text = `${loadedCompanyName}, es una organizacion dedicada a ${nature}; incluyendo contratistas y subcontratistas. En su compromiso permanente, por desarrollar sus actividades de una manera segura mediante la implementacion del SG - SST, reduciendo al mínimo posibles impactos ambientales y buscando la satisfaccion del cliente, ${loadedCompanyName}, ha establecido los siguientes principios:`;
 
     document.getElementById('policyContent').value = text;
 };
@@ -125,10 +143,11 @@ window.savePolicy = function() {
     .then(res => res.json())
     .then(response => {
         if (response.status === 'ok' || response.result) {
+            const isUpdate = strategicData.policy.idPlan ? true : false;
             Swal.fire({
                 icon: 'success',
-                title: 'Política Guardada',
-                text: 'La política ha sido guardada. Ahora puede agregar principios y objetivos.',
+                title: isUpdate ? 'Política Actualizada' : 'Política Guardada',
+                text: isUpdate ? 'La política ha sido actualizada exitosamente.' : 'La política ha sido guardada. Ahora puede agregar principios y objetivos.',
                 timer: 1500,
                 showConfirmButton: false
             });
