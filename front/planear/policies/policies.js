@@ -64,14 +64,24 @@ function renderPolicies() {
                 </button>
                 <button class="btn-delete-premium" title="Eliminar" onclick="deletePolicy(${item.idPolitica})">
                     <i class="fas fa-trash-alt"></i>
-                </button>
+                </button>`;
+                
+        if (item.rutaArchivo) {
+            const apiDownloadLink = config.BASE_API_URL + 'download.php?file=' + item.rutaArchivo;
+            html += `
+                <a href="${apiDownloadLink}" title="Descargar" style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background-color: #2ecc71; color: white; border-radius: 6px; text-decoration: none; border: none; cursor: pointer; font-size: 14px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#27ae60'" onmouseout="this.style.backgroundColor='#2ecc71'">
+                    <i class="fas fa-download"></i>
+                </a>`;
+        }
+
+        html += `
             </td>
             <td>${item.nomPolitica}</td>
             <td>${item.fechaCreacion}</td>
             <td>`;
             
         if (item.rutaArchivo) {
-            html += `<a href="${fileLink}" target="_blank" style="color: var(--primary-color); text-decoration: none;">⬇️ ${fileName}</a>`;
+            html += `<a href="${fileLink}" target="_blank" style="color: var(--primary-color); text-decoration: none;">📄 ${fileName}</a>`;
         } else {
             html += `N/A`;
         }
@@ -278,3 +288,4 @@ window.deletePolicy = function(idPolitica) {
         }
     });
 }
+
