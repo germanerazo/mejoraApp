@@ -1,54 +1,96 @@
-// Mock Data
+import config from "../../js/config.js";
+
+const API_URL = `${config.BASE_API_URL}strategic.php`;
+
+let idEmpresa = null;
 let strategicData = {
     policy: {
-        name: "Política del Sistema de Gestión Integrado",
+        idPlan: null,
+        name: "",
         date: new Date().toISOString().split('T')[0],
-        status: "Activo",
-        nature: "la consultoría en seguridad y salud en el trabajo",
+        status: "",
+        nature: "",
         content: ""
     },
-    principles: []
+    principles: [],
+    objectives: []
 };
 
 // Initialization
 const initStrategic = () => {
-    // Populate Policy
-    const polName = document.getElementById('policyName');
-    if (polName) {
-        polName.value = strategicData.policy.name;
-        document.getElementById('policyDate').value = strategicData.policy.date;
-        document.getElementById('policyStatus').value = strategicData.policy.status;
-        document.getElementById('policyNature').value = strategicData.policy.nature;
-    
-        // Initial Text Generation if empty
-        if (!strategicData.policy.content) {
-            generatePolicyText();
-        } else {
-            document.getElementById('policyContent').value = strategicData.policy.content;
-        }
-        
-        // Show sections if policy appears saved (has name)
-        if (strategicData.policy.name) {
-             document.getElementById('principlesSection').style.display = 'block';
-             document.getElementById('objectivesSection').style.display = 'block';
-             document.getElementById('btnPrint').style.display = 'inline-block';
-        }
-
-        // Render Principles if any
-        if (strategicData.principles.length > 0) {
-            renderPrinciples();
-        }
-
-        // Render Objectives if any
-        if (strategicData.objectives && strategicData.objectives.length > 0) {
-            renderObjectives();
-        }
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    if (user && user.idClient) {
+        idEmpresa = user.idClient;
+        loadStrategicData();
+    } else {
+        Swal.fire('Error', 'No se ha encontrado la sesión de la empresa.', 'error');
     }
 };
 
+if (document.readyState === 'loading') {
+    document.addEventListener("DOMContentLoaded", initStrategic);
+} else {
+    initStrategic();
+}
+
+function loadStrategicData() {
+    fetch(`${API_URL}?idEmpresa=${idEmpresa}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.policy) {
+                strategicData.policy = data.policy;
+                strategicData.principles = data.principles || [];
+                strategicData.objectives = data.objectives || [];
+            } else {
+                // If it doesn't exist yet for the company, initialize empty structure
+                strategicData.policy = {
+                    idPlan: null,
+                    name: "",
+                    date: new Date().toISOString().split('T')[0],
+                    status: "Activo",
+                    nature: "",
+                    content: ""
+                };
+                strategicData.principles = [];
+                strategicData.objectives = [];
+            }
+            populateForm();
+        })
+        .catch(err => {
+            console.error('Error loading strategic data:', err);
+            Swal.fire('Error', 'Ocurrió un error al cargar la información', 'error');
+        });
+}
+
+function populateForm() {
+    const polName = document.getElementById('policyName');
+    if (polName && strategicData.policy) {
+        polName.value = strategicData.policy.name || "";
+        document.getElementById('policyDate').value = strategicData.policy.date || new Date().toISOString().split('T')[0];
+        document.getElementById('policyStatus').value = strategicData.policy.status || "Activo";
+        document.getElementById('policyNature').value = strategicData.policy.nature || "";
+        document.getElementById('policyContent').value = strategicData.policy.content || "";
+        
+        // Show sections if policy has an ID (already saved in DB)
+        if (strategicData.policy.idPlan) {
+            document.getElementById('principlesSection').style.display = 'block';
+            document.getElementById('objectivesSection').style.display = 'block';
+            document.getElementById('btnPrint').style.display = 'inline-block';
+        } else {
+            document.getElementById('principlesSection').style.display = 'none';
+            document.getElementById('objectivesSection').style.display = 'none';
+            document.getElementById('btnPrint').style.display = 'none';
+        }
+
+        renderPrinciples();
+        renderObjectives();
+    }
+}
+
 // Global Functions
 window.generatePolicyText = function() {
-    const companyName = "Dinamik Zona Franca S.A.S"; // In real app, get from session/auth
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    const companyName = user ? (user.nomEmpresa || "La Empresa") : "La Empresa";
     const nature = document.getElementById('policyNature').value || "{Naturaleza}";
 
     const text = `${companyName}, es una organizacion dedicada a ${nature}; incluyendo contratistas y subcontratistas. En su compromiso permanente, por desarrollar sus actividades de una manera segura mediante la implementacion del SG - SST, reduciendo al mínimo posibles impactos ambientales y buscando la satisfaccion del cliente, ${companyName}, ha establecido los siguientes principios:`;
@@ -61,15 +103,13 @@ window.savePolicy = function() {
     const date = document.getElementById('policyDate').value;
 
     if (!name || !date) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Campos incompletos',
-            text: 'Por favor, complete el nombre y la fecha de la política.',
-        });
+        Swal.fire('Campos incompletos', 'Por favor, complete el nombre y la fecha de la política.', 'warning');
         return;
     }
 
-    strategicData.policy = {
+    const dataPayload = {
+        token: sessionStorage.getItem('token'),
+        idEmpresa: idEmpresa,
         name: name,
         date: date,
         status: document.getElementById('policyStatus').value,
@@ -77,20 +117,27 @@ window.savePolicy = function() {
         content: document.getElementById('policyContent').value
     };
 
-    // Reveal Principles Section, Objectives Section and Print Button
-    document.getElementById('principlesSection').style.display = 'block';
-    document.getElementById('objectivesSection').style.display = 'block';
-    document.getElementById('btnPrint').style.display = 'inline-block';
-
-    renderObjectives();
-
-    Swal.fire({
-        icon: 'success',
-        title: 'Política Guardada',
-        text: 'La política ha sido guardada. Ahora puede agregar principios y objetivos.',
-        timer: 1500,
-        showConfirmButton: false
-    });
+    fetch(`${API_URL}?action=savePolicy`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataPayload)
+    })
+    .then(res => res.json())
+    .then(response => {
+        if (response.status === 'ok' || response.result) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Política Guardada',
+                text: 'La política ha sido guardada. Ahora puede agregar principios y objetivos.',
+                timer: 1500,
+                showConfirmButton: false
+            });
+            // Reload all from db to get newly generated idPlan 
+            loadStrategicData();
+        } else {
+            Swal.fire('Error', response.result?.error_message || 'No se pudo guardar la política', 'error');
+        }
+    }).catch(console.error);
 };
 
 window.printPolicy = function() {
@@ -132,7 +179,7 @@ window.printPolicy = function() {
             <h1>${policy.name}</h1>
             
             <div class="policy-content">
-                ${policy.content.replace(/\n/g, '<br>')}
+                ${(policy.content || '').replace(/\n/g, '<br>')}
             </div>
 
             <div class="principles-section">
@@ -160,12 +207,120 @@ window.printPolicy = function() {
     printWindow.document.close();
 };
 
-// Objectives Logic
+/* ==========================================================
+   PRINCIPLES
+========================================================== */
+window.addPrinciple = async function() {
+    if (!strategicData.policy.idPlan) return Swal.fire('Error', 'Primero guarde la política principal', 'warning');
+
+    const { value: text } = await Swal.fire({
+        title: 'Nuevo Principio',
+        input: 'textarea',
+        inputLabel: 'Descripción del Principio',
+        inputPlaceholder: 'Escriba el principio aquí...',
+        showCancelButton: true,
+        confirmButtonText: 'Agregar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (text) {
+        fetch(`${API_URL}?action=savePrinciple`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                token: sessionStorage.getItem('token'),
+                idPlan: strategicData.policy.idPlan,
+                text: text
+            })
+        }).then(res => res.json()).then(res => {
+            if (res.status === 'ok' || res.result) loadStrategicData();
+        });
+    }
+};
+
+window.editPrinciple = async function(idPrincipio) {
+    const principle = strategicData.principles.find(p => p.idPrincipio == idPrincipio);
+    if (!principle) return;
+
+    const { value: text } = await Swal.fire({
+        title: 'Editar Principio',
+        input: 'textarea',
+        inputValue: principle.text,
+        showCancelButton: true,
+        confirmButtonText: 'Actualizar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (text) {
+        fetch(`${API_URL}?action=savePrinciple`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                token: sessionStorage.getItem('token'),
+                idPlan: strategicData.policy.idPlan,
+                idPrincipio: idPrincipio,
+                text: text
+            })
+        }).then(res => res.json()).then(res => {
+            if (res.status === 'ok' || res.result) loadStrategicData();
+        });
+    }
+};
+
+window.deletePrinciple = function(idPrincipio) {
+    Swal.fire({
+        title: '¿Eliminar principio?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`${API_URL}?action=deletePrinciple`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token: sessionStorage.getItem('token'),
+                    idPrincipio: idPrincipio
+                })
+            }).then(res => res.json()).then(res => {
+                if (res.status === 'ok' || res.result) loadStrategicData();
+            });
+        }
+    });
+};
+
+function renderPrinciples() {
+    const tbody = document.querySelector('#tablePrinciples tbody');
+    if (!tbody) return;
+    if (!strategicData.principles || strategicData.principles.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="2" class="empty-state">No hay principios registrados.</td></tr>`;
+        return;
+    }
+
+    let html = '';
+    strategicData.principles.forEach(item => {
+        html += `<tr>
+            <td style="white-space: nowrap; display: flex; gap: 5px;">
+                <button class="btn-edit-premium" title="Editar" onclick="editPrinciple(${item.idPrincipio})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-delete-premium" title="Eliminar" onclick="deletePrinciple(${item.idPrincipio})">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </td>
+            <td>${item.text}</td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+}
+
+/* ==========================================================
+   OBJECTIVES & INDICATORS
+========================================================== */
 window.showCreateObjective = function() {
     document.getElementById('mainStrategicView').style.display = 'none';
     document.getElementById('createObjectiveView').style.display = 'block';
-    
-    // Clear form
     document.getElementById('newObjectiveText').value = '';
 };
 
@@ -181,30 +336,38 @@ window.saveObjective = function() {
         return;
     }
 
-    if (!strategicData.objectives) strategicData.objectives = [];
-    
-    strategicData.objectives.push({
-        id: Date.now(),
-        text: text
+    fetch(`${API_URL}?action=saveObjective`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            token: sessionStorage.getItem('token'),
+            idPlan: strategicData.policy.idPlan,
+            text: text
+        })
+    }).then(res => res.json()).then(res => {
+        if (res.status === 'ok' || res.result) {
+            Swal.fire('Guardado', 'Objetivo agregado correctamente', 'success');
+            hideCreateObjective();
+            loadStrategicData();
+        }
     });
-
-    renderObjectives();
-    hideCreateObjective();
-    Swal.fire('Guardado', 'Objetivo agregado correctamente', 'success');
 };
 
-window.deleteObjective = function(id) {
+window.deleteObjective = function(idObjetivo) {
     Swal.fire({
         title: '¿Eliminar objetivo?',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
+        confirmButtonText: 'Sí, eliminar'
     }).then((result) => {
         if (result.isConfirmed) {
-            strategicData.objectives = strategicData.objectives.filter(o => o.id !== id);
-            renderObjectives();
-            Swal.fire('Eliminado', '', 'success');
+            fetch(`${API_URL}?action=deleteObjective`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: sessionStorage.getItem('token'), idObjetivo: idObjetivo })
+            }).then(res => res.json()).then(res => {
+                if (res.status === 'ok' || res.result) loadStrategicData();
+            });
         }
     });
 };
@@ -212,7 +375,6 @@ window.deleteObjective = function(id) {
 function renderObjectives() {
     const tbody = document.querySelector('#tableObjectives tbody');
     if (!tbody) return;
-
     if (!strategicData.objectives || strategicData.objectives.length === 0) {
         tbody.innerHTML = `<tr><td colspan="3" class="empty-state">No hay objetivos registrados.</td></tr>`;
         return;
@@ -237,20 +399,16 @@ function renderObjectives() {
     tbody.innerHTML = html;
 }
 
-// Indicator Logic
-window.showIndicators = function(objectiveId) {
-    const objective = strategicData.objectives.find(o => o.id === objectiveId);
+window.showIndicators = function(idObjetivo) {
+    const objective = strategicData.objectives.find(o => o.id == idObjetivo);
     if (!objective) return;
 
-    // View Switching
     document.getElementById('mainStrategicView').style.display = 'none';
     document.getElementById('indicatorsView').style.display = 'block';
-
-    // Set Context
-    document.getElementById('currentObjectiveId').value = objectiveId;
+    
+    document.getElementById('currentObjectiveId').value = idObjetivo;
     document.getElementById('indicatorObjectiveTitle').innerText = `Objetivo: ${objective.text}`;
 
-    // Populate Data (if exists)
     const ind = objective.indicator || {};
     document.getElementById('indFormula').value = ind.formula || '';
     document.getElementById('indResponsible').value = ind.responsible || '';
@@ -270,12 +428,11 @@ window.hideIndicators = function() {
 };
 
 window.saveIndicator = function() {
-    const objectiveId = parseInt(document.getElementById('currentObjectiveId').value);
-    const objective = strategicData.objectives.find(o => o.id === objectiveId);
+    const idObjetivo = parseInt(document.getElementById('currentObjectiveId').value);
     
-    if (!objective) return;
-
-    objective.indicator = {
+    const payload = {
+        token: sessionStorage.getItem('token'),
+        idObjetivo: idObjetivo,
         formula: document.getElementById('indFormula').value,
         responsible: document.getElementById('indResponsible').value,
         expected: document.getElementById('indExpected').value,
@@ -288,105 +445,17 @@ window.saveIndicator = function() {
         date: document.getElementById('indDate').value
     };
 
-    hideIndicators();
-    Swal.fire('Guardado', 'Indicador actualizado correctamente', 'success');
-};
-
-window.addPrinciple = async function() {
-    const { value: text } = await Swal.fire({
-        title: 'Nuevo Principio',
-        input: 'textarea',
-        inputLabel: 'Descripción del Principio',
-        inputPlaceholder: 'Escriba el principio aquí...',
-        inputAttributes: {
-            'aria-label': 'Escriba el principio aquí'
-        },
-        showCancelButton: true,
-        confirmButtonText: 'Agregar',
-        cancelButtonText: 'Cancelar'
-    });
-
-    if (text) {
-        strategicData.principles.push({
-            id: Date.now(),
-            text: text
-        });
-        renderPrinciples();
-        Swal.fire('Agregado', '', 'success');
-    }
-};
-
-window.editPrinciple = async function(id) {
-    const principle = strategicData.principles.find(p => p.id === id);
-    if (!principle) return;
-
-    const { value: text } = await Swal.fire({
-        title: 'Editar Principio',
-        input: 'textarea',
-        inputLabel: 'Descripción del Principio',
-        inputValue: principle.text,
-        inputPlaceholder: 'Escriba el principio aquí...',
-        inputAttributes: {
-            'aria-label': 'Escriba el principio aquí'
-        },
-        showCancelButton: true,
-        confirmButtonText: 'Actualizar',
-        cancelButtonText: 'Cancelar'
-    });
-
-    if (text) {
-        principle.text = text;
-        renderPrinciples();
-        Swal.fire('Actualizado', '', 'success');
-    }
-};
-
-window.deletePrinciple = function(id) {
-    Swal.fire({
-        title: '¿Eliminar principio?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            strategicData.principles = strategicData.principles.filter(p => p.id !== id);
-            renderPrinciples();
-            Swal.fire('Eliminado', '', 'success');
+    fetch(`${API_URL}?action=saveIndicator`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).then(res => res.json()).then(res => {
+        if (res.status === 'ok' || res.result) {
+            Swal.fire('Guardado', 'Indicador actualizado correctamente', 'success');
+            hideIndicators();
+            loadStrategicData(); // Refresh nested structure
+        } else {
+            Swal.fire('Error', 'No se pudo actualizar el indicador', 'error');
         }
-    });
+    }).catch(console.error);
 };
-
-function renderPrinciples() {
-    const tbody = document.querySelector('#tablePrinciples tbody');
-    if (!tbody) return;
-
-    if (strategicData.principles.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="2" class="empty-state">No hay principios registrados.</td></tr>`;
-        return;
-    }
-
-    let html = '';
-    strategicData.principles.forEach(item => {
-        html += `<tr>
-            <td style="white-space: nowrap; display: flex; gap: 5px;">
-                <button class="btn-edit-premium" title="Editar" onclick="editPrinciple(${item.id})">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-delete-premium" title="Eliminar" onclick="deletePrinciple(${item.id})">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </td>
-            <td>${item.text}</td>
-        </tr>`;
-    });
-    tbody.innerHTML = html;
-}
-
-// Check DOM Ready
-// Check DOM Ready
-if (document.readyState === 'loading') {
-    document.addEventListener("DOMContentLoaded", initStrategic);
-} else {
-    initStrategic();
-} 
