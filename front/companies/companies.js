@@ -1,6 +1,7 @@
 import config from "../js/config.js";
 
 const API_URL = `${config.BASE_API_URL}companies.php`;
+const USERS_API_URL = `${config.BASE_API_URL}users.php`;
 const DEPTS_API_URL = `${config.BASE_API_URL}departments.php`;
 const CITIES_API_URL = `${config.BASE_API_URL}cities.php`;
 
@@ -67,6 +68,25 @@ function initDeptoCity() {
             loadCities(e.target.value);
         });
     }
+}
+
+function loadProfessionals() {
+    fetch(`${USERS_API_URL}?profile=ADM`)
+        .then(res => res.json())
+        .then(data => {
+            const select = document.getElementById('profesional');
+            if (select) {
+                let html = '<option value="">Seleccione o escriba...</option>';
+                const users = Array.isArray(data) ? data : data.result;
+                if (users) {
+                    users.forEach(u => {
+                        html += `<option value="${u.nombre}">${u.nombre}</option>`;
+                    });
+                }
+                select.innerHTML = html;
+            }
+        })
+        .catch(console.error);
 }
 
 function loadCompanies() {
@@ -245,7 +265,13 @@ function showFormView(company = null) {
         document.getElementById('nroIdent').value = company.nroIdent || '';
         document.getElementById('gerente').value = company.gerente || '';
         document.getElementById('representante').value = company.representante || '';
-        document.getElementById('profesional').value = company.profesional || '';
+        
+        // Asignar el profesional u opciones por default
+        const profSelect = document.getElementById('profesional');
+        if (profSelect) {
+            profSelect.value = company.profesional || '';
+        }
+
         document.getElementById('estado').value = company.estado || '';
         document.getElementById('fecVincula').value = company.fecVincula || '';
         document.getElementById('fecFin').value = company.fecFin || '';
@@ -457,6 +483,7 @@ window.resetEvalUpload = resetEvalUpload;
 function initializeCompanies() {
     loadDepartments();
     initDeptoCity();
+    loadProfessionals();
 
     // Setup logo preview handler
     const logoFileInput = document.getElementById('logoFile');

@@ -43,6 +43,14 @@ class users extends connection
         return $data;
     }
 
+    public function getUsersByProfile($profile)
+    {
+        $profile = addslashes($profile);
+        $query = "SELECT idUsuario, nombre, email, codusr, idCliente, perfil FROM " . $this->table . " WHERE perfil = '$profile' ORDER BY nombre ASC";
+        return parent::getData($query);
+    }
+
+
     public function post($json)
     {
         $_answers = new answers;

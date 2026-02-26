@@ -21,6 +21,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
         } elseif (!empty($_GET['id'])) {
             echo json_encode($_users->getUser($_GET['id']));
             http_response_code(200);
+        } elseif (!empty($_GET['profile'])) {
+            echo json_encode($_users->getUsersByProfile($_GET['profile']));
+            http_response_code(200);
         } else {
             http_response_code(400);
             echo json_encode($_answers->error_400());

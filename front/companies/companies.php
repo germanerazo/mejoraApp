@@ -202,7 +202,9 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Profesional Asignado *</label>
-                            <input type="text" id="profesional" name="profesional" required>
+                            <select id="profesional" name="profesional" class="form-control" required>
+                                <option value="">Seleccione o escriba...</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>Estado *</label>
