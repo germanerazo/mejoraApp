@@ -1,30 +1,43 @@
-// Data Models
-const processes = {
-    'Estratégicos': [
-        { code: "PE-001", name: "Planeación Estratégica", status: "Vigente", created: "2023-01-15", modified: "2023-06-20" },
-        { code: "PE-002", name: "Gestión de Calidad", status: "Vigente", created: "2023-02-10", modified: "2023-07-05" },
-        { code: "PE-003", name: "Innovación y Desarrollo", status: "Pendiente de aprobación", created: "2023-03-05", modified: "2023-08-12" }
-    ],
-    'Operacionales': [
-        { code: "PO-001", name: "Gestión Comercial", status: "Vigente", created: "2023-01-20", modified: "2023-05-15" },
-        { code: "PO-002", name: "Producción", status: "Vigente", created: "2023-02-01", modified: "2023-06-10" },
-        { code: "PO-003", name: "Logística", status: "Obsoleto", created: "2023-03-10", modified: "2023-04-01" }
-    ],
-    'De Apoyo': [
-        { code: "PA-001", name: "Gestión Humana", status: "Vigente", created: "2023-01-10", modified: "2023-09-01" },
-        { code: "PA-002", name: "Gestión Financiera", status: "Vigente", created: "2023-01-12", modified: "2023-08-20" },
-        { code: "PA-003", name: "Mantenimiento", status: "Pendiente de aprobación", created: "2023-04-05", modified: "2023-07-15" }
-    ]
-};
+import config from "../../js/config.js";
+
+const API_URL = `${config.BASE_API_URL}processes.php`;
 
 // State
+let processes = {
+    'Estratégicos': [],
+    'Operacionales': [],
+    'De Apoyo': []
+};
 let currentTab = 'Estratégicos';
+let idEmpresa = null;
 
 // Initialization
-// Initialization
 function init() {
-    console.log("Process Map Initialized");
-    renderTable(processes[currentTab]);
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    if (user && user.idClient) {
+        idEmpresa = user.idClient;
+        loadProcesses();
+    } else {
+        Swal.fire('Error', 'No se ha encontrado la sesión de la empresa.', 'error');
+    }
+}
+
+function loadProcesses() {
+    fetch(`${API_URL}?idEmpresa=${idEmpresa}`)
+        .then(res => res.json())
+        .then(data => {
+            processes = data;
+            // Handle edge case where backend returns empty object instead of skeleton
+            if(!processes['Estratégicos']) processes['Estratégicos'] = [];
+            if(!processes['Operacionales']) processes['Operacionales'] = [];
+            if(!processes['De Apoyo']) processes['De Apoyo'] = [];
+            
+            renderTable(processes[currentTab]);
+        })
+        .catch(err => {
+            console.error('Error loading processes data:', err);
+            Swal.fire('Error', 'Ocurrió un error al cargar la información', 'error');
+        });
 }
 
 if (document.readyState === 'loading') {
@@ -108,7 +121,8 @@ window.createNewProcess = async function() {
             let sede = '';
             
             if (currentTab === 'Operacionales' || currentTab === 'De Apoyo') {
-                sede = document.getElementById('swal-input-sede').value;
+                const sedeEl = document.getElementById('swal-input-sede');
+                if(sedeEl) sede = sedeEl.value;
             }
 
             if (!name) {
@@ -121,65 +135,59 @@ window.createNewProcess = async function() {
     });
 
     if (formValues) {
-        // Simulate saving data
-        let prefix = 'PE';
-        if (currentTab === 'Operacionales') prefix = 'PO';
-        if (currentTab === 'De Apoyo') prefix = 'PA';
-
-        const newCode = `${prefix}-00${processes[currentTab].length + 1}`;
-        const today = new Date().toISOString().split('T')[0];
         
-        const newProcess = {
-            code: newCode,
+        const payload = {
+            token: sessionStorage.getItem('token'),
+            idEmpresa: idEmpresa,
+            tabName: currentTab,
             name: formValues.name,
             status: formValues.status,
-            created: today,
-            modified: today,
-            // We store 'sede' even if not currently shown in the main table
-            sede: formValues.sede 
+            sede: formValues.sede
         };
 
-        processes[currentTab].push(newProcess);
-        renderTable(processes[currentTab]);
-
-        Swal.fire({
-            icon: 'success',
-            title: '¡Guardado!',
-            text: `El proceso "${formValues.name}" ha sido creado exitosamente.`,
-            timer: 2000,
-            showConfirmButton: false
-        });
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(response => {
+            if (response.status === 'ok' || response.result) {
+                loadProcesses();
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Guardado!',
+                    text: `El proceso "${formValues.name}" ha sido creado exitosamente.`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire('Error', response.result?.error_message || 'No se pudo guardar', 'error');
+            }
+        }).catch(console.error);
     }
 }
 
 window.viewDetails = function(code) {
-    console.log("viewDetails called for:", code);
-    console.log("Current Tab:", currentTab);
-    
-    // Find the process to get its details
     const process = processes[currentTab].find(p => p.code === code);
-    console.log("Found process:", process);
 
     if (process) {
         const baseUrl = '../planear/process/processSheet.php';
         const params = `code=${code}&name=${encodeURIComponent(process.name)}&status=${encodeURIComponent(process.status)}`;
         const fullUrl = `${baseUrl}?${params}`;
         
-        console.log("Navigating via hash to:", fullUrl);
         // Use hash navigation so dashboard loads it embedded
         window.location.hash = encodeURIComponent(fullUrl);
     } else {
-        console.error("Process not found");
         Swal.fire('Error', 'No se encontró la información del proceso.', 'error');
     }
 }
 
-window.editProcess = async function(code) {
-    const processIndex = processes[currentTab].findIndex(p => p.code === code);
-    if (processIndex === -1) return;
+window.editProcess = async function(idProceso) {
+    const process = processes[currentTab].find(p => p.idProceso === idProceso || p.idProceso == idProceso);
+    if (!process) return;
 
-    const process = processes[currentTab][processIndex];
-    let title = `Editar Proceso ${code}`;
+    let title = `Editar Proceso ${process.code}`;
     let extraFields = '';
     let sedeValue = process.sede || '';
 
@@ -227,7 +235,8 @@ window.editProcess = async function(code) {
             let sede = '';
             
             if (currentTab === 'Operacionales' || currentTab === 'De Apoyo') {
-                sede = document.getElementById('swal-input-sede').value;
+                const sedeEl = document.getElementById('swal-input-sede');
+                if(sedeEl) sede = sedeEl.value;
             }
 
             if (!name) {
@@ -240,27 +249,39 @@ window.editProcess = async function(code) {
     });
 
     if (formValues) {
-        // Update data
-        processes[currentTab][processIndex].name = formValues.name;
-        processes[currentTab][processIndex].status = formValues.status;
-        processes[currentTab][processIndex].modified = new Date().toISOString().split('T')[0];
-        if (formValues.sede) {
-            processes[currentTab][processIndex].sede = formValues.sede;
-        }
+        
+        const payload = {
+            token: sessionStorage.getItem('token'),
+            idProceso: process.idProceso,
+            name: formValues.name,
+            status: formValues.status,
+            sede: formValues.sede
+        };
 
-        renderTable(processes[currentTab]);
-
-        Swal.fire({
-            icon: 'success',
-            title: '¡Actualizado!',
-            text: `El proceso "${formValues.name}" ha sido actualizado correctamente.`,
-            timer: 2000,
-            showConfirmButton: false
-        });
+        fetch(API_URL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(response => {
+            if (response.status === 'ok' || response.result) {
+                loadProcesses();
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Actualizado!',
+                    text: `El proceso ha sido actualizado correctamente.`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire('Error', response.result?.error_message || 'No se pudo actualizar', 'error');
+            }
+        }).catch(console.error);
     }
 }
 
-window.deleteProcess = function(code) {
+window.deleteProcess = function(idProceso, code) {
     Swal.fire({
         title: '¿Está seguro?',
         text: `Se eliminará el proceso ${code}. Esta acción no se puede deshacer.`,
@@ -272,20 +293,27 @@ window.deleteProcess = function(code) {
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            // Simulate deletion
-            const index = processes[currentTab].findIndex(p => p.code === code);
-            if (index > -1) {
-                processes[currentTab].splice(index, 1);
-                renderTable(processes[currentTab]);
-                
-                Swal.fire({
-                    title: '¡Eliminado!',
-                    text: `El proceso ${code} ha sido eliminado.`,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            }
+            
+            fetch(API_URL, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: sessionStorage.getItem('token'), idProceso: idProceso })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if(response.status === 'ok' || response.result) {
+                    loadProcesses();
+                    Swal.fire({
+                        title: '¡Eliminado!',
+                        text: `El proceso ${code} ha sido eliminado.`,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire('Error', 'No se pudo eliminar el proceso.', 'error');
+                }
+            });
         }
     });
 }
@@ -294,7 +322,7 @@ window.deleteProcess = function(code) {
 function renderTable(data) {
     const container = document.getElementById("processListContainer");
     
-    if (data.length === 0) {
+    if (!data || data.length === 0) {
         container.innerHTML = `<div class="empty-state">No hay procesos registrados en esta categoría.</div>`;
         return;
     }
@@ -327,10 +355,10 @@ function renderTable(data) {
                     <button class="btn-view-premium" onclick="viewDetails('${item.code}')" title="Ver Detalle">
                         <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn-edit-premium" onclick="editProcess('${item.code}')" title="Editar">
+                    <button class="btn-edit-premium" onclick="editProcess('${item.idProceso}')" title="Editar">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn-delete-premium" onclick="deleteProcess('${item.code}')" title="Eliminar">
+                    <button class="btn-delete-premium" onclick="deleteProcess('${item.idProceso}', '${item.code}')" title="Eliminar">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </td>
