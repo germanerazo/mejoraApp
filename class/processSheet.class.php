@@ -94,6 +94,19 @@ class processSheet extends connection {
         $idValue = isset($data['id']) ? intval($data['id']) : 0;
         
         if ($action === 'delete') {
+            if ($table == 'process_procedure') {
+                $qFicha = "SELECT idEmpresa FROM process_sheet WHERE idFicha = $idFicha";
+                $resFicha = parent::getData($qFicha);
+                if ($resFicha && count($resFicha) > 0) {
+                    $idEmpresa = $resFicha[0]['idEmpresa'];
+                    $qProc = "SELECT file FROM process_procedure WHERE idProcedure = $idValue AND idFicha = $idFicha";
+                    $resProc = parent::getData($qProc);
+                    if ($resProc && count($resProc) > 0 && !empty($resProc[0]['file'])) {
+                        $filePath = dirname(__DIR__) . '/dataClients/' . $idEmpresa . '/procedures/' . $idValue . '_' . $resProc[0]['file'];
+                        if (file_exists($filePath)) @unlink($filePath);
+                    }
+                }
+            }
             $q = "DELETE FROM $table WHERE $pkName = $idValue AND idFicha = $idFicha";
             parent::nonQuery($q);
             $resp = $answers->response;
@@ -123,11 +136,40 @@ class processSheet extends connection {
         }
         else if ($table == 'process_procedure') {
             $name = $this->sanitize($data['item']['name']);
-            $file = $this->sanitize($data['item']['file'] ?? '');
+            $fileName = $this->sanitize($data['item']['file'] ?? '');
+            $fileContent = $data['item']['fileContent'] ?? null;
+            
             if ($action === 'edit') {
-                parent::nonQuery("UPDATE process_procedure SET name='$name', file='$file' WHERE idProcedure=$idValue");
+                if ($fileContent) {
+                    parent::nonQuery("UPDATE process_procedure SET name='$name', file='$fileName' WHERE idProcedure=$idValue");
+                } else {
+                    parent::nonQuery("UPDATE process_procedure SET name='$name' WHERE idProcedure=$idValue");
+                }
             } else {
-                $idValue = parent::nonQueryId("INSERT INTO process_procedure (idFicha, name, file) VALUES ($idFicha, '$name', '$file')");
+                $idValue = parent::nonQueryId("INSERT INTO process_procedure (idFicha, name, file) VALUES ($idFicha, '$name', '$fileName')");
+            }
+            
+            // File writing logic
+            if ($fileContent && $fileName) {
+                if (preg_match('/^data:([a-zA-Z0-9\/\-\.]+);base64,(.*)$/', $fileContent, $matches)) {
+                    $b64 = $matches[2];
+                    $decoded = base64_decode($b64);
+                    
+                    // Get idEmpresa to follow the pattern dataClients/{idEmpresa}/procedures/
+                    $qFicha = "SELECT idEmpresa FROM process_sheet WHERE idFicha = $idFicha";
+                    $resFicha = parent::getData($qFicha);
+                    if ($resFicha && count($resFicha) > 0) {
+                        $idEmpresa = $resFicha[0]['idEmpresa'];
+                        $rootPath = dirname(__DIR__) . "/";
+                        $targetDir = "dataClients/" . $idEmpresa . "/procedures/";
+                        $fullPath = $rootPath . $targetDir;
+                        
+                        if (!is_dir($fullPath)) mkdir($fullPath, 0777, true);
+                        
+                        $path = $fullPath . $idValue . '_' . $fileName;
+                        file_put_contents($path, $decoded);
+                    }
+                }
             }
         }
         else if ($table == 'process_personnel') {

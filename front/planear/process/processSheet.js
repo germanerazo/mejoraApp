@@ -416,16 +416,34 @@ window.addProcedure = async function() {
         focusConfirm: false, showCancelButton: true, confirmButtonText: 'Agregar',
         preConfirm: () => {
             const fileInput = document.getElementById('swal-proc-file');
-            const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : '';
+            const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
             return {
                 name: document.getElementById('swal-proc-name').value,
-                file: fileName
+                fileObj: file
             }
         }
     });
 
     if (formValues && formValues.name) {
-        manageItemDB('add', 'process_procedure', formValues).then(() => loadDynamicData());
+        let fileContent = null;
+        let fileName = '';
+
+        if (formValues.fileObj) {
+            fileName = formValues.fileObj.name;
+            const reader = new FileReader();
+            reader.readAsDataURL(formValues.fileObj);
+            await new Promise(resolve => {
+                reader.onload = () => { fileContent = reader.result; resolve(); };
+            });
+        }
+
+        const payloadObj = {
+            name: formValues.name,
+            file: fileName,
+            fileContent: fileContent
+        };
+
+        manageItemDB('add', 'process_procedure', payloadObj).then(() => loadDynamicData());
     }
 }
 
@@ -448,15 +466,33 @@ window.editProcedure = async function(id) {
         focusConfirm: false, showCancelButton: true, confirmButtonText: 'Actualizar',
         preConfirm: () => {
             const fileInput = document.getElementById('swal-proc-file');
+            const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
             return {
                 name: document.getElementById('swal-proc-name').value,
-                file: fileInput.files.length > 0 ? fileInput.files[0].name : item.file
+                fileObj: file
             }
         }
     });
 
     if (formValues && formValues.name) {
-        manageItemDB('edit', 'process_procedure', formValues, id).then(() => loadDynamicData());
+        let fileContent = null;
+        let fileName = formValues.fileObj ? formValues.fileObj.name : item.file;
+
+        if (formValues.fileObj) {
+            const reader = new FileReader();
+            reader.readAsDataURL(formValues.fileObj);
+            await new Promise(resolve => {
+                reader.onload = () => { fileContent = reader.result; resolve(); };
+            });
+        }
+
+        const payloadObj = {
+            name: formValues.name,
+            file: fileName,
+            fileContent: fileContent
+        };
+
+        manageItemDB('edit', 'process_procedure', payloadObj, id).then(() => loadDynamicData());
     }
 }
 
@@ -477,13 +513,18 @@ function renderProcedures() {
     }
     let html = '';
     procedures.forEach(item => {
+        let fileLink = '-';
+        if (item.file) {
+            fileLink = `<a href="../../dataClients/${idEmpresa}/procedures/${item.idProcedure}_${item.file}" target="_blank" download="${item.file}" style="color: #4361ee; font-weight: 500; text-decoration: none;">📄 ${item.file}</a>`;
+        }
+
         html += `<tr>
             <td style="width: 120px;">
                 <button class="btn-edit-premium" onclick="editProcedure(${item.idProcedure})"><i class="fas fa-edit"></i></button>
                 <button class="btn-delete-premium" onclick="deleteProcedure(${item.idProcedure})"><i class="fas fa-trash-alt"></i></button>
             </td>
             <td>${item.name}</td>
-            <td>📄 ${item.file || '-'}</td>
+            <td>${fileLink}</td>
         </tr>`;
     });
     tbody.innerHTML = html;
