@@ -513,18 +513,24 @@ function renderProcedures() {
     }
     let html = '';
     procedures.forEach(item => {
-        let fileLink = '-';
-        if (item.file) {
-            fileLink = `<a href="../../dataClients/${idEmpresa}/procedures/${item.idProcedure}_${item.file}" target="_blank" download="${item.file}" style="color: #4361ee; font-weight: 500; text-decoration: none;">📄 ${item.file}</a>`;
-        }
+        const relPath = item.file ? `dataClients/${idEmpresa}/procedures/${item.idProcedure}_${item.file}` : null;
+        const apiDownloadLink = relPath ? config.BASE_API_URL + 'download.php?file=' + encodeURIComponent(relPath) : '#';
 
         html += `<tr>
-            <td style="width: 120px;">
+            <td style="width: 150px; display: flex; gap: 5px;">
                 <button class="btn-edit-premium" onclick="editProcedure(${item.idProcedure})"><i class="fas fa-edit"></i></button>
-                <button class="btn-delete-premium" onclick="deleteProcedure(${item.idProcedure})"><i class="fas fa-trash-alt"></i></button>
-            </td>
+                <button class="btn-delete-premium" onclick="deleteProcedure(${item.idProcedure})"><i class="fas fa-trash-alt"></i></button>`;
+        
+        if (item.file) {
+            html += `
+                <a href="${apiDownloadLink}" title="Descargar" style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background-color: #2ecc71; color: white; border-radius: 6px; text-decoration: none; border: none; cursor: pointer; font-size: 14px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#27ae60'" onmouseout="this.style.backgroundColor='#2ecc71'">
+                    <i class="fas fa-download"></i>
+                </a>`;
+        }
+        
+        html += `</td>
             <td>${item.name}</td>
-            <td>${fileLink}</td>
+            <td>${item.file ? `<a href="${apiDownloadLink}" target="_blank" style="color: #4361ee; font-weight: 500; text-decoration: none;">📄 ${item.file}</a>` : '-'}</td>
         </tr>`;
     });
     tbody.innerHTML = html;
