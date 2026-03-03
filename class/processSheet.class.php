@@ -46,6 +46,23 @@ class processSheet extends connection {
         return $response;
     }
 
+    public function getPersonnelConsolidado($idEmpresa) {
+        $idEmpresa = intval($idEmpresa);
+        // Join process_personnel -> process_sheet -> processes para obtener nombre de proceso
+        $q = "SELECT pp.*, ps.code, p.name as processName
+              FROM process_personnel pp
+              INNER JOIN process_sheet ps ON pp.idFicha = ps.idFicha
+              LEFT JOIN processes p ON ps.code = p.code AND ps.idEmpresa = p.idEmpresa
+              WHERE ps.idEmpresa = $idEmpresa
+              ORDER BY ps.code ASC, pp.role ASC";
+        $rows = parent::getData($q);
+        foreach ($rows as &$row) {
+            $row['responsibilities'] = json_decode($row['responsibilities'], true) ?: [];
+            $row['accountabilities'] = json_decode($row['accountabilities'], true) ?: [];
+        }
+        return $rows;
+    }
+
     public function saveSheet($data) {
         $answers = new answers;
         if(!$this->verifyToken($data, $answers)) return $answers->response;
@@ -176,14 +193,15 @@ class processSheet extends connection {
             $role = $this->sanitize($data['item']['role'] ?? '');
             $reportsTo = $this->sanitize($data['item']['reportsTo'] ?? '');
             $quantity = $this->sanitize($data['item']['quantity'] ?? '');
+            $frequency = $this->sanitize($data['item']['accountabilityFrequency'] ?? '');
             // Expect JSON array from front
             $respJson = addslashes(json_encode($data['item']['responsibilities'] ?? []));
             $accJson = addslashes(json_encode($data['item']['accountabilities'] ?? []));
             
             if ($action === 'edit') {
-                parent::nonQuery("UPDATE process_personnel SET role='$role', reportsTo='$reportsTo', quantity='$quantity', responsibilities='$respJson', accountabilities='$accJson' WHERE idPersonnel=$idValue");
+                parent::nonQuery("UPDATE process_personnel SET role='$role', reportsTo='$reportsTo', quantity='$quantity', responsibilities='$respJson', accountabilities='$accJson', accountabilityFrequency='$frequency' WHERE idPersonnel=$idValue");
             } else {
-                $idValue = parent::nonQueryId("INSERT INTO process_personnel (idFicha, role, reportsTo, quantity, responsibilities, accountabilities) VALUES ($idFicha, '$role', '$reportsTo', '$quantity', '$respJson', '$accJson')");
+                $idValue = parent::nonQueryId("INSERT INTO process_personnel (idFicha, role, reportsTo, quantity, responsibilities, accountabilities, accountabilityFrequency) VALUES ($idFicha, '$role', '$reportsTo', '$quantity', '$respJson', '$accJson', '$frequency')");
             }
         }
 

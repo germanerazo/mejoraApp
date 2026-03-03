@@ -545,6 +545,7 @@ window.addPersonnel = async function() {
             <input id="swal-pers-role" class="swal2-input" placeholder="Cargo">
             <input id="swal-pers-report" class="swal2-input" placeholder="Cargo al que reporta">
             <input type="number" id="swal-pers-qty" class="swal2-input" placeholder="Número de personas">
+            <input id="swal-pers-freq" class="swal2-input" placeholder="Frecuencia de Rendición de Cuentas">
         `,
         focusConfirm: false, showCancelButton: true, confirmButtonText: 'Agregar',
         preConfirm: () => {
@@ -552,6 +553,7 @@ window.addPersonnel = async function() {
                 role: document.getElementById('swal-pers-role').value,
                 reportsTo: document.getElementById('swal-pers-report').value,
                 quantity: document.getElementById('swal-pers-qty').value,
+                accountabilityFrequency: document.getElementById('swal-pers-freq').value,
                 responsibilities: [],
                 accountabilities: []
             }
@@ -573,6 +575,7 @@ window.editPersonnel = async function(id) {
             <input id="swal-pers-role" class="swal2-input" value="${item.role}">
             <input id="swal-pers-report" class="swal2-input" value="${item.reportsTo}">
             <input type="number" id="swal-pers-qty" class="swal2-input" value="${item.quantity}">
+            <input id="swal-pers-freq" class="swal2-input" placeholder="Frecuencia de Rendición" value="${item.accountabilityFrequency || ''}">
         `,
         focusConfirm: false, showCancelButton: true, confirmButtonText: 'Actualizar',
         preConfirm: () => {
@@ -580,6 +583,7 @@ window.editPersonnel = async function(id) {
                 role: document.getElementById('swal-pers-role').value,
                 reportsTo: document.getElementById('swal-pers-report').value,
                 quantity: document.getElementById('swal-pers-qty').value,
+                accountabilityFrequency: document.getElementById('swal-pers-freq').value,
                 responsibilities: item.responsibilities,
                 accountabilities: item.accountabilities
             }
@@ -603,67 +607,85 @@ window.managePersonnelDetails = async function(id) {
     const item = personnel.find(p => p.idPersonnel == id);
     if (!item) return;
 
-    let tempResp = [...(item.responsibilities || [])];
-    let tempAcc = [...(item.accountabilities || [])];
+    const FREQUENCIES = ['Diario', 'Semanal', 'Quincenal', 'Mensual', 'Trimestral', 'Semestral', 'Anual'];
+
+    // Normalize: responsibilities = strings[], accountabilities = {text, frequency}[]
+    let tempResp = [...(item.responsibilities || [])].map(r => typeof r === 'string' ? r : (r.text || ''));
+    let tempAcc  = [...(item.accountabilities  || [])].map(a =>
+        typeof a === 'string' ? { text: a, frequency: 'Mensual' } : { text: a.text || '', frequency: a.frequency || 'Mensual' }
+    );
+
+    const freqOptions = FREQUENCIES.map(f => `<option value="${f}">${f}</option>`).join('');
 
     const renderLists = () => {
         const respList = document.getElementById('list-resp');
-        const accList = document.getElementById('list-acc');
-        
+        const accList  = document.getElementById('list-acc');
+
         if (respList) {
             respList.innerHTML = tempResp.map((r, i) => `
-                <li style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 5px; background: #f8f9fa; border-radius: 4px;">
-                    <span>${r}</span>
-                    <button class="btn-icon btn-delete-small" data-type="resp" data-index="${i}" style="color: #dc3545; border: none; background: none; cursor: pointer;">✕</button>
+                <li style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;padding:6px 8px;background:#f8f9fa;border-radius:4px;gap:8px;">
+                    <span style="flex:1;font-size:13px;">${r}</span>
+                    <button class="btn-icon btn-delete-small" data-type="resp" data-index="${i}" style="color:#dc3545;border:none;background:none;cursor:pointer;font-size:14px;">✕</button>
                 </li>
-            `).join('');
+            `).join('') || '<li style="color:#999;font-size:13px;padding:5px;">Sin responsabilidades.</li>';
         }
 
         if (accList) {
-            accList.innerHTML = tempAcc.map((r, i) => `
-                <li style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 5px; background: #f8f9fa; border-radius: 4px;">
-                    <span>${r}</span>
-                    <button class="btn-icon btn-delete-small" data-type="acc" data-index="${i}" style="color: #dc3545; border: none; background: none; cursor: pointer;">✕</button>
+            accList.innerHTML = tempAcc.map((a, i) => `
+                <li style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;padding:6px 8px;background:#f8f9fa;border-radius:4px;gap:8px;">
+                    <div style="flex:1;">
+                        <div style="font-size:13px;font-weight:500;">${a.text}</div>
+                        <span style="display:inline-block;background:#e3f0ff;color:#4361ee;border-radius:3px;padding:1px 6px;font-size:11px;margin-top:2px;">${a.frequency}</span>
+                    </div>
+                    <button class="btn-icon btn-delete-small" data-type="acc" data-index="${i}" style="color:#dc3545;border:none;background:none;cursor:pointer;font-size:14px;margin-top:2px;">✕</button>
                 </li>
-            `).join('');
+            `).join('') || '<li style="color:#999;font-size:13px;padding:5px;">Sin rendiciones.</li>';
         }
     };
 
     const result = await Swal.fire({
         title: `Detalles: ${item.role}`,
-        width: '800px',
+        width: '860px',
         html: `
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;text-align:left;">
                 <div>
-                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 10px;">Responsabilidades</h3>
-                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                        <input id="input-resp" class="swal2-input" placeholder="Nueva responsabilidad" style="margin: 0; height: 35px; flex-grow: 1; font-size: 13px;">
-                        <button id="btn-add-resp" class="btn-new-record" style="padding: 0 10px; border-radius: 4px !important; width: 35px; height: 35px; min-width: 0;">+</button>
+                    <h3 style="font-size:15px;font-weight:600;margin-bottom:10px;color:#333;">Responsabilidades</h3>
+                    <div style="display:flex;gap:5px;margin-bottom:10px;">
+                        <input id="input-resp" class="swal2-input" placeholder="Nueva responsabilidad" style="margin:0;height:35px;flex-grow:1;font-size:13px;">
+                        <button id="btn-add-resp" class="btn-new-record" style="padding:0 10px;border-radius:4px !important;width:35px;height:35px;min-width:0;">+</button>
                     </div>
-                    <ul id="list-resp" style="list-style: none; padding: 0; max-height: 200px; overflow-y: auto;"></ul>
+                    <ul id="list-resp" style="list-style:none;padding:0;max-height:220px;overflow-y:auto;"></ul>
                 </div>
-
                 <div>
-                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 10px;">Rendición de Cuentas</h3>
-                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                        <input id="input-acc" class="swal2-input" placeholder="Nueva rendición" style="margin: 0; height: 35px; flex-grow: 1; font-size: 13px;">
-                        <button id="btn-add-acc" class="btn-new-record" style="padding: 0 10px; border-radius: 4px !important; width: 35px; height: 35px; min-width: 0;">+</button>
+                    <h3 style="font-size:15px;font-weight:600;margin-bottom:10px;color:#333;">Rendición de Cuentas</h3>
+                    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
+                        <input id="input-acc" class="swal2-input" placeholder="Descripción de rendición" style="margin:0;height:35px;font-size:13px;">
+                        <div style="display:flex;gap:5px;">
+                            <select id="select-freq" class="swal2-input" style="margin:0;height:35px;flex-grow:1;font-size:13px;padding:0 8px;">${freqOptions}</select>
+                            <button id="btn-add-acc" class="btn-new-record" style="padding:0 10px;border-radius:4px !important;width:35px;height:35px;min-width:0;">+</button>
+                        </div>
                     </div>
-                    <ul id="list-acc" style="list-style: none; padding: 0; max-height: 200px; overflow-y: auto;"></ul>
+                    <ul id="list-acc" style="list-style:none;padding:0;max-height:220px;overflow-y:auto;"></ul>
                 </div>
             </div>
         `,
         showCancelButton: true, confirmButtonText: 'Guardar Cambios',
         didOpen: () => {
             renderLists();
+
             document.getElementById('btn-add-resp').addEventListener('click', () => {
                 const val = document.getElementById('input-resp').value.trim();
                 if (val) { tempResp.push(val); document.getElementById('input-resp').value = ''; renderLists(); }
             });
 
             document.getElementById('btn-add-acc').addEventListener('click', () => {
-                const val = document.getElementById('input-acc').value.trim();
-                if (val) { tempAcc.push(val); document.getElementById('input-acc').value = ''; renderLists(); }
+                const text = document.getElementById('input-acc').value.trim();
+                const frequency = document.getElementById('select-freq').value;
+                if (text) {
+                    tempAcc.push({ text, frequency });
+                    document.getElementById('input-acc').value = '';
+                    renderLists();
+                }
             });
 
             // Prevent duplicating listeners using a flag if needed, but since it's a new modal we attach once globally during didOpen or carefully use event delegation
@@ -700,7 +722,15 @@ function renderPersonnel() {
     let html = '';
     personnel.forEach(item => {
         const respCount = item.responsibilities ? item.responsibilities.length : 0;
-        const accCount = item.accountabilities ? item.accountabilities.length : 0;
+        const accItems  = (item.accountabilities || []).map(a =>
+            typeof a === 'string' ? { text: a, frequency: '' } : a
+        );
+        const accCount = accItems.length;
+
+        const accPreview = accItems.slice(0, 2).map(a =>
+            `<div style="font-size:11px;margin-bottom:3px;">${a.text} <span style="background:#e3f0ff;color:#4361ee;border-radius:3px;padding:1px 5px;font-size:10px;">${a.frequency}</span></div>`
+        ).join('');
+        const accMore = accCount > 2 ? `<div style="font-size:11px;color:#999;">+${accCount - 2} más…</div>` : '';
 
         html += `<tr>
             <td style="width: 120px;">
@@ -716,7 +746,7 @@ function renderPersonnel() {
                 </button>
             </td>
             <td style="text-align: center;">${respCount}</td>
-            <td style="text-align: center;">${accCount}</td>
+            <td>${accPreview}${accMore}</td>
         </tr>`;
     });
     tbody.innerHTML = html;

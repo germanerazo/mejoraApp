@@ -20,7 +20,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
     case 'GET':
         header('Content-Type: application/json');
-        if (isset($_GET['idEmpresa']) && isset($_GET['code'])) {
+        if (isset($_GET['action']) && $_GET['action'] === 'getPersonnelConsolidado' && isset($_GET['idEmpresa'])) {
+            $data = $_sheet->getPersonnelConsolidado($_GET['idEmpresa']);
+            echo json_encode($data);
+            http_response_code(200);
+        } elseif (isset($_GET['idEmpresa']) && isset($_GET['code'])) {
             $data = $_sheet->getSheetData($_GET['idEmpresa'], $_GET['code']);
             echo json_encode($data);
             http_response_code(200);
