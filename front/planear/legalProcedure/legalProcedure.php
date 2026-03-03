@@ -1,22 +1,22 @@
 <!-- CSS -->
 <link rel="stylesheet" href="../planear/process/processMap.css">
-<link rel="stylesheet" href="../planear/hazards/hazards.css?v=1.0">
+<link rel="stylesheet" href="../planear/legalProcedure/legalProcedure.css?v=1.0">
 
 <div class="page-header">
-    <h1 class="page-title">Procedimiento Peligros y Riesgos</h1>
+    <h1 class="page-title">Procedimiento Requisitos Legales</h1>
 </div>
 
 <div class="content-card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <p style="color: #666; margin: 0;">Gestión de documentos de procedimientos de peligros y riesgos.</p>
-        <button id="btnCreateHazard" class="btn-premium btn-replace-premium" onclick="addHazard()">
+        <p style="color: #666; margin: 0;">Gestión de documentos para el cumplimiento de requisitos legales.</p>
+        <button id="btnCreateLegal" class="btn-premium btn-replace-premium" onclick="addLegal()">
             <i class="fas fa-plus-circle"></i> Nuevo Procedimiento
         </button>
     </div>
 
     <!-- Listado -->
     <div class="table-responsive">
-        <table class="modern-table" id="hazardsTable">
+        <table class="modern-table" id="legalTable">
             <thead>
                 <tr>
                     <th>Acciones</th>
@@ -53,4 +53,4 @@
     </div>
 </div>
 
-<script type="module" src="../planear/hazards/hazards.js?v=1.7"></script>
+<script type="module" src="../planear/legalProcedure/legalProcedure.js?v=1.0"></script>

@@ -1,5 +1,5 @@
 <!-- CSS -->
-<link rel="stylesheet" href="../process/processMap.css">
+<link rel="stylesheet" href="../planear/process/processMap.css">
 
 <div class="page-header">
     <h1 class="page-title">Consolidado Personal del Proceso</h1>
@@ -35,4 +35,4 @@
     <div id="personnelStats" style="margin-top: 15px; display: none; color: #888; font-size: 13px; text-align: right;"></div>
 </div>
 
-<script type="module" src="../planear/process/processPersonnel.js?v=1.1"></script>
+<script type="module" src="../planear/personnel/processPersonnel.js?v=1.1"></script>

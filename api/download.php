@@ -24,8 +24,10 @@ if (file_exists($filePath)) {
     $mimeType = finfo_file($finfo, $filePath);
     finfo_close($finfo);
 
-    if ($mimeType === false) {
-        $mimeType = 'application/octet-stream';
+    if ($mimeType === false || $mimeType === 'application/octet-stream') {
+        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        if ($ext === 'pdf') $mimeType = 'application/pdf';
+        else $mimeType = 'application/octet-stream';
     }
 
     // Limpiar el buffer si se estaba usando

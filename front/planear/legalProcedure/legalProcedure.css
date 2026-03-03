@@ -1,0 +1,144 @@
+/* Legal Procedure Module Styles */
+
+.btn-premium {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    text-decoration: none;
+}
+
+.btn-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.btn-premium:active {
+    transform: translateY(0);
+}
+
+.btn-replace-premium {
+    background: linear-gradient(135deg, #4361ee, #3f37c9);
+    color: white;
+}
+
+.btn-replace-premium:hover {
+    background: linear-gradient(135deg, #3f37c9, #3a0ca3);
+}
+
+.btn-delete-premium-red {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.btn-delete-premium-red:hover {
+    background: #dc2626;
+    color: white;
+}
+
+.btn-icon-premium {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 10px;
+}
+
+.btn-preview-pdf {
+    background: rgba(139, 92, 246, 0.1);
+    color: #7c3aed;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.btn-preview-pdf:hover {
+    background: #7c3aed;
+    color: white;
+}
+
+.btn-download-pdf {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.btn-download-pdf:hover {
+    background: #059669;
+    color: white;
+}
+
+/* Preview Panel Custom Styling */
+#previewPanel {
+    margin-top: 24px;
+    animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#pdfViewer {
+    background: #f1f5f9;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+#noPdfMessage {
+    background: #ffffff;
+    border: 2px dashed #e2e8f0;
+    margin: 20px;
+    border-radius: 12px;
+}
+
+/* Drag and Drop Zone */
+.drop-zone {
+    border: 2px dashed #ccc;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #fbfbfb;
+    margin-top: 10px;
+}
+
+.drop-zone:hover,
+.drop-zone.drag-over {
+    border-color: #4361ee;
+    background: rgba(67, 97, 238, 0.04);
+}
+
+.drop-zone i {
+    font-size: 32px;
+    color: #cbd5e1;
+    margin-bottom: 12px;
+    transition: color 0.3s;
+}
+
+.drop-zone:hover i,
+.drop-zone.drag-over i {
+    color: #4361ee;
+}
+
+#sw-fname {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #4361ee;
+    word-break: break-all;
+}

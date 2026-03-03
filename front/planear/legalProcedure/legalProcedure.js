@@ -1,8 +1,8 @@
 import config from "../../js/config.js";
 
-const API_URL = `${config.BASE_API_URL}hazards.php`;
+const API_URL = `${config.BASE_API_URL}legalProcedure.php`;
 
-let hazards   = [];
+let procedures = [];
 let idEmpresa = null;
 
 // ── Init ───────────────────────────────────────────────────────────────────
@@ -10,7 +10,7 @@ const init = () => {
     const user = JSON.parse(sessionStorage.getItem('user'));
     if (user && user.idClient) {
         idEmpresa = user.idClient;
-        loadHazards();
+        loadProcedures();
     } else {
         Swal.fire('Error', 'No se encontró la sesión de empresa.', 'error');
     }
@@ -23,48 +23,45 @@ if (document.readyState === 'loading') {
 }
 
 // ── Load ───────────────────────────────────────────────────────────────────
-function loadHazards() {
-    console.log("Intentando cargar procedimientos para empresa:", idEmpresa);
+function loadProcedures() {
     fetch(`${API_URL}?idEmpresa=${idEmpresa}`)
         .then(r => r.json())
         .then(data => {
-            console.log("Respuesta API hazards:", data);
-            // Manejo robusto de la respuesta
             if (Array.isArray(data)) {
-                hazards = data;
+                procedures = data;
             } else if (data && data.result && Array.isArray(data.result)) {
-                hazards = data.result;
+                procedures = data.result;
             } else {
-                hazards = [];
+                procedures = [];
             }
             renderTable();
         })
         .catch(err => { 
             console.error('Error cargando procedimientos:', err);
-            hazards = []; 
+            procedures = []; 
             renderTable(); 
         });
 }
 
 // ── Render table ───────────────────────────────────────────────────────────
 function renderTable() {
-    const tbody = document.querySelector('#hazardsTable tbody');
-    const btnNew = document.getElementById('btnCreateHazard');
+    const tbody = document.querySelector('#legalTable tbody');
+    const btnNew = document.getElementById('btnCreateLegal');
     if (!tbody) return;
 
-    if (!hazards.length) {
+    if (!procedures.length) {
         tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No hay procedimientos registrados.</td></tr>`;
         if (btnNew) btnNew.style.display = 'block';
+        closePreview();
         return;
     }
 
-    // Single mode: only show the first one if somehow multiple exist
+    // Single mode: only show the first one
     if (btnNew) {
         btnNew.setAttribute('style', 'display: none !important');
     }
-    const item = hazards[0];
+    const item = procedures[0];
     
-    // Escapar título para evitar errores en onclick
     const safeTitle = (item.titulo || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
     
     let html = '';
@@ -79,17 +76,17 @@ function renderTable() {
 
     html += `<tr>
         <td style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-            <button class="btn-premium btn-replace-premium" onclick="editHazard(${item.idHazard})" title="Editar o Reemplazar este documento">
+            <button class="btn-premium btn-replace-premium" onclick="editLegal(${item.idLegal})" title="Reemplazar documento">
                 <i class="fas fa-sync-alt"></i> Reemplazar
             </button>
-            <button class="btn-premium btn-icon-premium btn-delete-premium-red" onclick="deleteHazard(${item.idHazard})" title="Eliminar registro">
+            <button class="btn-premium btn-icon-premium btn-delete-premium-red" onclick="deleteLegal(${item.idLegal})" title="Eliminar">
                 <i class="fas fa-trash-alt"></i>
             </button>
             ${hasFile ? `
-            <button onclick="previewPdf('${previewUrl}','${safeTitle}','${fileName}')" class="btn-premium btn-icon-premium btn-preview-pdf" title="Vista previa del PDF">
+            <button onclick="previewPdf('${previewUrl}','${safeTitle}','${fileName}')" class="btn-premium btn-icon-premium btn-preview-pdf" title="Vista previa">
                 <i class="fas fa-eye"></i>
             </button>
-            <a href="${downloadUrl}" class="btn-premium btn-icon-premium btn-download-pdf" title="Descargar archivo original">
+            <a href="${downloadUrl}" class="btn-premium btn-icon-premium btn-download-pdf" title="Descargar">
                 <i class="fas fa-download"></i>
             </a>` : ''}
         </td>
@@ -105,11 +102,8 @@ function renderTable() {
 
     tbody.innerHTML = html;
 
-    // Previsualización automática si existe un archivo
     if (hasFile) {
-        const title = item.titulo || 'Procedimiento';
-        const file = item.rutaArchivo.split('/').pop();
-        previewPdf(previewUrl, title, file);
+        previewPdf(previewUrl, item.titulo || 'Procedimiento', fileName);
     } else {
         closePreview();
     }
@@ -135,7 +129,6 @@ window.previewPdf = function(url, title, fileName) {
 };
 
 window.closePreview = function() {
-    const panel  = document.getElementById('previewPanel');
     const iframe = document.getElementById('pdfViewer');
     const noPdf  = document.getElementById('noPdfMessage');
     const titleEl  = document.getElementById('previewTitle');
@@ -158,24 +151,17 @@ const setupDragAndDrop = () => {
 
     if (!dropZone || !fileInput) return;
 
-    ['dragover', 'dragenter'].forEach(eventName => {
-        dropZone.addEventListener(eventName, (e) => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
-        });
+    ['dragover', 'dragenter'].forEach(eName => {
+        dropZone.addEventListener(eName, (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
     });
 
-    ['dragleave', 'dragend', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('drag-over');
-        });
+    ['dragleave', 'dragend', 'drop'].forEach(eName => {
+        dropZone.addEventListener(eName, (e) => { e.preventDefault(); dropZone.classList.remove('drag-over'); });
     });
 
     dropZone.addEventListener('drop', (e) => {
         const files = e.dataTransfer.files;
         if (files.length) {
-            // Check if it's a PDF
             if (files[0].type !== 'application/pdf') {
                 Swal.showValidationMessage('Solo se permiten archivos PDF');
                 return;
@@ -187,40 +173,37 @@ const setupDragAndDrop = () => {
     });
 
     fileInput.addEventListener('change', () => {
-        if (fileInput.files.length) {
-            if (fileNameDisplay) fileNameDisplay.textContent = 'Archivo: ' + fileInput.files[0].name;
+        if (fileInput.files.length && fileNameDisplay) {
+            fileNameDisplay.textContent = 'Archivo: ' + fileInput.files[0].name;
         }
     });
 };
 
 // ── Add ────────────────────────────────────────────────────────────────────
-window.addHazard = async function() {
+window.addLegal = async function() {
     const { value: fv } = await Swal.fire({
-        title: 'Nuevo Procedimiento',
+        title: 'Nuevo Procedimiento Legal',
         width: '560px',
         html: `
             <div style="text-align:left; margin-bottom:15px;">
                 <label class="input-label">Título</label>
-                <input id="sw-titulo" class="swal2-input" placeholder="Ej: Protocolo de Seguridad">
+                <input id="sw-titulo" class="swal2-input" placeholder="Ej: Manual de Requisitos Legales">
             </div>
             <div style="text-align:left; margin-bottom:15px;">
                 <label class="input-label">Descripción</label>
                 <textarea id="sw-desc" class="swal2-textarea" placeholder="Breve descripción..." style="height:80px;"></textarea>
             </div>
             <div style="text-align:left; margin-bottom:15px;">
-                <label class="input-label">Fecha del documento</label>
+                <label class="input-label">Fecha</label>
                 <input type="date" id="sw-fecha" class="swal2-input" value="${new Date().toISOString().split('T')[0]}">
             </div>
-
             <div id="sw-drop-zone" class="drop-zone" onclick="document.getElementById('sw-file').click()">
                 <i class="fas fa-cloud-upload-alt"></i>
                 <div style="font-size:14px; color:#475569; font-weight:600;">Haz clic o arrastra un PDF aquí</div>
-                <div style="font-size:12px; color:#94a3b8; margin-top:4px;">Solo archivos PDF</div>
                 <div id="sw-fname"></div>
             </div>
             <input type="file" id="sw-file" accept=".pdf" style="display:none;">
         `,
-        focusConfirm: false,
         showCancelButton: true,
         confirmButtonText: '<i class="fas fa-save"></i> Guardar',
         didOpen: setupDragAndDrop,
@@ -239,7 +222,6 @@ window.addHazard = async function() {
     });
 
     if (!fv) return;
-
     const fd = new FormData();
     fd.append('token', sessionStorage.getItem('token'));
     fd.append('idEmpresa', idEmpresa);
@@ -251,14 +233,9 @@ window.addHazard = async function() {
     fetch(API_URL, { method: 'POST', body: fd })
         .then(r => r.json())
         .then(resp => {
-            if (resp.status === 'ok' || resp.result?.idHazard) {
+            if (resp.status === 'ok' || resp.result?.idLegal) {
                 Swal.fire({ icon: 'success', title: 'Guardado', timer: 1500, showConfirmButton: false });
-                loadHazards();
-                // Si tiene archivo, abrir preview automáticamente
-                if (fv.file && resp.result?.rutaArchivo) {
-                    const url = `${config.BASE_API_URL}download.php?file=${encodeURIComponent(resp.result.rutaArchivo)}&inline=1`;
-                    setTimeout(() => previewPdf(url, fv.titulo, fv.file.name), 1600);
-                }
+                loadProcedures();
             } else {
                 Swal.fire('Error', resp.result?.error_message || 'No se pudo guardar', 'error');
             }
@@ -267,14 +244,14 @@ window.addHazard = async function() {
 };
 
 // ── Edit ───────────────────────────────────────────────────────────────────
-window.editHazard = async function(id) {
-    const item = hazards.find(h => h.idHazard == id);
+window.editLegal = async function(id) {
+    const item = procedures.find(p => p.idLegal == id);
     if (!item) return;
 
     const currentFile = item.rutaArchivo ? item.rutaArchivo.split('/').pop() : 'Sin archivo';
 
     const { value: fv } = await Swal.fire({
-        title: 'Reemplazar Procedimiento',
+        title: 'Reemplazar Procedimiento Legal',
         width: '560px',
         html: `
             <div style="text-align:left; margin-bottom:15px;">
@@ -286,19 +263,17 @@ window.editHazard = async function(id) {
                 <textarea id="sw-desc" class="swal2-textarea" style="height:80px;">${item.descripcion || ''}</textarea>
             </div>
             <div style="text-align:left; margin-bottom:15px;">
-                <label class="input-label">Fecha del documento</label>
+                <label class="input-label">Fecha</label>
                 <input type="date" id="sw-fecha" class="swal2-input" value="${item.fechaCreacion}">
             </div>
-
             <div id="sw-drop-zone" class="drop-zone" onclick="document.getElementById('sw-file').click()">
                 <i class="fas fa-sync-alt"></i>
                 <div style="font-size:14px; color:#475569; font-weight:600;">Arrastra un nuevo PDF para reemplazar</div>
-                <div style="font-size:12px; color:#94a3b8; margin-top:4px;">Archivo actual: ${currentFile}</div>
+                <div style="font-size:12px; color:#94a3b8; margin-top:4px;">Actual: ${currentFile}</div>
                 <div id="sw-fname"></div>
             </div>
             <input type="file" id="sw-file" accept=".pdf" style="display:none;">
         `,
-        focusConfirm: false,
         showCancelButton: true,
         confirmButtonText: '<i class="fas fa-sync-alt"></i> Actualizar',
         didOpen: setupDragAndDrop,
@@ -315,10 +290,9 @@ window.editHazard = async function(id) {
     });
 
     if (!fv) return;
-
     const fd = new FormData();
     fd.append('token', sessionStorage.getItem('token'));
-    fd.append('idHazard', id);
+    fd.append('idLegal', id);
     fd.append('idEmpresa', idEmpresa);
     fd.append('titulo', fv.titulo);
     fd.append('descripcion', fv.descripcion);
@@ -328,9 +302,9 @@ window.editHazard = async function(id) {
     fetch(`${API_URL}?_method=PUT`, { method: 'POST', body: fd })
         .then(r => r.json())
         .then(resp => {
-            if (resp.status === 'ok' || resp.result?.idHazard) {
+            if (resp.status === 'ok' || resp.result?.idLegal) {
                 Swal.fire({ icon: 'success', title: 'Actualizado', timer: 1500, showConfirmButton: false });
-                loadHazards();
+                loadProcedures();
             } else {
                 Swal.fire('Error', resp.result?.error_message || 'No se pudo actualizar', 'error');
             }
@@ -339,28 +313,27 @@ window.editHazard = async function(id) {
 };
 
 // ── Delete ─────────────────────────────────────────────────────────────────
-window.deleteHazard = function(id) {
+window.deleteLegal = function(id) {
     Swal.fire({
-        title: '¿Eliminar procedimiento?',
-        text: 'Esta acción también eliminará el archivo PDF del servidor.',
+        title: '¿Eliminar procedimiento legal?',
+        text: 'Esta acción también eliminará el archivo del servidor.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e74c3c',
-        confirmButtonText: '<i class="fas fa-trash"></i> Sí, eliminar',
+        confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
     }).then(r => {
         if (!r.isConfirmed) return;
         fetch(API_URL, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: sessionStorage.getItem('token'), idHazard: id, idEmpresa })
+            body: JSON.stringify({ token: sessionStorage.getItem('token'), idLegal: id, idEmpresa })
         })
         .then(r => r.json())
         .then(resp => {
-            if (resp.status === 'ok' || resp.result?.idHazard) {
-                Swal.fire({ icon: 'success', title: '¡Eliminado!', timer: 1500, showConfirmButton: false });
-                closePreview();
-                loadHazards();
+            if (resp.status === 'ok' || resp.result?.idLegal) {
+                Swal.fire({ icon: 'success', title: 'Eliminado', timer: 1500, showConfirmButton: false });
+                loadProcedures();
             } else {
                 Swal.fire('Error', 'No se pudo eliminar', 'error');
             }
