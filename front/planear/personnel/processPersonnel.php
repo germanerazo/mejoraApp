@@ -1,5 +1,5 @@
 <!-- CSS -->
-<link rel="stylesheet" href="../planear/process/processMap.css">
+<link rel="stylesheet" href="../process/processMap.css">
 
 <div class="page-header">
     <h1 class="page-title">Consolidado Personal del Proceso</h1>
@@ -17,6 +17,7 @@
         <table class="modern-table" id="personnelConsolidadoTable">
             <thead>
                 <tr>
+                    <th>Acción</th>
                     <th>Proceso</th>
                     <th>Cargo</th>
                     <th>Cargo al que Reporta</th>

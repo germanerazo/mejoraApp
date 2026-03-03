@@ -545,7 +545,6 @@ window.addPersonnel = async function() {
             <input id="swal-pers-role" class="swal2-input" placeholder="Cargo">
             <input id="swal-pers-report" class="swal2-input" placeholder="Cargo al que reporta">
             <input type="number" id="swal-pers-qty" class="swal2-input" placeholder="Número de personas">
-            <input id="swal-pers-freq" class="swal2-input" placeholder="Frecuencia de Rendición de Cuentas">
         `,
         focusConfirm: false, showCancelButton: true, confirmButtonText: 'Agregar',
         preConfirm: () => {
@@ -553,7 +552,6 @@ window.addPersonnel = async function() {
                 role: document.getElementById('swal-pers-role').value,
                 reportsTo: document.getElementById('swal-pers-report').value,
                 quantity: document.getElementById('swal-pers-qty').value,
-                accountabilityFrequency: document.getElementById('swal-pers-freq').value,
                 responsibilities: [],
                 accountabilities: []
             }
@@ -575,7 +573,6 @@ window.editPersonnel = async function(id) {
             <input id="swal-pers-role" class="swal2-input" value="${item.role}">
             <input id="swal-pers-report" class="swal2-input" value="${item.reportsTo}">
             <input type="number" id="swal-pers-qty" class="swal2-input" value="${item.quantity}">
-            <input id="swal-pers-freq" class="swal2-input" placeholder="Frecuencia de Rendición" value="${item.accountabilityFrequency || ''}">
         `,
         focusConfirm: false, showCancelButton: true, confirmButtonText: 'Actualizar',
         preConfirm: () => {
@@ -583,7 +580,6 @@ window.editPersonnel = async function(id) {
                 role: document.getElementById('swal-pers-role').value,
                 reportsTo: document.getElementById('swal-pers-report').value,
                 quantity: document.getElementById('swal-pers-qty').value,
-                accountabilityFrequency: document.getElementById('swal-pers-freq').value,
                 responsibilities: item.responsibilities,
                 accountabilities: item.accountabilities
             }

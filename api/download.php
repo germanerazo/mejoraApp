@@ -33,10 +33,11 @@ if (file_exists($filePath)) {
         ob_end_clean();
     }
     
-    // Forzar la descarga con Content-Disposition: attachment
+    $inline = isset($_GET['inline']) && $_GET['inline'] == '1';
+    $disposition = $inline ? 'inline' : 'attachment';
     header('Content-Description: File Transfer');
     header('Content-Type: ' . $mimeType);
-    header('Content-Disposition: attachment; filename="' . basename($filePath) . '"');
+    header('Content-Disposition: ' . $disposition . '; filename="' . basename($filePath) . '"');
     header('Expires: 0');
     header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
     header('Pragma: public');
