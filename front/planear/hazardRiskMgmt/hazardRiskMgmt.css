@@ -4,7 +4,7 @@
     background: #fff;
     padding: 20px;
     border-radius: var(--radius-lg, 16px);
-    box-shadow: var(--shadow-sm, 0 2px 8px rgba(0,0,0,0.05));
+    box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.05));
     margin-bottom: 25px;
     display: flex;
     gap: 20px;
@@ -64,25 +64,106 @@
     color: var(--text-main, #2b2d42);
 }
 
-.btn-view-premium {
-    background: linear-gradient(135deg, #4361ee, #3f37c9);
+.btn-manage-risk {
+    background: linear-gradient(135deg, #329bd6 0%, #0077b6 100%);
     color: white;
     border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
+    padding: 8px 18px;
+    border-radius: 50px;
     cursor: pointer;
-    transition: all 0.3s;
-    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 600;
+    font-size: 13px;
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    white-space: nowrap;
+    box-shadow: 0 3px 10px rgba(50, 155, 214, 0.25);
+    letter-spacing: 0.3px;
 }
 
-.btn-view-premium:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+.btn-manage-risk:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 6px 18px rgba(0, 119, 182, 0.35);
+    background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
 }
 
-.btn-view-premium i {
+.btn-manage-risk:active {
+    transform: translateY(0);
+}
+
+.btn-manage-risk i {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Process Info Card (shown on screens 2 and 3) */
+.process-info-card {
+    background: #fff;
+    padding: 18px 24px;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #e9ecef;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.process-info-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.process-info-icon {
+    font-size: 1.8rem;
+    color: #329bd6;
+    background: rgba(50, 155, 214, 0.1);
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+}
+
+.process-info-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #8d99ae;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.process-info-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2b2d42;
+}
+
+/* Period Cell (annual plans table) */
+.period-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0;
+}
+
+.period-icon {
+    color: #329bd6;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.period-cell span {
     font-size: 14px;
+    color: #475569;
+}
+
+.period-cell strong {
+    color: #2b2d42;
 }
