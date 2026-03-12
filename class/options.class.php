@@ -40,17 +40,24 @@ class options extends connection {
             'order' => 99,
             'state' => '0',
             'nivel' => '2',
-            'nivelant' => '2' // Assuming parent is '2' (Hacer) which is likely code '2' or '200'. If parent is 2, nivelant=2? No, nivelant is "Nivel Anterior". If level 2, prev level is 1? Or parent code?
-            // Dashboard JS logic: 
-            // if (nivel === 1) map[code] = ...
-            // else parentCode = find(p => code > p && code < p+100)
-            // So if I use code 207, it looks for a parent between 200...299?? No.
-            // logic: find(code => 207 > code && 207 < code + 100).
-            // So if parent is 200, 207 is child.
-            // Nivel/NivelAnt might not be used for hierarchy logic in JS, only 'code' math.
-            // But let's set Nivel=2.
+            'nivelant' => '2' 
         );
         $data[] = $morbidity;
+
+        // MOCK: Inject Hazards Management Module
+        $hazardsMgmt = array(
+            'idOption' => 9992,
+            'code' => '208', 
+            'name' => 'Gestión Peligros y Riesgos',
+            'tag2' => 'hazardsRisks',
+            'link' => '../planear/hazardRiskMgmt/hazardRiskMgmt.php',
+            'back' => '',
+            'order' => 10, // Adjust order as needed
+            'state' => '0',
+            'nivel' => '2',
+            'nivelant' => '2' 
+        );
+        $data[] = $hazardsMgmt;
 
         return $data;
     }

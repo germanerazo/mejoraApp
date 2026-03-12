@@ -120,6 +120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const allowedCodes = userAccess.map(a => a.codigo);
     allowedCodes.push('207'); // Allow Morbidity Module manually
+    allowedCodes.push('208'); // Allow Hazards Management Module manually
 
     // 2. Obtener opciones del menú
     const optionsResponse = await fetch(`${config.BASE_API_URL}options.php?page=1`);

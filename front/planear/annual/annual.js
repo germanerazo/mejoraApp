@@ -1,18 +1,40 @@
-// Mock Data for Annual Plan
-let annualData = [
-    { id: 1, startDate: '2024-01-15', endDate: '2025-01-15' },
-    { id: 2, startDate: '2023-01-01', endDate: '2023-12-31' }
-];
+import config from "../../js/config.js";
 
-const initAnnual = () => {
-    renderAnnualList();
+const API_URL = `${config.BASE_API_URL}annual.php`;
+
+// State
+let annualData = [];
+let activeFullPlan = null;
+let activePlanId = null;
+let idEmpresa = null;
+let token = null;
+
+const initAnnual = async () => {
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    if (user && user.idClient) {
+        idEmpresa = user.idClient;
+        token = user.token;
+        await loadAnnualPlans();
+    } else {
+        Swal.fire('Error', 'No se ha encontrado la sesión de la empresa.', 'error');
+    }
+};
+
+const loadAnnualPlans = async () => {
+    try {
+        const res = await fetch(`${API_URL}?idEmpresa=${idEmpresa}`);
+        annualData = await res.json();
+        renderAnnualList();
+    } catch (err) {
+        console.error('Error loading plans:', err);
+    }
 };
 
 window.renderAnnualList = () => {
     const tbody = document.querySelector('#tableAnnualList tbody');
     if (!tbody) return;
 
-    if (annualData.length === 0) {
+    if (!Array.isArray(annualData) || annualData.length === 0) {
         tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px;">No hay planes registrados.</td></tr>`;
         return;
     }
@@ -21,13 +43,13 @@ window.renderAnnualList = () => {
     annualData.forEach(item => {
         html += `<tr>
             <td style="display: flex; gap: 5px;">
-                <button class="btn-delete-premium" title="Eliminar" onclick="deleteAnnual(${item.id})">
+                <button class="btn-delete-premium" title="Eliminar" onclick="deleteAnnual(${item.idPlan})">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </td>
-            <td>Desde: ${item.startDate}- Hasta: ${item.endDate}</td>
+            <td>Desde: ${item.startDate} - Hasta: ${item.endDate}</td>
             <td>
-                <button class="btn-view-premium" title="Ver detalle" onclick="viewAnnual(${item.id})">
+                <button class="btn-view-premium" title="Ver detalle" onclick="viewAnnual(${item.idPlan})">
                     <i class="fas fa-eye"></i>
                 </button>
             </td>
@@ -40,21 +62,16 @@ window.showCreateAnnual = () => {
     document.getElementById('annualListView').style.display = 'none';
     document.getElementById('annualCreateView').style.display = 'block';
     
-    // Calculate Default Dates
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
 
-    // Start Date: First day of current month
     const startDate = new Date(currentYear, currentMonth, 1);
     const startStr = startDate.getFullYear() + '-' + String(startDate.getMonth() + 1).padStart(2, '0') + '-' + String(startDate.getDate()).padStart(2, '0');
 
-    // End Date: Last day of current month, Next Year
-    // (month + 1, 0) gives the last day of the current month
     const endDate = new Date(currentYear + 1, currentMonth + 1, 0); 
     const endStr = endDate.getFullYear() + '-' + String(endDate.getMonth() + 1).padStart(2, '0') + '-' + String(endDate.getDate()).padStart(2, '0');
 
-    // Set form values
     document.getElementById('fieldStartDate').value = startStr;
     document.getElementById('fieldEndDate').value = endStr;
 };
@@ -64,7 +81,7 @@ window.hideCreateAnnual = () => {
     document.getElementById('annualListView').style.display = 'block';
 };
 
-window.saveAnnual = () => {
+window.saveAnnual = async () => {
     const start = document.getElementById('fieldStartDate').value;
     const end = document.getElementById('fieldEndDate').value;
 
@@ -73,82 +90,77 @@ window.saveAnnual = () => {
         return;
     }
 
-    const newItem = {
-        id: annualData.length > 0 ? Math.max(...annualData.map(i => i.id)) + 1 : 1,
-        startDate: start,
-        endDate: end
-    };
-
-    annualData.push(newItem);
-    renderAnnualList();
-    Swal.fire('Guardado', 'Plan Anual guardado correctamente', 'success');
-    hideCreateAnnual();
+    try {
+        const res = await fetch(`${API_URL}?action=savePlan`, {
+            method: 'POST',
+            body: JSON.stringify({
+                token,
+                idEmpresa,
+                startDate: start,
+                endDate: end
+            })
+        });
+        const resp = await res.json();
+        
+        if (resp.status === 'ok') {
+            await loadAnnualPlans();
+            Swal.fire('Guardado', 'Plan Anual guardado correctamente', 'success');
+            hideCreateAnnual();
+        } else {
+            Swal.fire('Error', resp.result.error_msg || 'Error al guardar', 'error');
+        }
+    } catch (err) {
+        console.error('Save error:', err);
+        Swal.fire('Error', 'Error de conexión', 'error');
+    }
 };
 
 window.deleteAnnual = (id) => {
     Swal.fire({
         title: '¿Eliminar Plan?',
-        text: "Esta acción no se puede deshacer",
+        text: "Esta acción no se puede deshacer y borrará todos los objetivos y actividades asociados.",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e74c3c',
         confirmButtonText: 'Sí, eliminar'
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            annualData = annualData.filter(i => i.id !== id);
-            renderAnnualList();
-            Swal.fire('Eliminado', 'El plan ha sido eliminado.', 'success');
+            try {
+                const res = await fetch(`${API_URL}?action=deletePlan`, {
+                    method: 'DELETE',
+                    body: JSON.stringify({ token, idPlan: id })
+                });
+                const resp = await res.json();
+                if (resp.status === 'ok') {
+                    await loadAnnualPlans();
+                    Swal.fire('Eliminado', 'El plan ha sido eliminado.', 'success');
+                }
+            } catch (err) {
+                console.error('Delete error:', err);
+            }
         }
     });
 };
 
-// Mock Data for Activities and Objectives
-let objectivesData = [
-    { id: 1, planId: 1, category: 'organizational', objective: 'Cumplir con el 90% de las actividades programadas', meta: '90%' }
-];
+window.viewAnnual = async (id) => {
+    try {
+        const res = await fetch(`${API_URL}?idPlan=${id}`);
+        activeFullPlan = await res.json();
+        activePlanId = id;
 
-let activitiesData = [
-    { 
-        id: 1, 
-        planId: 1,
-        category: 'organizational',
-        name: 'Capacitación SST', 
-        activity: 'Realizar capacitación de manejo de extintores', 
-        responsible: 'Lider SST', 
-        resources: 'Humano, Financiero', 
-        target: 'Todo el personal', 
-        planDate: '2024-03-15', 
-        execDate: '', 
-        obs: 'Pendiente' 
-    },
-    { 
-        id: 2, 
-        planId: 1,
-        category: 'medical',
-        name: 'Exámenes de Ingreso', 
-        activity: 'Realizar exámenes ocupacionales a nuevos', 
-        responsible: 'RH', 
-        resources: 'Financiero', 
-        target: 'Nuevos Ingresos', 
-        planDate: '2024-01-20', 
-        execDate: '2024-01-22', 
-        obs: 'Realizado' 
+        document.getElementById('annualListView').style.display = 'none';
+        document.getElementById('annualDetailView').style.display = 'block';
+        
+        document.getElementById('detailPeriod').innerText = `Desde: ${activeFullPlan.startDate} - Hasta: ${activeFullPlan.endDate}`;
+        
+        renderAllSections();
+        loadSignaturesUI();
+    } catch (err) {
+        console.error('View error:', err);
     }
-];
+};
 
-window.viewAnnual = (id) => {
-    const plan = annualData.find(i => i.id === id);
-    if (!plan) return;
-
-    window.activePlanId = id; // Store for context
-
-    document.getElementById('annualListView').style.display = 'none';
-    document.getElementById('annualDetailView').style.display = 'block';
-    
-    // Set Header
-    document.getElementById('detailPeriod').innerText = `Desde: ${plan.startDate} - Hasta: ${plan.endDate}`;
-    
-    // Render Sections
+const renderAllSections = () => {
     const categories = [
         { key: 'organizational', objId: 'tableObjectivesOrganizational', actId: 'tableOrganizational' },
         { key: 'programs', objId: 'tableObjectivesPrograms', actId: 'tablePrograms' },
@@ -160,49 +172,47 @@ window.viewAnnual = (id) => {
     ];
 
     categories.forEach(cat => {
-        renderObjectiveTable(id, cat.key, cat.objId);
-        renderActivityTable(id, cat.key, cat.actId);
+        renderObjectiveTableUI(cat.key, cat.objId);
+        renderActivityTableUI(cat.key, cat.actId);
     });
+};
 
-    // Load Signatures
-    const sigs = signaturesData.find(i => i.planId === id);
+const loadSignaturesUI = () => {
+    const sigs = activeFullPlan.signatures;
     if (sigs) {
-        document.getElementById('sigName1').value = sigs.s1.name;
-        document.getElementById('sigRole1').value = sigs.s1.role;
-        if (sigs.s1.imgSrc && sigs.s1.imgSrc.length > 30) { // check if valid src
-             document.getElementById('previewSig1').src = sigs.s1.imgSrc;
+        document.getElementById('sigName1').value = sigs.name1 || '';
+        document.getElementById('sigRole1').value = sigs.role1 || '';
+        if (sigs.imgSrc1 && sigs.imgSrc1.length > 30) {
+             document.getElementById('previewSig1').src = sigs.imgSrc1;
              document.getElementById('previewSig1').style.display = 'block';
              document.getElementById('placeholderSig1').style.display = 'none';
         } else {
-             // Reset
-             document.getElementById('previewSig1').src = '';
-             document.getElementById('previewSig1').style.display = 'none';
-             document.getElementById('placeholderSig1').style.display = 'block';
+             resetSigUI(1);
         }
 
-        document.getElementById('sigName2').value = sigs.s2.name;
-        document.getElementById('sigRole2').value = sigs.s2.role;
-        if (sigs.s2.imgSrc && sigs.s2.imgSrc.length > 30) {
-             document.getElementById('previewSig2').src = sigs.s2.imgSrc;
+        document.getElementById('sigName2').value = sigs.name2 || '';
+        document.getElementById('sigRole2').value = sigs.role2 || '';
+        if (sigs.imgSrc2 && sigs.imgSrc2.length > 30) {
+             document.getElementById('previewSig2').src = sigs.imgSrc2;
              document.getElementById('previewSig2').style.display = 'block';
              document.getElementById('placeholderSig2').style.display = 'none';
         } else {
-             document.getElementById('previewSig2').src = '';
-             document.getElementById('previewSig2').style.display = 'none';
-             document.getElementById('placeholderSig2').style.display = 'block';
+             resetSigUI(2);
         }
     } else {
-        // Clear signatures
         document.getElementById('sigName1').value = '';
         document.getElementById('sigRole1').value = '';
-        document.getElementById('previewSig1').style.display = 'none';
-        document.getElementById('placeholderSig1').style.display = 'block';
-
+        resetSigUI(1);
         document.getElementById('sigName2').value = '';
         document.getElementById('sigRole2').value = '';
-        document.getElementById('previewSig2').style.display = 'none';
-        document.getElementById('placeholderSig2').style.display = 'block';
+        resetSigUI(2);
     }
+};
+
+const resetSigUI = (num) => {
+    document.getElementById(`previewSig${num}`).src = '';
+    document.getElementById(`previewSig${num}`).style.display = 'none';
+    document.getElementById(`placeholderSig${num}`).style.display = 'block';
 };
 
 window.hideAnnualDetail = () => {
@@ -210,11 +220,11 @@ window.hideAnnualDetail = () => {
     document.getElementById('annualListView').style.display = 'block';
 };
 
-const renderObjectiveTable = (planId, category, tableId) => {
+const renderObjectiveTableUI = (category, tableId) => {
     const tbody = document.querySelector(`#${tableId} tbody`);
     if (!tbody) return;
     
-    const relevant = objectivesData.filter(i => i.planId === planId && i.category === category);
+    const relevant = activeFullPlan.objectives.filter(i => i.category === category);
     let html = '';
     
     if (relevant.length === 0) {
@@ -223,10 +233,10 @@ const renderObjectiveTable = (planId, category, tableId) => {
         relevant.forEach(item => {
             html += `<tr>
                 <td style="display: flex; gap: 5px;">
-                    <button class="btn-delete-premium" onclick="deleteObjective(${item.id})" title="Eliminar">
+                    <button class="btn-delete-premium" onclick="deleteObjective(${item.idObjective})" title="Eliminar">
                         <i class="fas fa-trash-alt"></i>
                     </button>
-                    <button class="btn-edit-premium" onclick="editObjective(${item.id})" title="Editar">
+                    <button class="btn-edit-premium" onclick="editObjective(${item.idObjective})" title="Editar">
                         <i class="fas fa-edit"></i>
                     </button>
                 </td>
@@ -238,23 +248,23 @@ const renderObjectiveTable = (planId, category, tableId) => {
     tbody.innerHTML = html;
 };
 
-const renderActivityTable = (planId, category, tableId) => {
+const renderActivityTableUI = (category, tableId) => {
     const tbody = document.querySelector(`#${tableId} tbody`);
     if (!tbody) return;
     
-    const relevant = activitiesData.filter(i => i.planId === planId && i.category === category);
+    const relevant = activeFullPlan.activities.filter(i => i.category === category);
     let html = '';
 
     if (relevant.length === 0) {
-        html = '<tr><td colspan="9" style="text-align: center; color: #999;">Sin actividades.</td></tr>';
+        html = '<tr><td colspan="10" style="text-align: center; color: #999;">Sin actividades.</td></tr>';
     } else {
         relevant.forEach(item => {
             html += `<tr>
                 <td style="display: flex; gap: 5px;">
-                    <button class="btn-delete-premium" onclick="deleteActivity(${item.id})" title="Eliminar">
+                    <button class="btn-delete-premium" onclick="deleteActivity(${item.idActivity})" title="Eliminar">
                         <i class="fas fa-trash-alt"></i>
                     </button>
-                    <button class="btn-edit-premium" onclick="editActivity(${item.id})" title="Editar">
+                    <button class="btn-edit-premium" onclick="editActivity(${item.idActivity})" title="Editar">
                         <i class="fas fa-edit"></i>
                     </button>
                 </td>
@@ -264,7 +274,7 @@ const renderActivityTable = (planId, category, tableId) => {
                 <td>${item.resources}</td>
                 <td>${item.target}</td>
                 <td>${item.planDate}</td>
-                <td>${item.execDate}</td>
+                <td>${item.execDate || 'N/A'}</td>
                 <td>${item.obs}</td>
             </tr>`;
         });
@@ -272,7 +282,6 @@ const renderActivityTable = (planId, category, tableId) => {
     tbody.innerHTML = html;
 };
 
-// Helper to get Table ID by category
 const getTableIds = (category) => {
     const map = {
         'organizational': { obj: 'tableObjectivesOrganizational', act: 'tableOrganizational' },
@@ -287,15 +296,10 @@ const getTableIds = (category) => {
 };
 
 window.addObjective = (category) => {
-    // Store context
     document.getElementById('objCategoryContext').value = category;
-    document.getElementById('objEditId').value = ''; // Clear edit ID
-    
-    // Reset fields
+    document.getElementById('objEditId').value = '';
     document.getElementById('fieldObjective').value = '';
     document.getElementById('fieldMeta').value = '';
-
-    // Switch Views
     document.getElementById('annualDetailView').style.display = 'none';
     document.getElementById('annualObjectiveView').style.display = 'block';
 };
@@ -305,7 +309,7 @@ window.hideObjectiveView = () => {
     document.getElementById('annualDetailView').style.display = 'block';
 };
 
-window.saveObjective = () => {
+window.saveObjective = async () => {
     const category = document.getElementById('objCategoryContext').value;
     const editId = document.getElementById('objEditId').value;
     const objective = document.getElementById('fieldObjective').value;
@@ -316,49 +320,41 @@ window.saveObjective = () => {
         return;
     }
 
-    if (editId) {
-        // Update existing
-        const index = objectivesData.findIndex(i => i.id == editId);
-        if (index > -1) {
-            objectivesData[index].objective = objective;
-            objectivesData[index].meta = meta;
-            // Category stays/updates? Usually stays.
-            Swal.fire('Actualizado', 'Objetivo actualizado correctamente', 'success');
+    try {
+        const res = await fetch(`${API_URL}?action=saveObjective`, {
+            method: 'POST',
+            body: JSON.stringify({
+                token,
+                idPlan: activePlanId,
+                idObjective: editId,
+                category,
+                objective,
+                meta
+            })
+        });
+        const resp = await res.json();
+        if (resp.status === 'ok') {
+            await refreshDetail();
+            Swal.fire('Guardado', 'Objetivo guardado correctamente', 'success');
+            hideObjectiveView();
         }
-    } else {
-        // Create new
-        const newItem = {
-            id: objectivesData.length > 0 ? Math.max(...objectivesData.map(i => i.id)) + 1 : 1,
-            planId: window.activePlanId,
-            category: category,
-            objective: objective,
-            meta: meta
-        };
-        objectivesData.push(newItem);
-        Swal.fire('Guardado', 'Objetivo agregado correctamente', 'success');
+    } catch (err) {
+        console.error('Obj save error:', err);
     }
-    
-    // Refresh table
-    const tableId = getTableIds(category).obj;
-    renderObjectiveTable(window.activePlanId, category, tableId);
-    
-    hideObjectiveView();
 };
 
 window.editObjective = (id) => {
-    const item = objectivesData.find(i => i.id === id);
+    const item = activeFullPlan.objectives.find(i => i.idObjective == id);
     if (!item) return;
 
     document.getElementById('objCategoryContext').value = item.category;
-    document.getElementById('objEditId').value = item.id;
+    document.getElementById('objEditId').value = item.idObjective;
     document.getElementById('fieldObjective').value = item.objective;
     document.getElementById('fieldMeta').value = item.meta;
 
     document.getElementById('annualDetailView').style.display = 'none';
     document.getElementById('annualObjectiveView').style.display = 'block';
 };
-
-// (getTableIds moved to top)
 
 window.deleteObjective = (id) => {
     Swal.fire({
@@ -368,72 +364,28 @@ window.deleteObjective = (id) => {
         showCancelButton: true,
         confirmButtonColor: '#e74c3c',
         confirmButtonText: 'Sí, eliminar'
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            const item = objectivesData.find(i => i.id === id);
-            if (item) {
-                objectivesData = objectivesData.filter(i => i.id !== id);
-                const tableId = getTableIds(item.category).obj;
-                if (tableId) {
-                    renderObjectiveTable(item.planId, item.category, tableId);
+            try {
+                const res = await fetch(`${API_URL}?action=deleteObjective`, {
+                    method: 'DELETE',
+                    body: JSON.stringify({ token, idObjective: id })
+                });
+                const resp = await res.json();
+                if (resp.status === 'ok') {
+                    await refreshDetail();
+                    Swal.fire('Eliminado', 'El objetivo ha sido eliminado.', 'success');
                 }
-                Swal.fire('Eliminado', 'El objetivo ha sido eliminado.', 'success');
+            } catch (err) {
+                console.error('Obj delete error:', err);
             }
         }
     });
-};
-
-// editObjective moved to top/merged
-
-
-window.deleteActivity = (id) => {
-     Swal.fire({
-        title: '¿Eliminar Actividad?',
-        text: "Esta acción no se puede deshacer",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#e74c3c',
-        confirmButtonText: 'Sí, eliminar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const item = activitiesData.find(i => i.id === id);
-            if (item) {
-                activitiesData = activitiesData.filter(i => i.id !== id);
-                const tableId = getTableIds(item.category).act;
-                if (tableId) {
-                    renderActivityTable(item.planId, item.category, tableId);
-                }
-                Swal.fire('Eliminado', 'La actividad ha sido eliminada.', 'success');
-            }
-        }
-    });
-};
-
-window.editActivity = (id) => {
-    const item = activitiesData.find(i => i.id === id);
-    if (!item) return;
-
-    document.getElementById('actCategoryContext').value = item.category;
-    document.getElementById('actEditId').value = item.id;
-    document.getElementById('fieldActName').value = item.name;
-    document.getElementById('fieldActActivity').value = item.activity;
-    document.getElementById('fieldActResponsible').value = item.responsible;
-    document.getElementById('fieldActResources').value = item.resources;
-    document.getElementById('fieldActTarget').value = item.target;
-    document.getElementById('fieldActPlanDate').value = item.planDate;
-    document.getElementById('fieldActExecDate').value = item.execDate;
-    document.getElementById('fieldActObs').value = item.obs;
-
-    document.getElementById('annualDetailView').style.display = 'none';
-    document.getElementById('annualActivityView').style.display = 'block';
 };
 
 window.addActivity = (category) => {
-    // Store context
     document.getElementById('actCategoryContext').value = category;
-    document.getElementById('actEditId').value = ''; // Clear ID
-    
-    // Reset fields
+    document.getElementById('actEditId').value = '';
     document.getElementById('fieldActName').value = '';
     document.getElementById('fieldActActivity').value = '';
     document.getElementById('fieldActResponsible').value = '';
@@ -442,8 +394,6 @@ window.addActivity = (category) => {
     document.getElementById('fieldActPlanDate').value = '';
     document.getElementById('fieldActExecDate').value = '';
     document.getElementById('fieldActObs').value = '';
-
-    // Switch Views
     document.getElementById('annualDetailView').style.display = 'none';
     document.getElementById('annualActivityView').style.display = 'block';
 };
@@ -453,7 +403,7 @@ window.hideActivityView = () => {
     document.getElementById('annualDetailView').style.display = 'block';
 };
 
-window.saveActivity = () => {
+window.saveActivity = async () => {
     const category = document.getElementById('actCategoryContext').value;
     const editId = document.getElementById('actEditId').value;
     const name = document.getElementById('fieldActName').value;
@@ -470,53 +420,84 @@ window.saveActivity = () => {
         return;
     }
 
-    if (editId) {
-        // Update
-        const index = activitiesData.findIndex(i => i.id == editId);
-        if (index > -1) {
-            activitiesData[index].name = name;
-            activitiesData[index].activity = activity;
-            activitiesData[index].responsible = responsible;
-            activitiesData[index].resources = resources;
-            activitiesData[index].target = target;
-            activitiesData[index].planDate = planDate;
-            activitiesData[index].execDate = execDate;
-            activitiesData[index].obs = obs;
-            Swal.fire('Actualizado', 'Actividad actualizada correctamente', 'success');
+    try {
+        const res = await fetch(`${API_URL}?action=saveActivity`, {
+            method: 'POST',
+            body: JSON.stringify({
+                token,
+                idPlan: activePlanId,
+                idActivity: editId,
+                category,
+                name,
+                activity,
+                responsible,
+                resources,
+                target,
+                planDate,
+                execDate,
+                obs
+            })
+        });
+        const resp = await res.json();
+        if (resp.status === 'ok') {
+            await refreshDetail();
+            Swal.fire('Guardado', 'Actividad guardada correctamente', 'success');
+            hideActivityView();
         }
-    } else {
-        // Create
-        const newItem = {
-            id: activitiesData.length > 0 ? Math.max(...activitiesData.map(i => i.id)) + 1 : 1,
-            planId: window.activePlanId,
-            category: category,
-            name: name,
-            activity: activity,
-            responsible: responsible,
-            resources: resources,
-            target: target,
-            planDate: planDate,
-            execDate: execDate,
-            obs: obs
-        };
-        activitiesData.push(newItem);
-        Swal.fire('Guardado', 'Actividad agregada correctamente', 'success');
+    } catch (err) {
+        console.error('Act save error:', err);
     }
-
-    const tableId = getTableIds(category).act;
-    const tr = renderActivityTable(window.activePlanId, category, tableId);
-    
-    hideActivityView();
 };
 
-// Signatures Data
-let signaturesData = [];
+window.editActivity = (id) => {
+    const item = activeFullPlan.activities.find(i => i.idActivity == id);
+    if (!item) return;
 
-window.saveSignatures = () => {
-    const planId = window.activePlanId;
-    if (!planId) return;
+    document.getElementById('actCategoryContext').value = item.category;
+    document.getElementById('actEditId').value = item.idActivity;
+    document.getElementById('fieldActName').value = item.name;
+    document.getElementById('fieldActActivity').value = item.activity;
+    document.getElementById('fieldActResponsible').value = item.responsible;
+    document.getElementById('fieldActResources').value = item.resources;
+    document.getElementById('fieldActTarget').value = item.target;
+    document.getElementById('fieldActPlanDate').value = item.planDate;
+    document.getElementById('fieldActExecDate').value = item.execDate;
+    document.getElementById('fieldActObs').value = item.obs;
 
-    // Get values
+    document.getElementById('annualDetailView').style.display = 'none';
+    document.getElementById('annualActivityView').style.display = 'block';
+};
+
+window.deleteActivity = (id) => {
+    Swal.fire({
+        title: '¿Eliminar Actividad?',
+        text: "Esta acción no se puede deshacer",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        confirmButtonText: 'Sí, eliminar'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                const res = await fetch(`${API_URL}?action=deleteActivity`, {
+                    method: 'DELETE',
+                    body: JSON.stringify({ token, idActivity: id })
+                });
+                const resp = await res.json();
+                if (resp.status === 'ok') {
+                    await refreshDetail();
+                    Swal.fire('Eliminado', 'La actividad ha sido eliminada.', 'success');
+                }
+            } catch (err) {
+                console.error('Act delete error:', err);
+            }
+        }
+    });
+};
+
+window.saveSignatures = async () => {
+    if (!activePlanId) return;
+
     const s1 = {
         name: document.getElementById('sigName1').value,
         role: document.getElementById('sigRole1').value,
@@ -528,16 +509,34 @@ window.saveSignatures = () => {
         imgSrc: document.getElementById('previewSig2').src
     };
 
-    // Upsert
-    const existingIndex = signaturesData.findIndex(i => i.planId === planId);
-    if (existingIndex > -1) {
-        signaturesData[existingIndex].s1 = s1;
-        signaturesData[existingIndex].s2 = s2;
-    } else {
-        signaturesData.push({ planId, s1, s2 });
+    try {
+        const res = await fetch(`${API_URL}?action=saveSignatures`, {
+            method: 'POST',
+            body: JSON.stringify({
+                token,
+                idPlan: activePlanId,
+                name1: s1.name,
+                role1: s1.role,
+                imgSrc1: s1.imgSrc,
+                name2: s2.name,
+                role2: s2.role,
+                imgSrc2: s2.imgSrc
+            })
+        });
+        const resp = await res.json();
+        if (resp.status === 'ok') {
+            Swal.fire('Guardado', 'Firmas guardadas correctamente', 'success');
+        }
+    } catch (err) {
+        console.error('Sig save error:', err);
     }
+};
 
-    Swal.fire('Guardado', 'Firmas guardadas correctamente', 'success');
+const refreshDetail = async () => {
+    if (!activePlanId) return;
+    const res = await fetch(`${API_URL}?idPlan=${activePlanId}`);
+    activeFullPlan = await res.json();
+    renderAllSections();
 };
 
 window.handleSignatureSelect = (input, imgId, placeholderId) => {
@@ -556,7 +555,6 @@ window.printAnnual = () => {
     window.print();
 };
 
-// Check DOM Ready
 if (document.readyState === 'loading') {
     document.addEventListener("DOMContentLoaded", initAnnual);
 } else {
