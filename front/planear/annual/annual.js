@@ -7,13 +7,13 @@ let annualData = [];
 let activeFullPlan = null;
 let activePlanId = null;
 let idEmpresa = null;
-let token = null;
+
+const getToken = () => sessionStorage.getItem('token');
 
 const initAnnual = async () => {
     const user = JSON.parse(sessionStorage.getItem('user'));
     if (user && user.idClient) {
         idEmpresa = user.idClient;
-        token = user.token;
         await loadAnnualPlans();
     } else {
         Swal.fire('Error', 'No se ha encontrado la sesión de la empresa.', 'error');
@@ -94,7 +94,7 @@ window.saveAnnual = async () => {
         const res = await fetch(`${API_URL}?action=savePlan`, {
             method: 'POST',
             body: JSON.stringify({
-                token,
+                token: getToken(),
                 idEmpresa,
                 startDate: start,
                 endDate: end
@@ -128,7 +128,7 @@ window.deleteAnnual = (id) => {
             try {
                 const res = await fetch(`${API_URL}?action=deletePlan`, {
                     method: 'DELETE',
-                    body: JSON.stringify({ token, idPlan: id })
+                    body: JSON.stringify({ token: getToken(), idPlan: id })
                 });
                 const resp = await res.json();
                 if (resp.status === 'ok') {
@@ -324,7 +324,7 @@ window.saveObjective = async () => {
         const res = await fetch(`${API_URL}?action=saveObjective`, {
             method: 'POST',
             body: JSON.stringify({
-                token,
+                token: getToken(),
                 idPlan: activePlanId,
                 idObjective: editId,
                 category,
@@ -369,7 +369,7 @@ window.deleteObjective = (id) => {
             try {
                 const res = await fetch(`${API_URL}?action=deleteObjective`, {
                     method: 'DELETE',
-                    body: JSON.stringify({ token, idObjective: id })
+                    body: JSON.stringify({ token: getToken(), idObjective: id })
                 });
                 const resp = await res.json();
                 if (resp.status === 'ok') {
@@ -424,7 +424,7 @@ window.saveActivity = async () => {
         const res = await fetch(`${API_URL}?action=saveActivity`, {
             method: 'POST',
             body: JSON.stringify({
-                token,
+                token: getToken(),
                 idPlan: activePlanId,
                 idActivity: editId,
                 category,
@@ -481,7 +481,7 @@ window.deleteActivity = (id) => {
             try {
                 const res = await fetch(`${API_URL}?action=deleteActivity`, {
                     method: 'DELETE',
-                    body: JSON.stringify({ token, idActivity: id })
+                    body: JSON.stringify({ token: getToken(), idActivity: id })
                 });
                 const resp = await res.json();
                 if (resp.status === 'ok') {
@@ -513,7 +513,7 @@ window.saveSignatures = async () => {
         const res = await fetch(`${API_URL}?action=saveSignatures`, {
             method: 'POST',
             body: JSON.stringify({
-                token,
+                token: getToken(),
                 idPlan: activePlanId,
                 name1: s1.name,
                 role1: s1.role,
