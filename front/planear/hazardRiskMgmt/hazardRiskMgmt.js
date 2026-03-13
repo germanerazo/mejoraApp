@@ -433,9 +433,19 @@ function renderDangerCards() {
                 } else {
                     measuresHtml = `<ul class="measure-list">`;
                     cons.measures.forEach(m => {
+                        let tags = '';
+                        if(m.elimination == 1) tags += '<span style="font-size:10px; background:#e74c3c; color:#fff; padding:2px 6px; border-radius:10px; margin-left:5px;">Eliminación</span>';
+                        if(m.substitution == 1) tags += '<span style="font-size:10px; background:#e67e22; color:#fff; padding:2px 6px; border-radius:10px; margin-left:5px;">Sustitución</span>';
+                        if(m.engineering_control == 1) tags += '<span style="font-size:10px; background:#f1c40f; color:#333; padding:2px 6px; border-radius:10px; margin-left:5px;">Control Ing.</span>';
+                        if(m.administrative_control == 1) tags += '<span style="font-size:10px; background:#3498db; color:#fff; padding:2px 6px; border-radius:10px; margin-left:5px;">Control Adm.</span>';
+                        if(m.ppe == 1) tags += '<span style="font-size:10px; background:#9b59b6; color:#fff; padding:2px 6px; border-radius:10px; margin-left:5px;">EPP</span>';
+
                         measuresHtml += `
-                            <li>
-                                <span><i class="fas fa-shield-virus"></i> ${m.measure_name}</span>
+                            <li style="display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <i class="fas fa-shield-virus" style="margin-right:5px;"></i> ${m.measure_name} 
+                                    <div style="margin-top:4px; margin-left:20px;">${tags}</div>
+                                </div>
                                 <button class="btn-icon-danger" onclick="removeMeasure(${m.adcm_id})" title="Eliminar Medida"><i class="fas fa-times"></i></button>
                             </li>
                         `;
@@ -633,6 +643,8 @@ window.selectModalDanger = function(element) {
     element.classList.add('selected');
 }
 
+let allConsData = [];
+
 window.openAddConsequenceModal = async function(activity_danger_id, danger_id) {
     Swal.fire({ title: 'Cargando consecuencias...', didOpen: () => Swal.showLoading() });
 
@@ -767,7 +779,8 @@ window.openAddConsequenceModal = async function(activity_danger_id, danger_id) {
             }
         });
     } catch (err) {
-        Swal.fire('Error', 'Error al cargar consecuencias.', 'error');
+        console.error('Error loading consequences modal:', err);
+        Swal.fire('Error', 'Error al cargar consecuencias: ' + err.message, 'error');
     }
 }
 
@@ -814,24 +827,58 @@ window.openAddMeasureModal = async function(adc_id, danger_id) {
         
         const htmlContent = `
             <div style="text-align: left;">
-                <label style="display:block; font-weight:600; margin-bottom:5px; font-size:14px; color:#4a5568;">1. Buscar Medida Preventiva</label>
-                <div style="position: relative; margin-bottom: 15px;">
+                <label style="display:block; font-weight:600; margin-bottom:5px; font-size:14px; color:#4a5568;">1. Seleccione una Medida Preventiva Existente</label>
+                <div style="position: relative; margin-bottom: 10px;">
                     <i class="fas fa-search" style="position: absolute; left: 12px; top: 12px; color: #888;"></i>
-                    <input type="text" id="modalMeasSearch" class="swal2-input" autocomplete="off" style="width: 100%; margin: 0; padding-left: 35px; box-sizing: border-box; font-size:14px; max-width:100%;" placeholder="Escriba para buscar...">
+                    <input type="text" id="modalMeasSearch" class="swal2-input" autocomplete="off" style="width: 100%; margin: 0; padding-left: 35px; box-sizing: border-box; font-size:14px; max-width:100%;" placeholder="Buscar medida registrada...">
                 </div>
 
-                <label style="display:block; font-weight:600; margin-bottom:5px; font-size:14px; color:#4a5568;">2. Seleccione la Medida (<span id="modalMeasCount" style="color:#329bd6;">0</span>)</label>
-                <div id="modalMeasList" style="max-height: 230px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 6px; padding: 5px; background: #fafafa;">
+                <div id="modalMeasList" style="max-height: 150px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 6px; padding: 5px; background: #fafafa; margin-bottom: 15px;">
+                </div>
+
+                <div style="display: flex; align-items: center; margin: 15px 0;">
+                    <hr style="flex-grow: 1; border:0; border-top:1px dashed #ccc;">
+                    <span style="padding: 0 10px; color: #888; font-size: 13px; font-weight: 600;">O CREAR UNA NUEVA</span>
+                    <hr style="flex-grow: 1; border:0; border-top:1px dashed #ccc;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Si la medida no existe en la lista, escríbala aquí para registrarla:</label>
+                    <input type="text" id="modalNewMeasure" class="swal2-input" autocomplete="off" style="width:100%; margin:0; font-size:14px;" placeholder="Ej: Instalación de guardas de seguridad nuevas...">
+                </div>
+
+                <hr style="border:0; border-top:1px dashed #ccc; margin: 20px 0;">
+
+                <label style="display:block; font-weight:600; margin-bottom:15px; font-size:15px; color:#27ae60;">
+                    <i class="fas fa-check-square"></i> Tipo de Control (Puede marcar varias)
+                </label>
+
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="chkElimination" value="1" style="width:16px; height:16px;"> Eliminación
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="chkSubstitution" value="1" style="width:16px; height:16px;"> Sustitución
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="chkEngineering" value="1" style="width:16px; height:16px;"> Control de Ingeniería
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="chkAdministrative" value="1" style="width:16px; height:16px;"> Control Administrativo
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="chkPPE" value="1" style="width:16px; height:16px;"> EPP
+                    </label>
                 </div>
             </div>
         `;
 
         Swal.fire({
-            title: 'Agregar Medida Preventiva',
+            title: 'Asociar Medida Preventiva',
             html: htmlContent,
-            width: '600px',
+            width: '700px',
             showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-save"></i> Guardar',
+            confirmButtonText: '<i class="fas fa-save"></i> Guardar Medida',
             cancelButtonText: 'Cancelar',
             customClass: {
                 confirmButton: 'btn-new-record',
@@ -845,22 +892,39 @@ window.openAddMeasureModal = async function(adc_id, danger_id) {
             },
             preConfirm: () => {
                 const selected = document.querySelector('.meas-option.selected');
-                if (!selected) {
-                    Swal.showValidationMessage('⚠️ Debe seleccionar una medida preventiva');
+                const newMeasureVal = document.getElementById('modalNewMeasure').value.trim();
+
+                if (!selected && newMeasureVal === '') {
+                    Swal.showValidationMessage('⚠️ Debe seleccionar una medida o escribir una nueva.');
                     return false;
                 }
-                return selected.dataset.id;
+
+                if (selected && newMeasureVal !== '') {
+                    Swal.showValidationMessage('⚠️ Seleccione una medida de la lista O escriba una nueva, no ambas.');
+                    return false;
+                }
+
+                return {
+                    preventive_measure_id: selected ? selected.dataset.id : '',
+                    new_measure_name: newMeasureVal,
+                    elimination: document.getElementById('chkElimination').checked ? 1 : 0,
+                    substitution: document.getElementById('chkSubstitution').checked ? 1 : 0,
+                    engineering_control: document.getElementById('chkEngineering').checked ? 1 : 0,
+                    administrative_control: document.getElementById('chkAdministrative').checked ? 1 : 0,
+                    ppe: document.getElementById('chkPPE').checked ? 1 : 0
+                };
             }
         }).then(async (result) => {
             if (result.isConfirmed) {
-                await postAction('addMeasure', {
-                    activity_danger_consequence_id: adc_id,
-                    preventive_measure_id: result.value
-                });
+                const payload = result.value;
+                payload.activity_danger_consequence_id = adc_id;
+                payload.danger_id = danger_id;
+                await postAction('addMeasure', payload);
             }
         });
     } catch (err) {
-        Swal.fire('Error', 'Error al cargar medidas preventivas.', 'error');
+        console.error('Error loading measures modal:', err);
+        Swal.fire('Error', 'Error al cargar medidas preventivas: ' + err.message, 'error');
     }
 }
 

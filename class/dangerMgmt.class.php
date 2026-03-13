@@ -73,7 +73,9 @@ class dangerMgmt extends connection {
             foreach ($consequences as &$cons) {
                 $adcId = intval($cons['adc_id']);
                 $cons['measures'] = parent::getData(
-                    "SELECT adcm.id as adcm_id, pm.id as measure_id, pm.name as measure_name
+                    "SELECT adcm.id as adcm_id, pm.id as measure_id, pm.name as measure_name,
+                            adcm.elimination, adcm.substitution, adcm.engineering_control,
+                            adcm.administrative_control, adcm.ppe
                      FROM activity_danger_consequence_measures adcm
                      JOIN preventive_measures pm ON adcm.preventive_measure_id = pm.id
                      WHERE adcm.activity_danger_consequence_id = $adcId
@@ -145,14 +147,51 @@ class dangerMgmt extends connection {
         if(!$this->verifyToken($data, $_answers)) return $_answers->response;
 
         $adcId = intval($data['activity_danger_consequence_id']);
-        $measureId = intval($data['preventive_measure_id']);
+        $dangerId = isset($data['danger_id']) ? intval($data['danger_id']) : 0;
+        
+        $measureId = isset($data['preventive_measure_id']) && $data['preventive_measure_id'] !== '' 
+            ? intval($data['preventive_measure_id']) : null;
+        $new_measure = isset($data['new_measure_name']) ? $this->sanitize($data['new_measure_name']) : '';
+
+        // Toggles
+        $elimination = !empty($data['elimination']) ? 1 : 0;
+        $substitution = !empty($data['substitution']) ? 1 : 0;
+        $eng_ctrl = !empty($data['engineering_control']) ? 1 : 0;
+        $admin_ctrl = !empty($data['administrative_control']) ? 1 : 0;
+        $ppe = !empty($data['ppe']) ? 1 : 0;
+
+        if (!$measureId && $new_measure) {
+            // Ver si ya existe
+            $existingMeasure = parent::getData("SELECT id FROM preventive_measures WHERE name = '$new_measure'");
+            if (empty($existingMeasure)) {
+                $measureId = parent::nonQueryId("INSERT INTO preventive_measures (name) VALUES ('$new_measure')");
+            } else {
+                $measureId = $existingMeasure[0]['id'];
+            }
+
+            if ($dangerId > 0) {
+                // Link it to the danger
+                $linkExists = parent::getData("SELECT id FROM danger_preventive_measures WHERE danger_id = $dangerId AND preventive_measure_id = $measureId");
+                if (empty($linkExists)) {
+                    parent::nonQueryId("INSERT INTO danger_preventive_measures (danger_id, preventive_measure_id) VALUES ($dangerId, $measureId)");
+                }
+            }
+        }
+
+        if (!$measureId) {
+            return $_answers->error_400("Falta el ID de la medida o el nombre de la nueva medida.");
+        }
 
         $exists = parent::getData("SELECT id FROM activity_danger_consequence_measures WHERE activity_danger_consequence_id = $adcId AND preventive_measure_id = $measureId");
         if (!empty($exists)) {
-            return $_answers->error_400("Esta medida ya está asignada.");
+            return $_answers->error_400("Esta medida ya está asignada a esta consecuencia.");
         }
 
-        $id = parent::nonQueryId("INSERT INTO activity_danger_consequence_measures (activity_danger_consequence_id, preventive_measure_id) VALUES ($adcId, $measureId)");
+        $query = "INSERT INTO activity_danger_consequence_measures 
+            (activity_danger_consequence_id, preventive_measure_id, elimination, substitution, engineering_control, administrative_control, ppe) 
+            VALUES ($adcId, $measureId, $elimination, $substitution, $eng_ctrl, $admin_ctrl, $ppe)";
+            
+        $id = parent::nonQueryId($query);
         $resp = $_answers->response;
         $resp['result'] = ["id" => $id];
         return $resp;
