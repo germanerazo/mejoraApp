@@ -424,12 +424,12 @@ function renderDangerCards() {
         // Build Consequence/Measures HTML
         let consequencesHtml = '';
         if (!danger.consequences || danger.consequences.length === 0) {
-            consequencesHtml = `<div class="empty-nested">No hay consecuencias registradas. <button class="btn-link-action" onclick="openAddConsequenceModal(${danger.activity_danger_id})">Agregar Consecuencia</button></div>`;
+            consequencesHtml = `<div class="empty-nested">No hay consecuencias registradas. <button class="btn-link-action" onclick="openAddConsequenceModal(${danger.activity_danger_id}, ${danger.danger_id})">Agregar Consecuencia</button></div>`;
         } else {
             danger.consequences.forEach(cons => {
                 let measuresHtml = '';
                 if (!cons.measures || cons.measures.length === 0) {
-                    measuresHtml = `<div class="empty-measures">Sin medidas preventivas. <button class="btn-link-action" onclick="openAddMeasureModal(${cons.adc_id})">Añadir Medida</button></div>`;
+                    measuresHtml = `<div class="empty-measures">Sin medidas preventivas. <button class="btn-link-action" onclick="openAddMeasureModal(${cons.adc_id}, ${danger.danger_id})">Añadir Medida</button></div>`;
                 } else {
                     measuresHtml = `<ul class="measure-list">`;
                     cons.measures.forEach(m => {
@@ -440,25 +440,42 @@ function renderDangerCards() {
                             </li>
                         `;
                     });
-                    measuresHtml += `</ul><div style="margin-top: 5px;"><button class="btn-link-action" onclick="openAddMeasureModal(${cons.adc_id})"><i class="fas fa-plus"></i> Añadir otra medida</button></div>`;
+                    measuresHtml += `</ul><div style="margin-top: 5px;"><button class="btn-link-action" onclick="openAddMeasureModal(${cons.adc_id}, ${danger.danger_id})"><i class="fas fa-plus"></i> Añadir otra medida</button></div>`;
+                }
+
+                let evaluationHtml = '';
+                if (cons.deficiency_level !== null || cons.existing_controls || cons.worst_consequence) {
+                    evaluationHtml = `
+                        <div style="background: #f1f3f5; border-radius: 6px; padding: 10px 15px; margin-bottom: 12px; font-size: 13px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                                <div><strong><i class="fas fa-shield-alt" style="color:#6c757d;"></i> Controles Existentes:</strong> <br>${cons.existing_controls || 'Ninguno'}</div>
+                                <div><strong>Nivel Deficiencia:</strong> ${cons.deficiency_level !== null ? cons.deficiency_level : '-'} | <strong>Nivel Exposición:</strong> ${cons.exposure_level !== null ? cons.exposure_level : '-'}</div>
+                                <div><strong>Nivel Consecuencia:</strong> ${cons.consequence_level !== null ? cons.consequence_level : '-'}</div>
+                                <div><strong><i class="fas fa-users" style="color:#329bd6;"></i> Expuestos:</strong> ${cons.exposed_count !== null ? cons.exposed_count : 'No def.'} | <strong>Req. Legal:</strong> ${cons.legal_requirements || '-'}</div>
+                                <div style="grid-column: 1 / -1;"><strong><i class="fas fa-exclamation-circle" style="color:#e67e22;"></i> Peor Consecuencia:</strong> ${cons.worst_consequence || 'No definida'}</div>
+                            </div>
+                        </div>
+                    `;
                 }
 
                 consequencesHtml += `
                     <div class="consequence-item">
-                        <div class="consequence-header">
-                            <div class="consequence-title">
+                        <div class="consequence-header" style="border-bottom: none; padding-bottom: 0px; margin-bottom: 8px;">
+                            <div class="consequence-title" style="font-size: 15px;">
                                 <i class="fas fa-biohazard" style="color: #e74c3c;"></i>
                                 Consecuencia: <strong>${cons.consequence_name}</strong>
                             </div>
                             <button class="btn-icon-danger" onclick="removeConsequence(${cons.adc_id})" title="Eliminar Consecuencia"><i class="fas fa-trash-alt"></i></button>
                         </div>
+                        ${evaluationHtml}
+                        <div style="font-size: 13px; font-weight: 600; color: #8d99ae; margin-bottom: 8px; margin-top: 10px; padding-left: 24px;">Medidas Preventivas:</div>
                         <div class="measures-container">
                             ${measuresHtml}
                         </div>
                     </div>
                 `;
             });
-            consequencesHtml += `<div style="margin-top: 15px;"><button class="btn-secondary-premium" onclick="openAddConsequenceModal(${danger.activity_danger_id})"><i class="fas fa-plus-circle"></i> Agregar Consecuencia</button></div>`;
+            consequencesHtml += `<div style="margin-top: 15px;"><button class="btn-secondary-premium" onclick="openAddConsequenceModal(${danger.activity_danger_id}, ${danger.danger_id})"><i class="fas fa-plus-circle"></i> Agregar Consecuencia</button></div>`;
         }
 
         html += `
@@ -489,6 +506,8 @@ async function loadOptions(action) {
     return await res.json();
 }
 
+let allDangersData = []; // Cached array for the modal
+
 window.openAddDangerModal = async function() {
     Swal.fire({
         title: 'Cargando peligros...',
@@ -497,33 +516,69 @@ window.openAddDangerModal = async function() {
     });
 
     try {
-        const dangers = await loadOptions('allDangers');
+        allDangersData = await loadOptions('allDangers');
         
-        let selectHtml = `<select id="swalDangerSelect" class="swal2-select" style="width: 100%; max-width: 100%;">
-            <option value="">Seleccione un peligro...</option>`;
-        
-        let currentType = '';
-        dangers.forEach(d => {
-            if (d.typeName !== currentType) {
-                if (currentType !== '') selectHtml += `</optgroup>`;
-                selectHtml += `<optgroup label="${d.typeName}">`;
-                currentType = d.typeName;
+        // Extract unique types
+        const typesMap = new Map();
+        allDangersData.forEach(d => {
+            if (!typesMap.has(d.danger_type_id)) {
+                typesMap.set(d.danger_type_id, d.typeName);
             }
-            selectHtml += `<option value="${d.id}">${d.name}</option>`;
         });
-        if (currentType !== '') selectHtml += `</optgroup>`;
-        selectHtml += `</select>`;
+
+        let typeOptions = `<option value="">-- Todos los tipos --</option>`;
+        for (const [id, name] of typesMap.entries()) {
+            typeOptions += `<option value="${id}">${name}</option>`;
+        }
+
+        const htmlContent = `
+            <div style="text-align: left;">
+                <label style="display:block; font-weight:600; margin-bottom:5px; font-size:14px; color:#4a5568;">1. Seleccione el Tipo</label>
+                <select id="modalDangerTypeSelect" class="swal2-select" style="width: 100%; margin: 0 0 15px 0; font-size:14px; padding:5px 10px; max-width:100%;">
+                    ${typeOptions}
+                </select>
+
+                <label style="display:block; font-weight:600; margin-bottom:5px; font-size:14px; color:#4a5568;">2. Buscar Peligro</label>
+                <div style="position: relative; margin-bottom: 15px;">
+                    <i class="fas fa-search" style="position: absolute; left: 12px; top: 12px; color: #888;"></i>
+                    <input type="text" id="modalDangerSearch" class="swal2-input" autocomplete="off" style="width: 100%; margin: 0; padding-left: 35px; box-sizing: border-box; font-size:14px; max-width:100%;" placeholder="Escriba para buscar...">
+                </div>
+
+                <label style="display:block; font-weight:600; margin-bottom:5px; font-size:14px; color:#4a5568;">3. Seleccione el Peligro (<span id="modalDangerCount" style="color:#329bd6;">0</span>)</label>
+                <div id="modalDangerList" style="max-height: 230px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 6px; padding: 5px; background: #fafafa;">
+                </div>
+            </div>
+        `;
 
         Swal.fire({
-            title: 'Agregar Peligro',
-            html: selectHtml,
+            title: 'Asociar nuevo Peligro',
+            html: htmlContent,
+            width: '600px',
             showCancelButton: true,
-            confirmButtonText: 'Agregar',
+            confirmButtonText: '<i class="fas fa-save"></i> Guardar Peligro',
             cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'btn-new-record',
+                cancelButton: 'btn-secondary-premium'
+            },
+            buttonsStyling: false,
+            didOpen: () => {
+                const typeSelect = document.getElementById('modalDangerTypeSelect');
+                const searchInput = document.getElementById('modalDangerSearch');
+                
+                typeSelect.addEventListener('change', renderModalDangers);
+                searchInput.addEventListener('input', renderModalDangers);
+
+                // Initial render
+                renderModalDangers();
+            },
             preConfirm: () => {
-                const val = document.getElementById('swalDangerSelect').value;
-                if (!val) Swal.showValidationMessage('Debe seleccionar un peligro');
-                return val;
+                const selected = document.querySelector('.danger-option.selected');
+                if (!selected) {
+                    Swal.showValidationMessage('⚠️ Debe hacer clic en un peligro de la lista para seleccionarlo');
+                    return false;
+                }
+                return selected.dataset.id; // Returns the danger_id
             }
         }).then(async (result) => {
             if (result.isConfirmed) {
@@ -538,34 +593,177 @@ window.openAddDangerModal = async function() {
     }
 }
 
-window.openAddConsequenceModal = async function(activity_danger_id) {
-    Swal.fire({ title: 'Cargando...', didOpen: () => Swal.showLoading() });
+function renderModalDangers() {
+    const listContainer = document.getElementById('modalDangerList');
+    const typeSelect = document.getElementById('modalDangerTypeSelect');
+    const searchInput = document.getElementById('modalDangerSearch');
+    const countSpan = document.getElementById('modalDangerCount');
+
+    if (!listContainer || !typeSelect || !searchInput) return;
+
+    const typeFilter = typeSelect.value;
+    const searchFilter = searchInput.value.toLowerCase().trim();
+
+    const filtered = allDangersData.filter(d => {
+        const matchesType = typeFilter === "" || d.danger_type_id == typeFilter;
+        const matchesSearch = searchFilter === "" || d.name.toLowerCase().includes(searchFilter);
+        return matchesType && matchesSearch;
+    });
+
+    countSpan.textContent = filtered.length;
+
+    if (filtered.length === 0) {
+        listContainer.innerHTML = `<div style="padding: 20px 15px; color: #8d99ae; text-align: center; font-size:13px;"><i class="fas fa-search" style="font-size: 24px; opacity: 0.5; margin-bottom: 10px; display: block;"></i> No se encontraron peligros que coincidan con su búsqueda.</div>`;
+        return;
+    }
+
+    let html = '';
+    filtered.forEach(d => {
+        html += `<div class="danger-option" data-id="${d.id}" onclick="selectModalDanger(this)">
+            <div style="font-size:11px; color:#8d99ae; text-transform:uppercase; margin-bottom:3px; font-weight: 700;">${d.typeName}</div>
+            <div style="color: #2b2d42;">${d.name}</div>
+        </div>`;
+    });
+
+    listContainer.innerHTML = html;
+}
+
+window.selectModalDanger = function(element) {
+    document.querySelectorAll('.danger-option').forEach(el => el.classList.remove('selected'));
+    element.classList.add('selected');
+}
+
+window.openAddConsequenceModal = async function(activity_danger_id, danger_id) {
+    Swal.fire({ title: 'Cargando consecuencias...', didOpen: () => Swal.showLoading() });
 
     try {
-        const consequences = await loadOptions('consequences');
-        let selectHtml = `<select id="swalConsSelect" class="swal2-select" style="width: 100%; max-width: 100%;">
-            <option value="">Seleccione una consecuencia...</option>`;
-        consequences.forEach(c => {
-            selectHtml += `<option value="${c.id}">${c.name}</option>`;
-        });
-        selectHtml += `</select>`;
+        allConsData = await loadOptions(`consequencesByDanger&dangerId=${danger_id}`);
+        
+        const htmlContent = `
+            <div style="text-align: left;">
+                <label style="display:block; font-weight:600; margin-bottom:5px; font-size:14px; color:#4a5568;">1. Buscar Consecuencia</label>
+                <div style="position: relative; margin-bottom: 15px;">
+                    <i class="fas fa-search" style="position: absolute; left: 12px; top: 12px; color: #888;"></i>
+                    <input type="text" id="modalConsSearch" class="swal2-input" autocomplete="off" style="width: 100%; margin: 0; padding-left: 35px; box-sizing: border-box; font-size:14px; max-width:100%;" placeholder="Escriba para buscar...">
+                </div>
+
+                <label style="display:block; font-weight:600; margin-bottom:5px; font-size:14px; color:#4a5568;">2. Seleccione la Consecuencia (<span id="modalConsCount" style="color:#329bd6;">0</span>)</label>
+                <div id="modalConsList" style="max-height: 180px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 6px; padding: 5px; background: #fafafa; margin-bottom: 20px;">
+                </div>
+
+                <hr style="border:0; border-top:1px dashed #ccc; margin: 20px 0;">
+
+                <label style="display:block; font-weight:600; margin-bottom:15px; font-size:15px; color:#329bd6;">
+                    <i class="fas fa-sliders-h"></i> Criterios de Evaluación
+                </label>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Controles Existentes <span style="font-weight:normal; color:#888;">(Ej: En la fuente, medio, individuo)</span></label>
+                    <input type="text" id="modalExistingControls" class="swal2-input" style="width:100%; margin:0; font-size:14px;">
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Nivel de Deficiencia</label>
+                        <select id="modalND" class="swal2-select" style="width:100%; margin:0; font-size:14px; padding:5px;">
+                            <option value="">Seleccione...</option>
+                            <option value="0">0 - Bajo</option>
+                            <option value="2">2 - Medio</option>
+                            <option value="6">6 - Alto</option>
+                            <option value="10">10 - Muy Alto</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Nivel de Exposición</label>
+                        <select id="modalNE" class="swal2-select" style="width:100%; margin:0; font-size:14px; padding:5px;">
+                            <option value="">Seleccione...</option>
+                            <option value="1">1 - Esporádica</option>
+                            <option value="2">2 - Ocasional</option>
+                            <option value="3">3 - Frecuente</option>
+                            <option value="4">4 - Continua</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Nivel de Consecuencia</label>
+                        <select id="modalNC" class="swal2-select" style="width:100%; margin:0; font-size:14px; padding:5px;">
+                            <option value="">Seleccione...</option>
+                            <option value="10">10 - Leve</option>
+                            <option value="25">25 - Grave</option>
+                            <option value="60">60 - Muy Grave</option>
+                            <option value="100">100 - Mortal/Catastrófico</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr style="border:0; border-top:1px dashed #ccc; margin: 20px 0;">
+
+                <label style="display:block; font-weight:600; margin-bottom:15px; font-size:15px; color:#e67e22;">
+                    <i class="fas fa-users-cog"></i> Criterios para Establecer Controles
+                </label>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Número de Expuestos</label>
+                        <input type="number" id="modalExposed" class="swal2-input" min="0" max="1000" style="width:100%; margin:0; font-size:14px;">
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Req. Legales Asociados</label>
+                        <select id="modalLegalCode" class="swal2-select" style="width:100%; margin:0; font-size:14px; padding:5px;">
+                            <option value="">Seleccione...</option>
+                            <option value="SI">Sí</option>
+                            <option value="NO">No</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Peor Consecuencia</label>
+                    <input type="text" id="modalWorst" class="swal2-input" style="width:100%; margin:0; font-size:14px;">
+                </div>
+
+            </div>
+        `;
 
         Swal.fire({
-            title: 'Agregar Consecuencia',
-            html: selectHtml,
+            title: 'Asociar y Evaluar Consecuencia',
+            html: htmlContent,
+            width: '750px',
             showCancelButton: true,
-            confirmButtonText: 'Agregar',
+            confirmButtonText: '<i class="fas fa-save"></i> Guardar Evaluación',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'btn-new-record',
+                cancelButton: 'btn-secondary-premium'
+            },
+            buttonsStyling: false,
+            didOpen: () => {
+                const searchInput = document.getElementById('modalConsSearch');
+                searchInput.addEventListener('input', renderModalCons);
+                renderModalCons(); // Initial render
+            },
             preConfirm: () => {
-                const val = document.getElementById('swalConsSelect').value;
-                if (!val) Swal.showValidationMessage('Debe seleccionar una consecuencia');
-                return val;
+                const selected = document.querySelector('.cons-option.selected');
+                if (!selected) {
+                    Swal.showValidationMessage('⚠️ Debe seleccionar una consecuencia del listado');
+                    return false;
+                }
+                
+                return {
+                    consequence_id: selected.dataset.id,
+                    existing_controls: document.getElementById('modalExistingControls').value,
+                    deficiency_level: document.getElementById('modalND').value,
+                    exposure_level: document.getElementById('modalNE').value,
+                    consequence_level: document.getElementById('modalNC').value,
+                    exposed_count: document.getElementById('modalExposed').value,
+                    worst_consequence: document.getElementById('modalWorst').value,
+                    legal_requirements: document.getElementById('modalLegalCode').value,
+                };
             }
         }).then(async (result) => {
             if (result.isConfirmed) {
-                await postAction('addConsequence', {
-                    activity_danger_id: activity_danger_id,
-                    consequence_id: result.value
-                });
+                const payload = result.value;
+                payload.activity_danger_id = activity_danger_id;
+                await postAction('addConsequence', payload);
             }
         });
     } catch (err) {
@@ -573,27 +771,85 @@ window.openAddConsequenceModal = async function(activity_danger_id) {
     }
 }
 
-window.openAddMeasureModal = async function(adc_id) {
-    Swal.fire({ title: 'Cargando...', didOpen: () => Swal.showLoading() });
+function renderModalCons() {
+    const listContainer = document.getElementById('modalConsList');
+    const searchInput = document.getElementById('modalConsSearch');
+    const countSpan = document.getElementById('modalConsCount');
+
+    if (!listContainer || !searchInput) return;
+
+    const searchFilter = searchInput.value.toLowerCase().trim();
+
+    const filtered = allConsData.filter(c => c.name.toLowerCase().includes(searchFilter));
+
+    countSpan.textContent = filtered.length;
+
+    if (filtered.length === 0) {
+        listContainer.innerHTML = `<div style="padding: 20px 15px; color: #8d99ae; text-align: center; font-size:13px;"><i class="fas fa-search" style="font-size: 24px; opacity: 0.5; margin-bottom: 10px; display: block;"></i> No se encontraron consecuencias.</div>`;
+        return;
+    }
+
+    let html = '';
+    filtered.forEach(c => {
+        html += `<div class="danger-option cons-option" data-id="${c.id}" onclick="selectModalCons(this)">
+            <div style="color: #2b2d42;">${c.name}</div>
+        </div>`;
+    });
+
+    listContainer.innerHTML = html;
+}
+
+window.selectModalCons = function(element) {
+    document.querySelectorAll('.cons-option').forEach(el => el.classList.remove('selected'));
+    element.classList.add('selected');
+}
+
+let allMeasData = [];
+
+window.openAddMeasureModal = async function(adc_id, danger_id) {
+    Swal.fire({ title: 'Cargando medidas...', didOpen: () => Swal.showLoading() });
 
     try {
-        const measures = await loadOptions('measures');
-        let selectHtml = `<select id="swalMeasSelect" class="swal2-select" style="width: 100%; max-width: 100%;">
-            <option value="">Seleccione una medida preventiva...</option>`;
-        measures.forEach(m => {
-            selectHtml += `<option value="${m.id}">${m.name}</option>`;
-        });
-        selectHtml += `</select>`;
+        allMeasData = await loadOptions(`measuresByDanger&dangerId=${danger_id}`);
+        
+        const htmlContent = `
+            <div style="text-align: left;">
+                <label style="display:block; font-weight:600; margin-bottom:5px; font-size:14px; color:#4a5568;">1. Buscar Medida Preventiva</label>
+                <div style="position: relative; margin-bottom: 15px;">
+                    <i class="fas fa-search" style="position: absolute; left: 12px; top: 12px; color: #888;"></i>
+                    <input type="text" id="modalMeasSearch" class="swal2-input" autocomplete="off" style="width: 100%; margin: 0; padding-left: 35px; box-sizing: border-box; font-size:14px; max-width:100%;" placeholder="Escriba para buscar...">
+                </div>
+
+                <label style="display:block; font-weight:600; margin-bottom:5px; font-size:14px; color:#4a5568;">2. Seleccione la Medida (<span id="modalMeasCount" style="color:#329bd6;">0</span>)</label>
+                <div id="modalMeasList" style="max-height: 230px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 6px; padding: 5px; background: #fafafa;">
+                </div>
+            </div>
+        `;
 
         Swal.fire({
             title: 'Agregar Medida Preventiva',
-            html: selectHtml,
+            html: htmlContent,
+            width: '600px',
             showCancelButton: true,
-            confirmButtonText: 'Agregar',
+            confirmButtonText: '<i class="fas fa-save"></i> Guardar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'btn-new-record',
+                cancelButton: 'btn-secondary-premium'
+            },
+            buttonsStyling: false,
+            didOpen: () => {
+                const searchInput = document.getElementById('modalMeasSearch');
+                searchInput.addEventListener('input', renderModalMeas);
+                renderModalMeas(); // Initial render
+            },
             preConfirm: () => {
-                const val = document.getElementById('swalMeasSelect').value;
-                if (!val) Swal.showValidationMessage('Debe seleccionar una medida');
-                return val;
+                const selected = document.querySelector('.meas-option.selected');
+                if (!selected) {
+                    Swal.showValidationMessage('⚠️ Debe seleccionar una medida preventiva');
+                    return false;
+                }
+                return selected.dataset.id;
             }
         }).then(async (result) => {
             if (result.isConfirmed) {
@@ -606,6 +862,39 @@ window.openAddMeasureModal = async function(adc_id) {
     } catch (err) {
         Swal.fire('Error', 'Error al cargar medidas preventivas.', 'error');
     }
+}
+
+function renderModalMeas() {
+    const listContainer = document.getElementById('modalMeasList');
+    const searchInput = document.getElementById('modalMeasSearch');
+    const countSpan = document.getElementById('modalMeasCount');
+
+    if (!listContainer || !searchInput) return;
+
+    const searchFilter = searchInput.value.toLowerCase().trim();
+
+    const filtered = allMeasData.filter(m => m.name.toLowerCase().includes(searchFilter));
+
+    countSpan.textContent = filtered.length;
+
+    if (filtered.length === 0) {
+        listContainer.innerHTML = `<div style="padding: 20px 15px; color: #8d99ae; text-align: center; font-size:13px;"><i class="fas fa-search" style="font-size: 24px; opacity: 0.5; margin-bottom: 10px; display: block;"></i> No se encontraron medidas preventivas.</div>`;
+        return;
+    }
+
+    let html = '';
+    filtered.forEach(m => {
+        html += `<div class="danger-option meas-option" data-id="${m.id}" onclick="selectModalMeas(this)">
+            <div style="color: #2b2d42;">${m.name}</div>
+        </div>`;
+    });
+
+    listContainer.innerHTML = html;
+}
+
+window.selectModalMeas = function(element) {
+    document.querySelectorAll('.meas-option').forEach(el => el.classList.remove('selected'));
+    element.classList.add('selected');
 }
 
 // ── DELETE ACTIONS ──────────────────────────────────────────────────────────

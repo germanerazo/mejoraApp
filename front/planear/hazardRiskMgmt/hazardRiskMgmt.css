@@ -485,3 +485,26 @@
     color: #8d99ae;
     padding: 5px 0;
 }
+
+/* Modal Search Options */
+.danger-option {
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    font-size: 13px;
+    text-align: left;
+}
+
+.danger-option:hover {
+    background: #eef2f5;
+}
+
+.danger-option.selected {
+    background: rgba(50, 155, 214, 0.1);
+    border-color: #329bd6;
+    color: #0077b6;
+    font-weight: 600;
+}

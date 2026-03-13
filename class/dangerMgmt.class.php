@@ -61,7 +61,9 @@ class dangerMgmt extends connection {
 
             // Consecuencias
             $consequences = parent::getData(
-                "SELECT adc.id as adc_id, c.id as consequence_id, c.name as consequence_name
+                "SELECT adc.id as adc_id, c.id as consequence_id, c.name as consequence_name,
+                        adc.existing_controls, adc.deficiency_level, adc.exposure_level,
+                        adc.consequence_level, adc.exposed_count, adc.worst_consequence, adc.legal_requirements
                  FROM activity_danger_consequences adc
                  JOIN consequences c ON adc.consequence_id = c.id
                  WHERE adc.activity_danger_id = $adId
@@ -112,13 +114,27 @@ class dangerMgmt extends connection {
 
         $adId = intval($data['activity_danger_id']);
         $consId = intval($data['consequence_id']);
+        
+        $existing_controls = $this->sanitize($data['existing_controls'] ?? '');
+        $def_lvl = isset($data['deficiency_level']) && $data['deficiency_level'] !== '' ? intval($data['deficiency_level']) : 'NULL';
+        $exp_lvl = isset($data['exposure_level']) && $data['exposure_level'] !== '' ? intval($data['exposure_level']) : 'NULL';
+        $cons_lvl = isset($data['consequence_level']) && $data['consequence_level'] !== '' ? intval($data['consequence_level']) : 'NULL';
+        $exp_count = isset($data['exposed_count']) && $data['exposed_count'] !== '' ? intval($data['exposed_count']) : 'NULL';
+        $worst_cons = $this->sanitize($data['worst_consequence'] ?? '');
+        $legal_req = $this->sanitize($data['legal_requirements'] ?? '');
 
+        // Se quita la verificación de "ya existe" para permitir varias evaluaciones de la misma consecuencia si se desea,
+        // o se puede mantener. A pedido del usuario no cambia esa regla, pero la consecuencia puede ser única por peligro.
         $exists = parent::getData("SELECT id FROM activity_danger_consequences WHERE activity_danger_id = $adId AND consequence_id = $consId");
         if (!empty($exists)) {
-            return $_answers->error_400("Esta consecuencia ya está asignada.");
+            return $_answers->error_400("Esta consecuencia ya está asignada a este peligro.");
         }
 
-        $id = parent::nonQueryId("INSERT INTO activity_danger_consequences (activity_danger_id, consequence_id) VALUES ($adId, $consId)");
+        $query = "INSERT INTO activity_danger_consequences 
+            (activity_danger_id, consequence_id, existing_controls, deficiency_level, exposure_level, consequence_level, exposed_count, worst_consequence, legal_requirements) 
+            VALUES ($adId, $consId, '$existing_controls', $def_lvl, $exp_lvl, $cons_lvl, $exp_count, '$worst_cons', '$legal_req')";
+            
+        $id = parent::nonQueryId($query);
         $resp = $_answers->response;
         $resp['result'] = ["id" => $id];
         return $resp;
