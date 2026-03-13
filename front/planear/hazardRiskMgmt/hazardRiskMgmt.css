@@ -167,3 +167,321 @@
 .period-cell strong {
     color: #2b2d42;
 }
+
+/* ═══════════════════════════════════════════════════════════ */
+/* Screen 3: Risk Process Header                              */
+/* ═══════════════════════════════════════════════════════════ */
+
+.risk-process-header {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e9ecef;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.risk-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #22496d 0%, #329bd6 100%);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.risk-header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.risk-header-title i {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.risk-header-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0;
+}
+
+.risk-header-item {
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    border-right: 1px solid #f0f0f0;
+}
+
+.risk-header-item:last-child {
+    border-right: none;
+}
+
+.risk-header-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #8d99ae;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.risk-header-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2b2d42;
+}
+
+/* Activity Count Badge */
+.activity-count-badge {
+    background: rgba(50, 155, 214, 0.1);
+    color: #0077b6;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Routine Activity Badge */
+.badge-routine {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(39, 174, 96, 0.1);
+    color: #27ae60;
+}
+
+.badge-routine i {
+    font-size: 11px;
+}
+
+/* High Risk Activity Badge */
+.badge-high-risk {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+}
+
+.badge-high-risk i {
+    font-size: 11px;
+}
+
+/* Routine No Badge (grey) */
+.badge-routine-no {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(141, 153, 174, 0.1);
+    color: #8d99ae;
+}
+
+.badge-routine-no i {
+    font-size: 11px;
+}
+
+/* High Risk Yes Badge (danger) */
+.badge-high-risk-yes {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(231, 76, 60, 0.15);
+    color: #c0392b;
+}
+
+.badge-high-risk-yes i {
+    font-size: 11px;
+}
+
+/* Section header for activities */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* Screen 4: Danger Management Cards                           */
+/* ═══════════════════════════════════════════════════════════ */
+
+.danger-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e9ecef;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.danger-card-header {
+    background: #f8f9fa;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.danger-type {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #8d99ae;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.danger-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2b2d42;
+}
+
+.danger-card-body {
+    padding: 20px 24px;
+}
+
+.consequence-item {
+    background: #fdfdfd;
+    border: 1px solid #eef0f2;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 15px;
+}
+
+.consequence-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #e9ecef;
+}
+
+.consequence-title {
+    font-size: 14px;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.measures-container {
+    padding-left: 24px;
+}
+
+.measure-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.measure-list li {
+    font-size: 13px;
+    color: #4a5568;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #eef0f2;
+}
+
+.measure-list li span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.measure-list li i {
+    color: #27ae60;
+}
+
+/* Inline Action Buttons */
+.btn-link-action {
+    background: none;
+    border: none;
+    color: #329bd6;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+}
+
+.btn-link-action:hover {
+    text-decoration: underline;
+    color: #0077b6;
+}
+
+.btn-icon-danger {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    padding: 4px;
+}
+
+.btn-icon-danger:hover {
+    opacity: 1;
+}
+
+.btn-danger-action {
+    background: rgba(231, 76, 60, 0.1);
+    color: #c0392b;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-danger-action:hover {
+    background: rgba(231, 76, 60, 0.2);
+}
+
+.empty-nested {
+    font-size: 13px;
+    color: #8d99ae;
+    font-style: italic;
+    padding: 10px 0;
+}
+
+.empty-measures {
+    font-size: 13px;
+    color: #8d99ae;
+    padding: 5px 0;
+}
