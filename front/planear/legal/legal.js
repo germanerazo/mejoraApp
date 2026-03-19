@@ -1,239 +1,300 @@
-// Mock Data for Legal Matrix
-let legalData = [
-    {
-        id: 1,
-        classification: 'S',
-        norm: 'Decreto 1072',
-        year: '2015',
-        disposition: 'Ministerio de Trabajo',
-        articles: 'Art. 2.2.4.6.1',
-        description: 'Por medio del cual se expide el Decreto Único Reglamentario del Sector Trabajo',
-        evidence: 'Matriz de Peligros, Plan de Trabajo',
-        responsible: 'Lider SST',
-        exists: 'SI',
-        observation: 'Cumplimiento anual'
-    },
-    {
-        id: 2,
-        classification: 'H',
-        norm: 'Ley 1562',
-        year: '2012',
-        disposition: 'Congreso de la República',
-        articles: 'Art. 1',
-        description: 'Por la cual se modifica el Sistema de Riesgos Laborales y se dictan otras disposiciones en materia de Salud Ocupacional',
-        evidence: 'Afiliaciones ARL',
-        responsible: 'Gerencia',
-        exists: 'SI',
-        observation: ''
-    }
-];
+// ============================================================
+// legal.js  –  Matriz Legal  (CRUD conectado a API real)
+// ============================================================
 
+// ── Helpers de sesión (igual que el resto de la app) ─────────────────────────
+const getLegalSession = () => ({
+    token:     sessionStorage.getItem('token')     || '',
+    idEmpresa: sessionStorage.getItem('idEmpresa') || 0,
+});
+
+const API_LEGAL = '../../../api/legalMatrix.php';
+
+// ── Estado local ──────────────────────────────────────────────────────────────
+let legalData = [];
+
+// ── Inicialización ────────────────────────────────────────────────────────────
 const initLegal = () => {
-    renderLegalList();
+    loadLegalList();
 };
 
+// ── READ – cargar lista desde la API ─────────────────────────────────────────
+const loadLegalList = async (clasificacion = '', norma = '') => {
+    const { idEmpresa } = getLegalSession();
+    if (!idEmpresa) {
+        renderLegalList([]);
+        return;
+    }
+
+    let url = `${API_LEGAL}?idEmpresa=${idEmpresa}`;
+    if (clasificacion) url += `&clasificacion=${encodeURIComponent(clasificacion)}`;
+    if (norma)         url += `&norma=${encodeURIComponent(norma)}`;
+
+    try {
+        const resp = await fetch(url);
+        const data = await resp.json();
+        // La API devuelve un array directo
+        legalData = Array.isArray(data) ? data : [];
+        renderLegalList(legalData);
+    } catch (err) {
+        console.error('Error cargando matriz legal:', err);
+        Swal.fire('Error', 'No se pudo cargar la Matriz Legal', 'error');
+    }
+};
+
+// ── Render de la tabla ────────────────────────────────────────────────────────
 window.renderLegalList = (data = legalData) => {
     const tbody = document.querySelector('#tableLegalList tbody');
     if (!tbody) return;
 
-    if (data.length === 0) {
+    if (!data || data.length === 0) {
         tbody.innerHTML = `<tr><td colspan="12" class="empty-state">No se encontraron normas registradas.</td></tr>`;
         return;
     }
 
     let html = '';
     data.forEach(item => {
+        const existeBadge = item.existeAct === 'SI'
+            ? '<span class="badge-active">SI</span>'
+            : '<span class="badge-inactive">NO</span>';
+
         html += `<tr>
-            <td class="col-action" style="display: flex; gap: 5px; justify-content: center;">
-                <button class="btn-edit-premium" title="Editar" onclick="editLegal(${item.id})">
+            <td class="col-action" style="display:flex;gap:5px;justify-content:center;">
+                <button class="btn-edit-premium"   title="Editar"   onclick="editLegal(${item.idLegal})">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn-delete-premium" title="Eliminar" onclick="deleteLegal(${item.id})">
+                <button class="btn-delete-premium" title="Eliminar" onclick="deleteLegal(${item.idLegal})">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </td>
-            <td class="col-id">${item.id}</td>
-            <td>${item.classification}</td>
-            <td class="col-norma">${item.norm}</td>
-            <td>${item.year}</td>
-            <td>${item.disposition}</td>
-            <td>${item.articles}</td>
-            <td class="col-desc">${item.description}</td>
-            <td class="col-evidencia">${item.evidence}</td>
-            <td>${item.responsible}</td>
-            <td style="text-align: center;">${item.exists === 'SI' ? '<span class="badge-active">SI</span>' : '<span class="badge-inactive">NO</span>'}</td>
-            <td>${item.observation}</td>
+            <td class="col-id">${item.idLegal}</td>
+            <td>${item.clasificacion ?? ''}</td>
+            <td class="col-norma">${item.norma ?? ''}</td>
+            <td>${item.anioEmision ?? ''}</td>
+            <td>${item.disposicion ?? ''}</td>
+            <td>${item.articulos   ?? ''}</td>
+            <td class="col-desc">${item.descripcion ?? ''}</td>
+            <td class="col-evidencia">${item.evidencia   ?? ''}</td>
+            <td>${item.responsable ?? ''}</td>
+            <td style="text-align:center;">${existeBadge}</td>
+            <td>${item.observacion ?? ''}</td>
         </tr>`;
     });
     tbody.innerHTML = html;
 };
 
+// ── Filtrar ───────────────────────────────────────────────────────────────────
 window.filterLegal = () => {
-    const classFilter = document.getElementById('filterClassification').value.toLowerCase();
-    const normFilter = document.getElementById('filterNorma').value.toLowerCase();
-
-    const filtered = legalData.filter(item => {
-        const matchClass = !classFilter || item.classification.toLowerCase().includes(classFilter);
-        const matchNorm = !normFilter || item.norm.toLowerCase().includes(normFilter);
-        return matchClass && matchNorm;
-    });
-
-    renderLegalList(filtered);
+    const clasificacion = document.getElementById('filterClassification').value;
+    const norma         = document.getElementById('filterNorma').value.trim();
+    loadLegalList(clasificacion, norma);
 };
 
-// Data Persistence
-window.legalData = window.legalData || legalData; 
-
+// ── Mostrar formulario Nuevo ──────────────────────────────────────────────────
 window.showCreateLegal = () => {
-    document.getElementById('legalListView').style.display = 'none';
+    document.getElementById('legalListView').style.display   = 'none';
     document.getElementById('legalCreateView').style.display = 'block';
-    document.getElementById('legalGraphView').style.display = 'none';
+    document.getElementById('legalGraphView').style.display  = 'none';
     document.getElementById('legalFormTitle').innerText = 'NUEVO REGISTRO MATRIZ LEGAL';
-    
-    // Reset Form
+
     document.getElementById('legalForm').reset();
-    document.getElementById('legalId').value = '';
-    // Set default date
-    document.getElementById('fieldDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('legalId').value    = '';
+    document.getElementById('fieldDate').value  = new Date().toISOString().split('T')[0];
 };
 
 window.hideCreateLegal = () => {
     document.getElementById('legalCreateView').style.display = 'none';
-    document.getElementById('legalListView').style.display = 'block';
+    document.getElementById('legalListView').style.display   = 'block';
 };
 
-window.saveLegal = () => {
-    const id = document.getElementById('legalId').value;
-    const classification = document.getElementById('fieldClassification').value;
-    const norm = document.getElementById('fieldNorm').value;
-    
-    if (!norm) {
+// ── CREATE / UPDATE ───────────────────────────────────────────────────────────
+window.saveLegal = async () => {
+    const { token, idEmpresa } = getLegalSession();
+    const id   = document.getElementById('legalId').value;
+    const norma = document.getElementById('fieldNorm').value.trim();
+
+    if (!norma) {
         Swal.fire('Error', 'El campo Norma es obligatorio', 'error');
         return;
     }
 
-    const newItem = {
-        id: id ? parseInt(id) : (legalData.length > 0 ? Math.max(...legalData.map(i => i.id)) + 1 : 1),
-        classification: classification,
-        norm: norm,
-        year: document.getElementById('fieldYear').value,
-        disposition: document.getElementById('fieldDisposition').value,
-        articles: document.getElementById('fieldArticles').value,
-        description: document.getElementById('fieldDescription').value,
-        evidence: document.getElementById('fieldEvidence').value,
-        responsible: document.getElementById('fieldResponsible').value,
-        exists: document.getElementById('fieldExists').value,
-        observation: document.getElementById('fieldObservation').value,
+    const payload = {
+        token,
+        idEmpresa,
+        clasificacion: document.getElementById('fieldClassification').value,
+        norma,
+        anioEmision:   document.getElementById('fieldYear').value,
+        disposicion:   document.getElementById('fieldDisposition').value,
+        articulos:     document.getElementById('fieldArticles').value,
+        descripcion:   document.getElementById('fieldDescription').value,
+        evidencia:     document.getElementById('fieldEvidence').value,
+        responsable:   document.getElementById('fieldResponsible').value,
+        existeAct:     document.getElementById('fieldExists').value,
+        observacion:   document.getElementById('fieldObservation').value,
+        fecha:         document.getElementById('fieldDate').value,
     };
 
+    let url    = API_LEGAL;
+    let method = 'POST';
+
     if (id) {
-        const index = legalData.findIndex(i => i.id == id);
-        if (index !== -1) legalData[index] = newItem;
-    } else {
-        legalData.push(newItem);
+        payload.idLegal = id;
+        url    = `${API_LEGAL}?_method=PUT`;
+        method = 'POST';   // simulamos PUT via POST + flag
     }
 
-    renderLegalList();
-    Swal.fire('Guardado', 'Registro guardado correctamente', 'success');
-    hideCreateLegal();
+    try {
+        const resp = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const result = await resp.json();
+
+        if (result.status === 'ok') {
+            Swal.fire('Guardado', 'Registro guardado correctamente', 'success');
+            hideCreateLegal();
+            loadLegalList();
+        } else {
+            Swal.fire('Error', result?.result?.error_message ?? 'Error al guardar', 'error');
+        }
+    } catch (err) {
+        console.error('Error guardando registro legal:', err);
+        Swal.fire('Error', 'No se pudo guardar el registro', 'error');
+    }
 };
 
-window.editLegal = (id) => {
-    const item = legalData.find(i => i.id === id);
+// ── Cargar datos en formulario para editar ────────────────────────────────────
+window.editLegal = (idLegal) => {
+    const item = legalData.find(i => parseInt(i.idLegal) === parseInt(idLegal));
     if (!item) return;
 
     showCreateLegal();
     document.getElementById('legalFormTitle').innerText = 'EDITAR REGISTRO MATRIZ LEGAL';
-    
-    document.getElementById('legalId').value = item.id;
-    document.getElementById('fieldClassification').value = item.classification;
-    document.getElementById('fieldNorm').value = item.norm;
-    document.getElementById('fieldYear').value = item.year;
-    document.getElementById('fieldDisposition').value = item.disposition;
-    document.getElementById('fieldArticles').value = item.articles;
-    document.getElementById('fieldDescription').value = item.description;
-    document.getElementById('fieldEvidence').value = item.evidence;
-    document.getElementById('fieldResponsible').value = item.responsible;
-    document.getElementById('fieldExists').value = item.exists;
-    document.getElementById('fieldObservation').value = item.observation;
+
+    document.getElementById('legalId').value                   = item.idLegal;
+    document.getElementById('fieldClassification').value       = item.clasificacion ?? 'S';
+    document.getElementById('fieldNorm').value                 = item.norma         ?? '';
+    document.getElementById('fieldYear').value                 = item.anioEmision   ?? '';
+    document.getElementById('fieldDisposition').value          = item.disposicion   ?? '';
+    document.getElementById('fieldArticles').value             = item.articulos     ?? '';
+    document.getElementById('fieldDescription').value          = item.descripcion   ?? '';
+    document.getElementById('fieldEvidence').value             = item.evidencia     ?? '';
+    document.getElementById('fieldResponsible').value          = item.responsable   ?? '';
+    document.getElementById('fieldExists').value               = item.existeAct     ?? 'NO';
+    document.getElementById('fieldObservation').value          = item.observacion   ?? '';
+    document.getElementById('fieldDate').value                 = item.fecha         ?? '';
 };
 
-window.deleteLegal = (id) => {
+// ── DELETE – un registro ──────────────────────────────────────────────────────
+window.deleteLegal = (idLegal) => {
     Swal.fire({
         title: '¿Eliminar registro?',
-        text: "Esta acción no se puede deshacer",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#e74c3c',
-        confirmButtonText: 'Sí, eliminar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            legalData = legalData.filter(i => i.id !== id);
-            renderLegalList();
-            Swal.fire('Eliminado', 'El registro ha sido eliminado.', 'success');
+        text:  'Esta acción no se puede deshacer',
+        icon:  'warning',
+        showCancelButton:    true,
+        confirmButtonColor:  '#e74c3c',
+        confirmButtonText:   'Sí, eliminar',
+        cancelButtonText:    'Cancelar',
+    }).then(async (result) => {
+        if (!result.isConfirmed) return;
+
+        const { token, idEmpresa } = getLegalSession();
+
+        try {
+            const resp = await fetch(API_LEGAL, {
+                method:  'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ token, idEmpresa, idLegal }),
+            });
+            const data = await resp.json();
+
+            if (data.status === 'ok') {
+                Swal.fire('Eliminado', 'Registro eliminado correctamente.', 'success');
+                loadLegalList();
+            } else {
+                Swal.fire('Error', data?.result?.error_message ?? 'Error al eliminar', 'error');
+            }
+        } catch (err) {
+            console.error('Error eliminando registro legal:', err);
+            Swal.fire('Error', 'No se pudo eliminar el registro', 'error');
         }
     });
 };
 
+// ── DELETE ALL – eliminar toda la gestión legal ───────────────────────────────
 window.deleteSelected = () => {
     Swal.fire({
-        title: '¿Eliminar registros?',
-        text: "Esta acción no se puede deshacer",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#e74c3c',
-        confirmButtonText: 'Sí, eliminar'
+        title: '¿Eliminar TODA la Gestión Legal?',
+        text:  'Se eliminarán TODOS los registros de la empresa. Esta acción no se puede deshacer.',
+        icon:  'warning',
+        showCancelButton:    true,
+        confirmButtonColor:  '#e74c3c',
+        confirmButtonText:   'Sí, eliminar todo',
+        cancelButtonText:    'Cancelar',
+    }).then(async (result) => {
+        if (!result.isConfirmed) return;
+
+        const { token, idEmpresa } = getLegalSession();
+
+        try {
+            const resp = await fetch(`${API_LEGAL}?_method=DELETE_ALL`, {
+                method:  'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ token, idEmpresa }),
+            });
+            const data = await resp.json();
+
+            if (data.status === 'ok') {
+                Swal.fire('Eliminado', 'Toda la gestión legal ha sido eliminada.', 'success');
+                loadLegalList();
+            } else {
+                Swal.fire('Error', data?.result?.error_message ?? 'Error al eliminar', 'error');
+            }
+        } catch (err) {
+            console.error('Error eliminando gestión legal:', err);
+            Swal.fire('Error', 'No se pudo eliminar la gestión legal', 'error');
+        }
     });
 };
 
-// Graph Logic
+// ── GRÁFICA ───────────────────────────────────────────────────────────────────
 let legalChartInstance = null;
 
 window.showLegalGraph = () => {
-    document.getElementById('legalListView').style.display = 'none';
+    document.getElementById('legalListView').style.display   = 'none';
     document.getElementById('legalCreateView').style.display = 'none';
-    document.getElementById('legalGraphView').style.display = 'block';
-
+    document.getElementById('legalGraphView').style.display  = 'block';
     renderLegalChart();
 };
 
 window.hideLegalGraph = () => {
-    document.getElementById('legalGraphView').style.display = 'none';
-    document.getElementById('legalListView').style.display = 'block';
+    document.getElementById('legalGraphView').style.display  = 'none';
+    document.getElementById('legalListView').style.display   = 'block';
 };
 
 window.renderLegalChart = () => {
     const ctx = document.getElementById('legalChart').getContext('2d');
-    
-    // Count Data
-    let siCount = 0;
-    let noCount = 0;
-    
+
+    let siCount = 0, noCount = 0;
     legalData.forEach(item => {
-        if (item.exists === 'SI') siCount++;
-        else if (item.exists === 'NO') noCount++;
+        if (item.existeAct === 'SI') siCount++;
+        else                         noCount++;
     });
-    
-    const total = siCount + noCount;
+
+    const total  = siCount + noCount;
     const percSi = total ? Math.round((siCount / total) * 100) : 0;
     const percNo = total ? Math.round((noCount / total) * 100) : 0;
-    
-    // Update Stats Display
-    document.getElementById('statSi').innerText = siCount;
-    document.getElementById('percSi').innerText = percSi + '%';
-    document.getElementById('statNo').innerText = noCount;
-    document.getElementById('percNo').innerText = percNo + '%';
+
+    document.getElementById('statSi').innerText    = siCount;
+    document.getElementById('percSi').innerText    = percSi + '%';
+    document.getElementById('statNo').innerText    = noCount;
+    document.getElementById('percNo').innerText    = percNo + '%';
     document.getElementById('statTotal').innerText = total;
 
-    // Destroy existing chart if any
-    if (legalChartInstance) {
-        legalChartInstance.destroy();
-    }
-    
-    // Register Plugin Safely
-    if (typeof ChartDataLabels !== 'undefined') {
-        Chart.register(ChartDataLabels);
-    }
+    if (legalChartInstance) legalChartInstance.destroy();
+
+    if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
 
     legalChartInstance = new Chart(ctx, {
         type: 'pie',
@@ -241,67 +302,46 @@ window.renderLegalChart = () => {
             labels: ['SI', 'NO'],
             datasets: [{
                 data: [siCount, noCount],
-                backgroundColor: [
-                    '#2ecc71', // SI - Green
-                    '#e74c3c'  // NO - Red
-                ],
-                borderWidth: 1
-            }]
+                backgroundColor: ['#2ecc71', '#e74c3c'],
+                borderWidth: 1,
+            }],
         },
         options: {
-            responsive: true,
+            responsive:          true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    position: 'top',
-                },
-                title: {
-                    display: true,
-                    text: 'Distribución Existe Actividad'
-                },
+                legend: { position: 'top' },
+                title:  { display: true, text: 'Distribución Existe Actividad' },
                 datalabels: {
                     color: '#fff',
-                    font: {
-                        weight: 'bold',
-                        size: 16
-                    },
+                    font:  { weight: 'bold', size: 16 },
                     formatter: (value, ctx) => {
-                        let sum = 0;
-                        let dataArr = ctx.chart.data.datasets[0].data;
-                        dataArr.map(data => {
-                            sum += data;
-                        });
-                        let percentage = sum > 0 ? (value * 100 / sum).toFixed(0) + "%" : "0%";
-                        return percentage;
-                    }
-                }
-            }
-        }
+                        const sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        return sum > 0 ? (value * 100 / sum).toFixed(0) + '%' : '0%';
+                    },
+                },
+            },
+        },
     });
 };
 
 window.printLegalGraph = () => {
-    const canvas = document.getElementById('legalChart');
-    const win = window.open('', 'Imprimir Gráfica', 'height=600,width=800');
+    const canvas  = document.getElementById('legalChart');
+    const win     = window.open('', 'Imprimir Gráfica', 'height=600,width=800');
     win.document.write('<html><head><title>Imprimir Gráfica Legal</title>');
-    // Simple styles for print
-    win.document.write('<style>body{font-family: sans-serif; text-align: center; padding: 20px;} h2 {margin-bottom: 20px;} img { max-width: 100%; height: auto; }</style>');
+    win.document.write('<style>body{font-family:sans-serif;text-align:center;padding:20px;}h2{margin-bottom:20px;}img{max-width:100%;height:auto;}</style>');
     win.document.write('</head><body>');
     win.document.write('<h2>Gráfica de Cumplimiento Legal (Existe Actividad)</h2>');
-    
-    // Add Stats for Print
-    const statsHtml = document.getElementById('legalStats').outerHTML;
-    win.document.write('<div style="margin-bottom: 30px; display: inline-block; text-align: left;">' + statsHtml + '</div><br>');
-    
+    win.document.write('<div style="margin-bottom:30px;display:inline-block;text-align:left;">' + document.getElementById('legalStats').outerHTML + '</div><br>');
     win.document.write('<img src="' + canvas.toDataURL() + '" />');
     win.document.write('</body></html>');
     win.document.close();
-    win.print(); 
+    win.print();
 };
 
-// Check DOM Ready
+// ── Bootstrap ─────────────────────────────────────────────────────────────────
 if (document.readyState === 'loading') {
-    document.addEventListener("DOMContentLoaded", initLegal);
+    document.addEventListener('DOMContentLoaded', initLegal);
 } else {
     initLegal();
 }
