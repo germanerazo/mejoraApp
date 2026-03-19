@@ -89,6 +89,84 @@ class dangerMgmt extends connection {
         return $dangers;
     }
 
+    // ── REPORTE COMPLETO (una fila por actividad+peligro+consecuencia) ────────
+
+    public function getFullReport($idEmpresa) {
+        $idEmpresa = intval($idEmpresa);
+        if (!$idEmpresa) return [];
+
+        // Todas las actividades de la empresa (desde process_sheet_activities vía process_sheets)
+        $rows = parent::getData(
+            "SELECT
+                psa.id            AS idActivity,
+                psa.name          AS activity_name,
+                psa.area          AS area,
+                psa.routine       AS routine,
+                psa.highRisk      AS high_risk,
+                d.id              AS danger_id,
+                d.name            AS danger_name,
+                dt.name           AS danger_type,
+                c.name            AS consequence_name,
+                adc.id            AS adc_id,
+                adc.existing_controls,
+                adc.deficiency_level,
+                adc.exposure_level,
+                adc.consequence_level,
+                adc.exposed_count,
+                adc.worst_consequence,
+                adc.legal_requirements
+             FROM process_sheet_activities psa
+             INNER JOIN process_sheets ps      ON ps.id       = psa.process_sheet_id
+             INNER JOIN activity_dangers ad     ON ad.idActivity = psa.id
+             INNER JOIN dangers d               ON d.id        = ad.danger_id
+             INNER JOIN danger_types dt         ON dt.id       = d.danger_type_id
+             INNER JOIN activity_danger_consequences adc ON adc.activity_danger_id = ad.id
+             INNER JOIN consequences c          ON c.id        = adc.consequence_id
+             WHERE ps.idEmpresa = $idEmpresa
+             ORDER BY psa.name, d.name, c.name"
+        );
+
+        // Para cada fila, agregar las medidas agrupadas y los flags de tipo de control
+        foreach ($rows as &$row) {
+            $adcId = intval($row['adc_id']);
+            $measures = parent::getData(
+                "SELECT pm.name AS measure_name,
+                        adcm.elimination, adcm.substitution, adcm.engineering_control,
+                        adcm.administrative_control, adcm.ppe
+                 FROM activity_danger_consequence_measures adcm
+                 JOIN preventive_measures pm ON pm.id = adcm.preventive_measure_id
+                 WHERE adcm.activity_danger_consequence_id = $adcId"
+            );
+
+            // Agrupar nombres y flags
+            $names          = [];
+            $elimination    = 0;
+            $substitution   = 0;
+            $engineering    = 0;
+            $administrative = 0;
+            $ppe            = 0;
+
+            foreach ($measures as $m) {
+                $names[] = $m['measure_name'];
+                if ($m['elimination'])          $elimination    = 1;
+                if ($m['substitution'])         $substitution   = 1;
+                if ($m['engineering_control'])  $engineering    = 1;
+                if ($m['administrative_control']) $administrative = 1;
+                if ($m['ppe'])                  $ppe            = 1;
+            }
+
+            $row['measures']          = implode(' / ', $names);
+            $row['has_elimination']   = $elimination;
+            $row['has_substitution']  = $substitution;
+            $row['has_engineering']   = $engineering;
+            $row['has_administrative']= $administrative;
+            $row['has_ppe']           = $ppe;
+        }
+
+        return $rows;
+    }
+
+
     // ── AGREGAR ASOCIACIONES ──────────────────────────────────────
 
     public function addActivityDanger($data) {

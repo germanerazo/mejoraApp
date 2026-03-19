@@ -1,0 +1,187 @@
+/* ============================================================
+   riskReport.css  –  Reporte Matriz de Peligros y Riesgos
+   ============================================================ */
+@import url("../../styles/colors.css");
+
+/* ── Toolbar ──────────────────────────────────────────────── */
+.rr-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.rr-count-badge {
+    background: rgba(50,155,214,0.1);
+    color: #0077b6;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rr-btn-print {
+    background: #6c757d;
+    color: #fff;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+}
+.rr-btn-print:hover { background: #5a6268; }
+
+.rr-btn-export {
+    background: #1d7c45;
+    color: #fff;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s, transform 0.15s;
+}
+.rr-btn-export:hover { background: #155d34; transform: translateY(-1px); }
+
+/* ── Table wrapper ────────────────────────────────────────── */
+.rr-table-wrapper {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 68vh;
+    border-radius: 12px;
+}
+
+/* ── Table ────────────────────────────────────────────────── */
+.rr-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    min-width: 2400px;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.rr-table thead tr {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.rr-th {
+    background: linear-gradient(135deg, #22496d 0%, #329bd6 100%);
+    color: #fff;
+    padding: 11px 10px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border: 1px solid rgba(255,255,255,0.15);
+    white-space: nowrap;
+}
+
+/* Columna sticky (Actividad) */
+.rr-sticky {
+    position: sticky;
+    left: 0;
+    z-index: 20;
+    background: linear-gradient(135deg, #22496d 0%, #2b5f8a 100%) !important;
+    border-right: 2px solid rgba(255,255,255,0.3) !important;
+}
+
+/* ── Rows ─────────────────────────────────────────────────── */
+.rr-table tbody tr:nth-child(even) td { background: #f4f7fc; }
+.rr-table tbody tr:nth-child(odd)  td { background: #fff; }
+
+.rr-table tbody tr:hover td {
+    background: #e8f4fb !important;
+    transition: background 0.15s;
+}
+
+.rr-table td {
+    padding: 8px 10px;
+    border: 1px solid #e0e0e0;
+    vertical-align: middle;
+    text-align: center;
+    color: #374151;
+    line-height: 1.4;
+}
+
+/* Sticky cell en body */
+.rr-table tbody td.rr-sticky-cell {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    font-weight: 700;
+    color: #22496d;
+    border-right: 2px solid #cbd5e1;
+    background: inherit;
+}
+
+/* ── NR / NP color badges ─────────────────────────────────── */
+.rr-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.72rem;
+    white-space: nowrap;
+}
+
+.rr-nr-i      { background: #d4edda; color: #155724; }   /* I - Muy Bajo  */
+.rr-nr-ii     { background: #fff3cd; color: #856404; }   /* II - Bajo     */
+.rr-nr-iii    { background: #fde8c8; color: #7a4200; }   /* III - Medio   */
+.rr-nr-iv     { background: #f8d7da; color: #721c24; }   /* IV - Alto     */
+
+.rr-accept-ok  { background: #d4edda; color: #155724; border-radius: 10px; padding: 3px 10px; font-weight: 600; font-size: 0.72rem; }
+.rr-accept-no  { background: #f8d7da; color: #721c24; border-radius: 10px; padding: 3px 10px; font-weight: 600; font-size: 0.72rem; }
+.rr-accept-ctrl{ background: #fff3cd; color: #856404; border-radius: 10px; padding: 3px 10px; font-weight: 600; font-size: 0.72rem; }
+
+.rr-check-yes { color: #27ae60; font-size: 1rem; }
+.rr-check-no  { color: #cbd5e1; font-size: 1rem; }
+
+/* ── Empty / Loading ──────────────────────────────────────── */
+.rr-table .empty-state {
+    padding: 40px;
+    text-align: center;
+    color: #8d99ae;
+}
+
+/* ── Print styles ─────────────────────────────────────────── */
+@media print {
+    .filter-bar,
+    .rr-toolbar,
+    .page-header p,
+    .rr-btn-print,
+    .rr-btn-export { display: none !important; }
+
+    .rr-table-wrapper {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .rr-table {
+        font-size: 7pt;
+        min-width: auto;
+        width: 100%;
+    }
+
+    .rr-th {
+        background: #22496d !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}

@@ -34,6 +34,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
             echo json_encode($_mgmt->getMeasuresByDanger($_GET['dangerId']));
         } else if ($action === 'activityDangers' && isset($_GET['idActivity'])) {
             echo json_encode($_mgmt->getActivityDangers($_GET['idActivity']));
+        } else if ($action === 'fullReport' && isset($_GET['idEmpresa'])) {
+            echo json_encode($_mgmt->getFullReport($_GET['idEmpresa']));
         } else {
             http_response_code(400);
             echo json_encode($_answers->error_400());
