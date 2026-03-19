@@ -1,26 +1,43 @@
 // ============================================================
 // legal.js  –  Matriz Legal  (CRUD conectado a API real)
 // ============================================================
-
-// ── Helpers de sesión (igual que el resto de la app) ─────────────────────────
-const getLegalSession = () => ({
-    token:     sessionStorage.getItem('token')     || '',
-    idEmpresa: sessionStorage.getItem('idEmpresa') || 0,
-});
+import config from "../../js/config.js";
 
 const API_LEGAL = `${config.BASE_API_URL}legalMatrix.php`;
+
+// ── Sesión (igual que hazardRiskMgmt.js) ─────────────────────────────────────
+let idEmpresa = null;
+let token     = null;
+
+const loadSession = () => {
+    const user = JSON.parse(sessionStorage.getItem('user') || 'null');
+    if (user && user.idClient) {
+        idEmpresa = user.idClient;
+        token     = sessionStorage.getItem('token') || '';
+        return true;
+    }
+    return false;
+};
+
+// ── Registro único del plugin DataLabels ──────────────────────────────────────
+if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+    Chart.register(ChartDataLabels);
+}
 
 // ── Estado local ──────────────────────────────────────────────────────────────
 let legalData = [];
 
 // ── Inicialización ────────────────────────────────────────────────────────────
 const initLegal = () => {
+    if (!loadSession()) {
+        Swal.fire('Error', 'No se ha encontrado la sesión de la empresa.', 'error');
+        return;
+    }
     loadLegalList();
 };
 
 // ── READ – cargar lista desde la API ─────────────────────────────────────────
 const loadLegalList = async (clasificacion = '', norma = '') => {
-    const { idEmpresa } = getLegalSession();
     if (!idEmpresa) {
         renderLegalList([]);
         return;
@@ -109,7 +126,6 @@ window.hideCreateLegal = () => {
 
 // ── CREATE / UPDATE ───────────────────────────────────────────────────────────
 window.saveLegal = async () => {
-    const { token, idEmpresa } = getLegalSession();
     const id   = document.getElementById('legalId').value;
     const norma = document.getElementById('fieldNorm').value.trim();
 
@@ -199,8 +215,6 @@ window.deleteLegal = (idLegal) => {
     }).then(async (result) => {
         if (!result.isConfirmed) return;
 
-        const { token, idEmpresa } = getLegalSession();
-
         try {
             const resp = await fetch(API_LEGAL, {
                 method:  'DELETE',
@@ -234,8 +248,6 @@ window.deleteSelected = () => {
         cancelButtonText:    'Cancelar',
     }).then(async (result) => {
         if (!result.isConfirmed) return;
-
-        const { token, idEmpresa } = getLegalSession();
 
         try {
             const resp = await fetch(`${API_LEGAL}?_method=DELETE_ALL`, {
@@ -293,8 +305,6 @@ window.renderLegalChart = () => {
     document.getElementById('statTotal').innerText = total;
 
     if (legalChartInstance) legalChartInstance.destroy();
-
-    if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
 
     legalChartInstance = new Chart(ctx, {
         type: 'pie',
