@@ -8,7 +8,7 @@ const getLegalSession = () => ({
     idEmpresa: sessionStorage.getItem('idEmpresa') || 0,
 });
 
-const API_LEGAL = '../../../api/legalMatrix.php';
+const API_LEGAL = `${config.BASE_API_URL}legalMatrix.php`;
 
 // ── Estado local ──────────────────────────────────────────────────────────────
 let legalData = [];

@@ -6,6 +6,9 @@ require_once '../class/legalMatrix.class.php';
 $_answers     = new answers;
 $_legalMatrix = new legalMatrix;
 
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header('Content-Type: application/json');
 
 switch ($_SERVER['REQUEST_METHOD']) {
