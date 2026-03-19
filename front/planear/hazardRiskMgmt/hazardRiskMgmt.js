@@ -827,7 +827,7 @@ window.openAddMeasureModal = async function(adc_id, danger_id) {
         
         const htmlContent = `
             <div style="text-align: left;">
-                <label style="display:block; font-weight:600; margin-bottom:5px; font-size:14px; color:#4a5568;">1. Seleccione una Medida Preventiva Existente</label>
+                <label style="display:block; font-weight:600; margin-bottom:5px; font-size:14px; color:#4a5568;">1. Seleccione una Medida Preventiva Existente (<span id="modalMeasCount" style="color:#329bd6;">0</span>)</label>
                 <div style="position: relative; margin-bottom: 10px;">
                     <i class="fas fa-search" style="position: absolute; left: 12px; top: 12px; color: #888;"></i>
                     <input type="text" id="modalMeasSearch" class="swal2-input" autocomplete="off" style="width: 100%; margin: 0; padding-left: 35px; box-sizing: border-box; font-size:14px; max-width:100%;" placeholder="Buscar medida registrada...">

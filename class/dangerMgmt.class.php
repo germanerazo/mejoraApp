@@ -168,13 +168,13 @@ class dangerMgmt extends connection {
             } else {
                 $measureId = $existingMeasure[0]['id'];
             }
+        }
 
-            if ($dangerId > 0) {
-                // Link it to the danger
-                $linkExists = parent::getData("SELECT id FROM danger_preventive_measures WHERE danger_id = $dangerId AND preventive_measure_id = $measureId");
-                if (empty($linkExists)) {
-                    parent::nonQueryId("INSERT INTO danger_preventive_measures (danger_id, preventive_measure_id) VALUES ($dangerId, $measureId)");
-                }
+        if ($measureId && $dangerId > 0) {
+            // Siempre asociar la medida con el peligro en la tabla maestra (si no lo está ya)
+            $linkExists = parent::getData("SELECT id FROM danger_preventive_measures WHERE danger_id = $dangerId AND preventive_measure_id = $measureId");
+            if (empty($linkExists)) {
+                parent::nonQueryId("INSERT INTO danger_preventive_measures (danger_id, preventive_measure_id) VALUES ($dangerId, $measureId)");
             }
         }
 
