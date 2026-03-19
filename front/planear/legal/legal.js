@@ -5,7 +5,6 @@ import config from "../../js/config.js";
 
 const API_LEGAL = `${config.BASE_API_URL}legalMatrix.php`;
 
-// ── Sesión (igual que hazardRiskMgmt.js) ─────────────────────────────────────
 let idEmpresa = null;
 let token     = null;
 
@@ -355,3 +354,284 @@ if (document.readyState === 'loading') {
 } else {
     initLegal();
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// IMPORTACIÓN DESDE EXCEL
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Columnas esperadas (índice 0-based)
+const EXCEL_COLS = [
+    'clasificacion',  // 0
+    'norma',          // 1
+    'anioEmision',    // 2
+    'disposicion',    // 3
+    'articulos',      // 4
+    'descripcion',    // 5
+    'evidencia',      // 6
+    'responsable',    // 7
+    'existeAct',      // 8
+    'observacion',    // 9
+    'fecha',          // 10
+];
+
+const EXCEL_HEADERS = [
+    'Clasificación','Norma','Año Emisión','Disposición que regula',
+    'Art. Aplicable','Descripción Requisito','Evidencia Cumplimiento',
+    'Responsable','Existe Act.','Observación','Fecha',
+];
+
+/** Filas parseadas del Excel, se llenan en parseo y se usan en importExcelData */
+let excelParsedRows = [];
+
+// ── Abrir/cerrar modal ────────────────────────────────────────────────────────
+window.triggerExcelImport = () => {
+    document.getElementById('modalExcelImport').style.display = 'block';
+    // Reset estado anterior
+    excelParsedRows = [];
+    document.getElementById('excelPreviewContainer').style.display  = 'none';
+    document.getElementById('importProgressWrapper').style.display  = 'none';
+    document.getElementById('excelPreviewTable').innerHTML           = '';
+    const dropZone = document.getElementById('excelDropZone');
+    dropZone.style.background   = '#f6fff8';
+    dropZone.style.borderColor  = '#2ecc71';
+
+    // Abrir selector solo si el modal ya estaba visible antes (evita doble apertura)
+    // El onclick del drop zone llama a este mismo método; el input lo lanzamos desde aquí
+    // solo cuando el usuario hizo clic en el botón de la barra de acciones.
+    const caller = triggerExcelImport.caller;   // puede ser null en módulos strict
+    document.getElementById('excelFileInput').click();
+};
+
+window.closeExcelModal = () => {
+    document.getElementById('modalExcelImport').style.display = 'none';
+    document.getElementById('excelFileInput').value = '';
+};
+
+// Cerrar modal al hacer clic fuera del panel
+document.getElementById('modalExcelImport').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('modalExcelImport')) closeExcelModal();
+});
+
+// ── Drag-and-drop ─────────────────────────────────────────────────────────────
+window.handleExcelDrop = (event) => {
+    event.preventDefault();
+    const dropZone = document.getElementById('excelDropZone');
+    dropZone.style.background  = '#f6fff8';
+    dropZone.style.borderColor = '#2ecc71';
+    const file = event.dataTransfer.files[0];
+    if (file) processExcelFile(file);
+};
+
+// ── Selección por input file ──────────────────────────────────────────────────
+window.handleExcelFile = (event) => {
+    const file = event.target.files[0];
+    if (file) processExcelFile(file);
+};
+
+// ── Parsear archivo con SheetJS ───────────────────────────────────────────────
+const processExcelFile = (file) => {
+    const allowed = ['.xlsx', '.xls', '.csv'];
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!allowed.includes(ext)) {
+        Swal.fire('Formato no válido', 'Solo se aceptan archivos .xlsx, .xls o .csv', 'warning');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data    = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+            const sheet   = workbook.Sheets[workbook.SheetNames[0]];
+            const rows    = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+            // Detectar si la primera fila es encabezado (contiene texto no numérico en col 1)
+            let startRow = 0;
+            if (rows.length > 0) {
+                const firstCell = String(rows[0][0] || '').trim().toUpperCase();
+                // Si la primera celda NO es H/S/E, asumimos que es encabezado
+                if (!['H', 'S', 'E'].includes(firstCell)) startRow = 1;
+            }
+
+            excelParsedRows = [];
+            for (let i = startRow; i < rows.length; i++) {
+                const row = rows[i];
+                // Ignorar filas completamente vacías
+                if (row.every(cell => cell === '' || cell === null || cell === undefined)) continue;
+
+                const clasif = String(row[0] ?? '').trim().toUpperCase();
+                const norma  = String(row[1] ?? '').trim();
+                if (!norma) continue; // norma es campo obligatorio
+
+                // Manejar año — SheetJS puede devolver Date o número
+                let anio = row[2];
+                if (anio instanceof Date) anio = anio.getFullYear();
+                anio = parseInt(anio) || '';
+
+                // Manejar fecha (col 10)
+                let fecha = row[10];
+                if (fecha instanceof Date) {
+                    fecha = fecha.toISOString().split('T')[0];
+                } else {
+                    fecha = String(fecha ?? '').trim();
+                }
+
+                const existeAct = String(row[8] ?? 'NO').trim().toUpperCase();
+
+                excelParsedRows.push({
+                    clasificacion: ['H','S','E'].includes(clasif) ? clasif : 'S',
+                    norma,
+                    anioEmision:  anio,
+                    disposicion:  String(row[3]  ?? '').trim(),
+                    articulos:    String(row[4]  ?? '').trim(),
+                    descripcion:  String(row[5]  ?? '').trim(),
+                    evidencia:    String(row[6]  ?? '').trim(),
+                    responsable:  String(row[7]  ?? '').trim(),
+                    existeAct:    ['SI','NO'].includes(existeAct) ? existeAct : 'NO',
+                    observacion:  String(row[9]  ?? '').trim(),
+                    fecha,
+                });
+            }
+
+            if (excelParsedRows.length === 0) {
+                Swal.fire('Sin datos', 'No se encontraron filas válidas en el archivo. Verifica que la Norma esté completa.', 'warning');
+                return;
+            }
+
+            renderExcelPreview(excelParsedRows);
+        } catch (err) {
+            console.error('Error leyendo Excel:', err);
+            Swal.fire('Error', 'No se pudo leer el archivo. Verifica que sea un Excel válido.', 'error');
+        }
+    };
+    reader.readAsArrayBuffer(file);
+};
+
+// ── Renderizar preview ────────────────────────────────────────────────────────
+const renderExcelPreview = (rows) => {
+    const container = document.getElementById('excelPreviewContainer');
+    const table     = document.getElementById('excelPreviewTable');
+    const countEl   = document.getElementById('excelPreviewCount');
+
+    countEl.innerHTML = `<i class="fas fa-table" style="margin-right:6px;"></i>${rows.length} registro${rows.length !== 1 ? 's' : ''} encontrado${rows.length !== 1 ? 's' : ''}`;
+
+    // Encabezado
+    let html = `<thead><tr style="position:sticky;top:0;background:#1a7f37;color:#fff;">`;
+    html += `<th style="padding:8px 10px;font-size:0.75rem;">#</th>`;
+    EXCEL_HEADERS.forEach(h => {
+        html += `<th style="padding:8px 10px;font-size:0.75rem;white-space:nowrap;">${h}</th>`;
+    });
+    html += `</tr></thead><tbody>`;
+
+    rows.forEach((row, idx) => {
+        const existeBadge = row.existeAct === 'SI'
+            ? `<span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:10px;font-weight:600;">SI</span>`
+            : `<span style="background:#ffebee;color:#c62828;padding:2px 8px;border-radius:10px;font-weight:600;">NO</span>`;
+
+        const bg = idx % 2 === 0 ? '#fff' : '#f9fafb';
+        html += `<tr style="background:${bg};">
+            <td style="padding:6px 10px;color:#888;font-size:0.75rem;text-align:center;">${idx + 1}</td>
+            <td style="padding:6px 10px;font-weight:700;color:#1a7f37;">${row.clasificacion}</td>
+            <td style="padding:6px 10px;font-weight:600;">${row.norma}</td>
+            <td style="padding:6px 10px;">${row.anioEmision}</td>
+            <td style="padding:6px 10px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${row.disposicion}">${row.disposicion}</td>
+            <td style="padding:6px 10px;">${row.articulos}</td>
+            <td style="padding:6px 10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${row.descripcion}">${row.descripcion}</td>
+            <td style="padding:6px 10px;max-width:150px;overflow:hidden;text-overflow:ellipsis;" title="${row.evidencia}">${row.evidencia}</td>
+            <td style="padding:6px 10px;">${row.responsable}</td>
+            <td style="padding:6px 10px;text-align:center;">${existeBadge}</td>
+            <td style="padding:6px 10px;max-width:120px;overflow:hidden;text-overflow:ellipsis;" title="${row.observacion}">${row.observacion}</td>
+            <td style="padding:6px 10px;">${row.fecha}</td>
+        </tr>`;
+    });
+    html += `</tbody>`;
+    table.innerHTML = html;
+    container.style.display = 'block';
+};
+
+// ── Guardar todos los registros via API (uno por uno con barra de progreso) ───
+window.importExcelData = async () => {
+    if (!excelParsedRows.length) return;
+    if (!idEmpresa) {
+        Swal.fire('Error', 'No se encontró la sesión de empresa.', 'error');
+        return;
+    }
+
+    const totalRows = excelParsedRows.length;
+    const progressWrapper = document.getElementById('importProgressWrapper');
+    const progressBar     = document.getElementById('importProgressBar');
+    const progressLabel   = document.getElementById('importProgressLabel');
+    const previewContainer = document.getElementById('excelPreviewContainer');
+
+    previewContainer.style.display  = 'none';
+    progressWrapper.style.display   = 'block';
+
+    let successCount = 0;
+    let errorCount   = 0;
+
+    for (let i = 0; i < totalRows; i++) {
+        const row = excelParsedRows[i];
+        const pct = Math.round(((i + 1) / totalRows) * 100);
+
+        progressBar.style.width   = pct + '%';
+        progressLabel.textContent = `Importando ${i + 1} de ${totalRows}… (${pct}%)`;
+
+        try {
+            const resp = await fetch(API_LEGAL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, idEmpresa, ...row }),
+            });
+            const result = await resp.json();
+            if (result.status === 'ok') successCount++;
+            else                        errorCount++;
+        } catch {
+            errorCount++;
+        }
+    }
+
+    progressBar.style.width   = '100%';
+    progressLabel.textContent = `Completado: ${successCount} guardados, ${errorCount} errores.`;
+
+    setTimeout(() => {
+        closeExcelModal();
+        loadLegalList();
+        Swal.fire({
+            icon:  errorCount === 0 ? 'success' : 'warning',
+            title: 'Importación completada',
+            html:  `<b>${successCount}</b> registro${successCount !== 1 ? 's' : ''} importado${successCount !== 1 ? 's' : ''} correctamente.<br>` +
+                   (errorCount ? `<span style="color:#e74c3c;">${errorCount} con error.</span>` : ''),
+        });
+    }, 500);
+};
+
+// ── Descargar plantilla Excel ─────────────────────────────────────────────────
+window.downloadExcelTemplate = () => {
+    if (typeof XLSX === 'undefined') {
+        Swal.fire('Error', 'La librería de Excel no está disponible aún. Intenta de nuevo en un momento.', 'error');
+        return;
+    }
+
+    const templateRows = [
+        EXCEL_HEADERS,  // fila de encabezados
+        // Fila de ejemplo
+        ['S', 'Decreto 1072', 2015, 'Ministerio de Trabajo', 'Art. 2.2.4.6.1',
+         'Por medio del cual se expide el Decreto Único Reglamentario del Sector Trabajo',
+         'Matriz de Peligros, Plan de Trabajo', 'Lider SST', 'SI', 'Cumplimiento anual', '2024-01-15'],
+        ['H', 'Ley 1562', 2012, 'Congreso de la República', 'Art. 1',
+         'Por la cual se modifica el Sistema de Riesgos Laborales',
+         'Afiliaciones ARL', 'Gerencia', 'SI', '', '2024-01-01'],
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(templateRows);
+
+    // Ancho de columnas
+    ws['!cols'] = [
+        { wch: 14 }, { wch: 20 }, { wch: 13 }, { wch: 30 }, { wch: 20 },
+        { wch: 50 }, { wch: 30 }, { wch: 20 }, { wch: 12 }, { wch: 30 }, { wch: 14 },
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'MatrizLegal');
+    XLSX.writeFile(wb, 'plantilla_matriz_legal.xlsx');
+};

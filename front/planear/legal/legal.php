@@ -5,6 +5,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <!-- Chart.js DataLabels Plugin (v2.2.0) -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<!-- SheetJS – leer archivos Excel en el cliente -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <div class="page-header">
     <h1 class="page-title">MATRIZ LEGAL</h1>
@@ -34,11 +36,22 @@
     </div>
 
     <!-- Actions -->
-    <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+    <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
         <button class="btn-new-record" onclick="showCreateLegal()">
             <i class="fas fa-plus-circle"></i> Nuevo Registro Legal
         </button>
-        <button class="btn-new-record" onclick="deleteSelected()" style="background-color: #e74c3c;">Eliminar Gestión legal</button>
+        <!-- Importar Excel -->
+        <button class="btn-import-excel" onclick="triggerExcelImport()" title="Cargar registros desde Excel">
+            <i class="fas fa-file-excel"></i> Importar Excel
+        </button>
+        <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleExcelFile(event)">
+        <!-- Descargar plantilla -->
+        <button class="btn-template-excel" onclick="downloadExcelTemplate()" title="Descargar plantilla Excel">
+            <i class="fas fa-download"></i> Plantilla
+        </button>
+        <button class="btn-new-record" onclick="deleteSelected()" style="background-color: #e74c3c;">
+            <i class="fas fa-trash"></i> Eliminar Gestión legal
+        </button>
         <!-- Graph Button -->
         <button class="btn-hover-graph" title="Graficar Cumplimiento" onclick="showLegalGraph()">
             <i class="fas fa-chart-pie"></i> Ver Gráfica de Cumplimiento
@@ -176,6 +189,62 @@
             </div>
             <div style="margin-top: 15px; font-weight: bold; font-size: 1.2em;">
                 Total: <span id="statTotal">0</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de importación Excel -->
+<div id="modalExcelImport" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9999; overflow-y:auto;">
+    <div style="background:#fff; border-radius:12px; max-width:960px; margin:40px auto; padding:0; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#1a7f37,#2ecc71); padding:20px 28px; border-radius:12px 12px 0 0; display:flex; justify-content:space-between; align-items:center;">
+            <div style="color:#fff;">
+                <h2 style="margin:0; font-size:1.2rem;"><i class="fas fa-file-excel" style="margin-right:8px;"></i>Importar Matriz Legal desde Excel</h2>
+                <p style="margin:4px 0 0; font-size:0.82rem; opacity:0.85;">Sube un archivo .xlsx / .xls con los datos de la matriz</p>
+            </div>
+            <button onclick="closeExcelModal()" style="background:rgba(255,255,255,0.2); border:none; color:#fff; border-radius:50%; width:36px; height:36px; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
+        </div>
+
+        <!-- Drop Zone -->
+        <div id="excelDropZone"
+             style="margin:24px 28px 0; border:2px dashed #2ecc71; border-radius:10px; padding:32px; text-align:center; cursor:pointer; transition:all .2s; background:#f6fff8;"
+             onclick="triggerExcelImport()"
+             ondragover="event.preventDefault(); this.style.background='#e8fdf0'; this.style.borderColor='#1a7f37';"
+             ondragleave="this.style.background='#f6fff8'; this.style.borderColor='#2ecc71';"
+             ondrop="handleExcelDrop(event)">
+            <i class="fas fa-cloud-upload-alt" style="font-size:2.5rem; color:#2ecc71; margin-bottom:10px;"></i>
+            <p style="margin:0; font-size:1rem; color:#444; font-weight:600;">Arrastra tu archivo Excel aquí o haz clic para seleccionar</p>
+            <p style="margin:6px 0 0; font-size:0.8rem; color:#888;">Formatos aceptados: .xlsx · .xls · .csv</p>
+        </div>
+
+        <!-- Guía de columnas -->
+        <div style="margin:16px 28px 0; background:#fffbea; border:1px solid #f0c040; border-radius:8px; padding:12px 16px; font-size:0.8rem; color:#7a5c00;">
+            <strong><i class="fas fa-info-circle"></i> Orden de columnas esperado en la hoja:</strong>
+            <span style="margin-left:8px;">Clasificación (H/S/E) · Norma · Año de Emisión · Disposición que regula · Art. Aplicable · Descripción Requisito · Evidencia Cumplimiento · Responsable · Existe Act. (SI/NO) · Observación · Fecha (YYYY-MM-DD)</span>
+        </div>
+
+        <!-- Preview Table -->
+        <div id="excelPreviewContainer" style="margin:16px 28px; display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <strong id="excelPreviewCount" style="color:#1a7f37;"></strong>
+                <div style="display:flex; gap:8px;">
+                    <button onclick="importExcelData()" class="btn-new-record" style="background:#1a7f37;">
+                        <i class="fas fa-database"></i> Guardar Todos
+                    </button>
+                    <button onclick="closeExcelModal()" class="btn-secondary-premium">Cancelar</button>
+                </div>
+            </div>
+            <div style="overflow-x:auto; max-height:380px; overflow-y:auto; border:1px solid #e0e0e0; border-radius:8px;">
+                <table id="excelPreviewTable" style="width:100%; border-collapse:collapse; font-size:0.82rem;"></table>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div id="importProgressWrapper" style="margin:0 28px 24px; display:none;">
+            <p style="margin:0 0 6px; font-size:0.85rem; color:#555;" id="importProgressLabel">Importando...</p>
+            <div style="background:#e9ecef; border-radius:6px; height:12px; overflow:hidden;">
+                <div id="importProgressBar" style="height:100%; background:linear-gradient(90deg,#1a7f37,#2ecc71); width:0%; transition:width .3s;"></div>
             </div>
         </div>
     </div>

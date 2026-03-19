@@ -126,3 +126,44 @@
     font-size: 0.85em;
     font-weight: 600;
 }
+
+/* ── Botones Excel ────────────────────────────────────────── */
+.btn-import-excel {
+    background-color: #1d7c45;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s, transform 0.15s;
+}
+
+.btn-import-excel:hover {
+    background-color: #155d34;
+    transform: translateY(-1px);
+}
+
+.btn-template-excel {
+    background-color: transparent;
+    color: #1d7c45;
+    border: 2px solid #1d7c45;
+    padding: 8px 14px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.btn-template-excel:hover {
+    background-color: #1d7c45;
+    color: #fff;
+}
