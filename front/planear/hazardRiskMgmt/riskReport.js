@@ -224,110 +224,182 @@ window.rrClearFilters = () => {
 
 // ── Imprimir ──────────────────────────────────────────────────────────────────
 window.rrPrint = () => {
-    const table   = document.getElementById('rrTable');
+    const table    = document.getElementById('rrTable');
     const rowCount = document.getElementById('rrRowCount').textContent;
-    const now     = new Date().toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' });
+    const now      = new Date().toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' });
 
     const printStyles = `
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: Arial, Helvetica, sans-serif; font-size: 7.5pt; color: #1a1a1a; background: #fff; }
+
+        /* ── Página: A3 horizontal ─────────────────────────────────── */
+        @page {
+            size: A3 landscape;
+            margin: 6mm 5mm;
+        }
+
+        html, body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #fff;
+            width: 100%;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* El wrapper se escalará por JS para que quepa en el papel */
+        #printRoot {
+            transform-origin: top left;
+            width: max-content;
+        }
 
         .print-header {
-            display: flex; justify-content: space-between; align-items: flex-end;
-            padding: 12px 0 10px; border-bottom: 2px solid #22496d; margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 8px;
+            border-bottom: 2.5px solid #22496d;
+            margin-bottom: 10px;
         }
-        .print-header h1 { font-size: 13pt; color: #22496d; font-weight: 700; }
-        .print-header p  { font-size: 8pt; color: #666; margin-top: 3px; }
-        .print-meta      { font-size: 7.5pt; color: #666; text-align: right; }
+        .print-header h1 {
+            font-size: 12pt;
+            color: #22496d;
+            font-weight: 700;
+        }
+        .print-header p  { font-size: 7.5pt; color: #555; margin-top: 3px; }
+        .print-meta      { font-size: 7pt; color: #666; text-align: right; line-height: 1.5; }
 
-        table { width: 100%; border-collapse: collapse; table-layout: auto; }
-        thead tr { background: #22496d !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        table {
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+        thead tr {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
         th {
-            background: #22496d; color: #fff; padding: 5px 4px;
-            font-size: 6.5pt; text-align: center; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 0.3px;
-            border: 1px solid rgba(255,255,255,0.2);
+            background: #22496d !important;
+            color: #fff;
+            padding: 5px 5px;
+            font-size: 6.2pt;
+            text-align: center;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            border: 1px solid rgba(255,255,255,0.25);
             white-space: nowrap;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
         td {
-            padding: 4px 4px; border: 1px solid #d0d0d0;
-            vertical-align: middle; text-align: center;
-            font-size: 6.8pt; color: #1a1a1a;
+            padding: 4px 5px;
+            border: 1px solid #ccc;
+            vertical-align: middle;
+            text-align: center;
+            font-size: 6.5pt;
+            color: #1a1a1a;
+            line-height: 1.3;
         }
-        tr:nth-child(even) td { background: #f0f4f8; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        tr:nth-child(even) td {
+            background: #f0f4f8;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
 
-        /* Badges: imprimir color de fondo */
+        /* Columnas con texto a la izquierda */
+        td:nth-child(1)  { text-align: left; font-weight: 700; color: #22496d; }
+        td:nth-child(2)  { text-align: left; }
+        td:nth-child(5)  { text-align: left; font-weight: 600; }
+        td:nth-child(6)  { text-align: left; }
+        td:nth-child(7)  { text-align: left; }
+        td:nth-child(17) { text-align: left; }
+        td:nth-child(18) { text-align: left; }
+        td:nth-child(19) { text-align: left; }
+
+        /* Badges de riesgo ────────────────────────────────────────── */
         .rr-badge, .badge-routine, .badge-routine-no,
         .badge-high-risk, .badge-high-risk-yes,
         .rr-accept-ok, .rr-accept-no, .rr-accept-ctrl {
+            display: inline-block;
+            padding: 1px 5px;
+            border-radius: 8px;
+            font-size: 6pt;
+            font-weight: 700;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
-            display: inline-block; padding: 1px 5px; border-radius: 8px;
-            font-size: 6.5pt; font-weight: 700;
         }
-        .rr-nr-i    { background: #d4edda; color: #155724; }
-        .rr-nr-ii   { background: #fff3cd; color: #856404; }
-        .rr-nr-iii  { background: #fde8c8; color: #7a4200; }
-        .rr-nr-iv   { background: #f8d7da; color: #721c24; }
-        .rr-accept-ok   { background: #d4edda; color: #155724; }
-        .rr-accept-no   { background: #f8d7da; color: #721c24; }
-        .rr-accept-ctrl { background: #fff3cd; color: #856404; }
-        .badge-routine     { background: rgba(39,174,96,0.12); color: #27ae60; }
-        .badge-routine-no  { background: rgba(141,153,174,0.12); color: #8d99ae; }
-        .badge-high-risk-yes { background: rgba(231,76,60,0.15); color: #c0392b; }
-        .badge-high-risk     { background: rgba(231,76,60,0.08); color: #e74c3c; }
-        .rr-check-yes { color: #27ae60; }
-        .rr-check-no  { color: #ccc; }
-
-        /* Columna Actividad: texto a la izquierda */
-        td:first-child { text-align: left; font-weight: 700; color: #22496d; }
-        td:nth-child(2) { text-align: left; }
-        td:nth-child(5), td:nth-child(6), td:nth-child(7),
-        td:nth-child(17), td:nth-child(18), td:nth-child(19) { text-align: left; }
-
-        @page { size: A3 landscape; margin: 8mm 6mm; }
+        .rr-nr-i    { background: #d4edda !important; color: #155724 !important; }
+        .rr-nr-ii   { background: #fff3cd !important; color: #856404 !important; }
+        .rr-nr-iii  { background: #fde8c8 !important; color: #7a4200 !important; }
+        .rr-nr-iv   { background: #f8d7da !important; color: #721c24 !important; }
+        .rr-accept-ok   { background: #d4edda !important; color: #155724 !important; }
+        .rr-accept-no   { background: #f8d7da !important; color: #721c24 !important; }
+        .rr-accept-ctrl { background: #fff3cd !important; color: #856404 !important; }
+        .badge-routine      { background: rgba(39,174,96,0.15) !important;  color: #27ae60 !important; }
+        .badge-routine-no   { background: rgba(141,153,174,0.1) !important; color: #8d99ae !important; }
+        .badge-high-risk-yes{ background: rgba(231,76,60,0.15) !important;  color: #c0392b !important; }
+        .badge-high-risk    { background: rgba(231,76,60,0.08) !important;  color: #e74c3c !important; }
+        .rr-check-yes { color: #27ae60 !important; font-size: 8pt; }
+        .rr-check-no  { color: #ddd    !important; font-size: 8pt; }
     `;
 
+    // Clonar tabla y limpiar sticky
     const clonedTable = table.cloneNode(true);
-    // Quitar posición sticky para impresión
     clonedTable.querySelectorAll('[class*="rr-sticky"]').forEach(el => {
         el.style.position = 'static';
     });
 
-    const win = window.open('', '_blank', 'width=1200,height=800');
+    const win = window.open('', '_blank', 'width=1400,height=900,scrollbars=yes');
     win.document.write(`<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Reporte Matriz de Peligros y Riesgos</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>${printStyles}</style>
 </head>
 <body>
+<div id="printRoot">
     <div class="print-header">
         <div>
-            <h1><i class="fas fa-shield-alt" style="color:#329bd6; margin-right:6px;"></i>Reporte Matriz de Peligros y Riesgos</h1>
-            <p>${rowCount} registro(s) · Generado el ${now}</p>
+            <h1><i class="fas fa-shield-alt" style="color:#329bd6;margin-right:6px;"></i>Reporte Matriz de Peligros y Riesgos</h1>
+            <p>${rowCount} registro(s) mostrados &nbsp;·&nbsp; Generado el ${now}</p>
         </div>
         <div class="print-meta">
             <strong>Gestión de Peligros y Riesgos</strong><br>
-            GTC-45
+            Metodología GTC-45
         </div>
     </div>
     ${clonedTable.outerHTML}
+</div>
 </body>
 </html>`);
-
     win.document.close();
 
-    // Esperar a que Font Awesome cargue antes de imprimir
-    win.onload = () => {
+    win.addEventListener('load', () => {
+        // A3 landscape: ancho útil ≈ 410mm × (96px/25.4mm) = ~1,550px equivalente
+        // Pero usamos el ancho de viewport de la ventana de impresión como referencia
+        const printRoot  = win.document.getElementById('printRoot');
+        const naturalW   = printRoot.scrollWidth;
+
+        // Ancho utilizable A3 landscape en mm (420 - 10mm márgenes) × factor px/mm a 96dpi
+        const paperMM    = 410;          // A3 landscape útil ~410mm
+        const pxPerMM    = 96 / 25.4;   // ≈ 3.78 px por mm
+        const targetPx   = paperMM * pxPerMM; // ≈ 1550px
+
+        const scale = Math.min(1, targetPx / naturalW);
+
+        printRoot.style.transform      = `scale(${scale})`;
+        printRoot.style.transformOrigin = 'top left';
+        // Ajustar el alto del body al contenido escalado
+        win.document.body.style.height = (printRoot.scrollHeight * scale) + 'px';
+
         setTimeout(() => {
             win.focus();
             win.print();
-            win.close();
-        }, 600);
-    };
+            // Cerrar solo después de que el diálogo de impresión cierre
+            win.addEventListener('afterprint', () => win.close());
+        }, 700);
+    });
 };
 
 // ── Exportar Excel ────────────────────────────────────────────────────────────

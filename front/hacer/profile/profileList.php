@@ -50,20 +50,15 @@
 
     <div class="form-grid-3">
         <div>
-            <label class="input-label">Cargo</label>
+            <label class="input-label">Cargo <small style="color:#8d99ae;">(desde Ficha de Proceso → Personal)</small></label>
             <select id="profileJob" class="swal2-select">
-                <option value="">Seleccione...</option>
-                <option value="Analista">Analista</option>
-                <option value="Gerente">Gerente</option>
-                <!-- Add more options as needed -->
+                <option value="">Cargando cargos...</option>
             </select>
         </div>
         <div>
             <label class="input-label">Cargo al que Reporta</label>
             <select id="profileReportTo" class="swal2-select">
-                <option value="">Seleccione...</option>
-                <option value="Gerente General">Gerente General</option>
-                <option value="Junta Directiva">Junta Directiva</option>
+                <option value="">Ninguno</option>
             </select>
         </div>
     </div>
@@ -200,4 +195,4 @@
 
 </div>
 
-<script type="module" src="../hacer/profile/profileList.js?v=1.0"></script>
+<script type="module" src="../hacer/profile/profileList.js?v=2.0"></script>
