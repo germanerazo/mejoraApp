@@ -3,7 +3,8 @@
 // ============================================================
 import config from "../../js/config.js";
 
-const API = `${config.BASE_API_URL}profileCargo.php`;
+const API     = `${config.BASE_API_URL}profileCargo.php`;
+const API_EPP = `${config.BASE_API_URL}eppCatalog.php`;
 
 // ── Sesión ────────────────────────────────────────────────────────────────────
 let idEmpresa = null;
@@ -411,6 +412,9 @@ window.addSubsection = async (type) => {
     };
     const tableId = tableMap[apiType];
 
+    // EPP tiene su propio flujo con catálogo buscable
+    if (type === 'epp') { addEppFromCatalog(); return; }
+
     const { value: text } = await Swal.fire({
         title:           `Agregar ${labels[type] || type}`,
         input:           'textarea',
@@ -447,7 +451,216 @@ window.addSubsection = async (type) => {
     }
 };
 
-// ── REMOVE ítem de subtabla ───────────────────────────────────────────────────
+// ── ADD EPP desde Catálogo (lista buscable) ────────────────────────────────
+const addEppFromCatalog = async () => {
+    if (!currentProfile) {
+        Swal.fire('Aviso', 'Primero debe guardar el perfil de cargo.', 'warning');
+        return;
+    }
+
+    // 1. Cargar catálogo
+    let catalog = [];
+    try {
+        const r = await fetch(`${API_EPP}?idEmpresa=${idEmpresa}`);
+        catalog  = await r.json();
+        if (!Array.isArray(catalog)) catalog = [];
+    } catch { catalog = []; }
+
+    if (catalog.length === 0) {
+        Swal.fire({
+            icon: 'info',
+            title: 'Sin EPPs en catálogo',
+            html: 'No hay elementos registrados en el catálogo.<br>Diríjase a <strong>Crear EPP</strong> primero.',
+        });
+        return;
+    }
+
+    // 2. Construir HTML del Swal buscable
+    const listHtml = catalog.map(e =>
+        `<div class="epp-option" data-id="${e.id}" data-name="${escapeAttr(e.name)}"
+              style="display:flex; align-items:center; gap:10px; padding:10px 12px;
+                     border:1px solid #e9ecef; border-radius:8px; margin-bottom:6px;
+                     cursor:pointer; transition:all 0.15s; background:#fff;">
+            <i class="fas fa-hard-hat" style="color:#e67e22; font-size:1rem; flex-shrink:0;"></i>
+            <div style="flex:1; text-align:left;">
+                <strong style="font-size:13px;">${escapeHtml(e.name)}</strong>
+                ${e.standard ? `<br><small style="color:#8d99ae;">${escapeHtml(e.standard)}</small>` : ''}
+            </div>
+            <i class="fas fa-circle-check check-icon" style="color:#e9ecef; font-size:1.1rem;"></i>
+        </div>`
+    ).join('');
+
+    const { isConfirmed } = await Swal.fire({
+        title: 'Seleccionar EPP del Catálogo',
+        width: 520,
+        html: `
+            <div style="margin-bottom:10px;">
+                <input id="eppSearchInput" class="swal2-input"
+                       placeholder="🔍 Buscar elemento..."
+                       style="margin:0; width:100%; box-sizing:border-box;"
+                       oninput="filterEppOptions(this.value)">
+            </div>
+            <div id="eppCatalogList"
+                 style="max-height:320px; overflow-y:auto; padding:4px 0;">
+                ${listHtml}
+            </div>`,
+        showCancelButton: true,
+        confirmButtonText: 'Agregar seleccionado',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#27ae60',
+        focusConfirm: false,
+        didOpen: () => {
+            // Eventos de selección
+            document.querySelectorAll('.epp-option').forEach(el => {
+                el.addEventListener('click', () => {
+                    document.querySelectorAll('.epp-option').forEach(o => {
+                        o.style.background = '#fff';
+                        o.style.borderColor = '#e9ecef';
+                        o.querySelector('.check-icon').style.color = '#e9ecef';
+                    });
+                    el.style.background   = 'rgba(39,174,96,0.08)';
+                    el.style.borderColor  = '#27ae60';
+                    el.querySelector('.check-icon').style.color = '#27ae60';
+                    el.dataset.selected = 'true';
+                });
+            });
+        },
+        preConfirm: () => {
+            const sel = document.querySelector('.epp-option[data-selected="true"]');
+            if (!sel) {
+                Swal.showValidationMessage('⚠️ Debe seleccionar un elemento de la lista.');
+                return false;
+            }
+            return { id: parseInt(sel.dataset.id), name: sel.dataset.name };
+        },
+    });
+
+    if (!isConfirmed) return;
+    // Swal.getPopup ya cerró, el resultado viene del preConfirm
+    // Necesitamos re-obtener el valor — Swal lo pasa en result.value
+    // Usamos un enfoque alternativo: guardamos en variable externa
+    // FIX: volver a usar un segundo .fire que no necesita el popup
+    // -> Mejor patron: mover la lógica al resultado del .then()
+};
+
+// Patron correcto: separar el Swal con then()
+const openEppSwalAndSave = async () => {
+    if (!currentProfile) {
+        Swal.fire('Aviso', 'Primero debe guardar el perfil de cargo.', 'warning');
+        return;
+    }
+
+    let catalog = [];
+    try {
+        const r = await fetch(`${API_EPP}?idEmpresa=${idEmpresa}`);
+        catalog  = await r.json();
+        if (!Array.isArray(catalog)) catalog = [];
+    } catch { catalog = []; }
+
+    if (catalog.length === 0) {
+        Swal.fire({ icon: 'info', title: 'Sin EPPs', html: 'No hay EPPs en el catálogo. Registre en <strong>Crear EPP</strong> primero.' });
+        return;
+    }
+
+    const buildListHtml = (items) => items.map(e =>
+        `<div class="epp-option" data-id="${e.id}" data-name="${escapeAttr(e.name)}"
+              style="display:flex;align-items:center;gap:10px;padding:10px 12px;
+                     border:1px solid #e9ecef;border-radius:8px;margin-bottom:6px;
+                     cursor:pointer;transition:all 0.15s;background:#fff;">
+            <i class="fas fa-hard-hat" style="color:#e67e22;font-size:1rem;flex-shrink:0;"></i>
+            <div style="flex:1;text-align:left;">
+                <strong style="font-size:13px;">${escapeHtml(e.name)}</strong>
+                ${e.standard ? `<br><small style="color:#8d99ae;">${escapeHtml(e.standard)}</small>` : ''}
+            </div>
+            <i class="fas fa-circle-check" style="color:#e9ecef;font-size:1.1rem;"></i>
+        </div>`
+    ).join('');
+
+    Swal.fire({
+        title: '<i class="fas fa-hard-hat" style="color:#e67e22;"></i> Agregar EPP al Perfil',
+        width: 540,
+        html: `
+            <input id="eppSearchInput" class="swal2-input"
+                   placeholder="🔍 Buscar elemento..."
+                   style="margin:0 0 10px;width:100%;box-sizing:border-box;">
+            <div id="eppCatalogList"
+                 style="max-height:330px;overflow-y:auto;padding:2px 0;">
+                ${buildListHtml(catalog)}
+            </div>`,
+        showCancelButton: true,
+        confirmButtonText: '<i class="fas fa-plus"></i> Agregar seleccionado',
+        cancelButtonText:  'Cancelar',
+        confirmButtonColor: '#27ae60',
+        focusConfirm: false,
+        didOpen: () => {
+            const onSelect = (el) => {
+                document.querySelectorAll('.epp-option').forEach(o => {
+                    o.style.background  = '#fff';
+                    o.style.borderColor = '#e9ecef';
+                    o.querySelector('.fa-circle-check').style.color = '#e9ecef';
+                    delete o.dataset.selected;
+                });
+                el.style.background  = 'rgba(39,174,96,0.09)';
+                el.style.borderColor = '#27ae60';
+                el.querySelector('.fa-circle-check').style.color = '#27ae60';
+                el.dataset.selected  = 'true';
+            };
+
+            document.querySelectorAll('.epp-option').forEach(el =>
+                el.addEventListener('click', () => onSelect(el))
+            );
+
+            // Filtro de búsqueda en tiempo real
+            document.getElementById('eppSearchInput').addEventListener('input', (e) => {
+                const q = e.target.value.toLowerCase().trim();
+                const filtered = catalog.filter(c => c.name.toLowerCase().includes(q));
+                document.getElementById('eppCatalogList').innerHTML = buildListHtml(filtered);
+                document.querySelectorAll('.epp-option').forEach(el =>
+                    el.addEventListener('click', () => onSelect(el))
+                );
+            });
+        },
+        preConfirm: () => {
+            const sel = document.querySelector('.epp-option[data-selected="true"]');
+            if (!sel) {
+                Swal.showValidationMessage('⚠️ Seleccione un elemento de la lista.');
+                return false;
+            }
+            return { idEppCatalog: parseInt(sel.dataset.id), name: sel.dataset.name };
+        },
+    }).then(async (result) => {
+        if (!result.isConfirmed || !result.value) return;
+        const { idEppCatalog, name } = result.value;
+
+        try {
+            const resp = await fetch(`${API}?action=addItem`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token,
+                    idProfile:    currentProfile.id,
+                    type:         'epp',
+                    descripcion:  name,
+                    idEppCatalog,
+                }),
+            });
+            const data = await resp.json();
+            if (data.status !== 'ok') {
+                Swal.fire('Error', 'No se pudo guardar el EPP.', 'error');
+                return;
+            }
+            addRowToTable('epp', 'tableEpp', data.result.id, name);
+            Swal.fire({ icon: 'success', title: 'EPP agregado', timer: 1000, showConfirmButton: false });
+        } catch {
+            Swal.fire('Error', 'Error de conexión.', 'error');
+        }
+    });
+};
+
+// Exponemos la función final (la anterior era borrador de diseño)
+window.addEppFromCatalog = openEppSwalAndSave;
+
+// ── REMOVE ítem de subtabla ──────────────────────────────────────────────────────────────
 window.removeSubItem = async (dbId, type, respRowId, tableRowId) => {
     if (!dbId) {
         // Ítem local no guardado aún → solo quitar del DOM

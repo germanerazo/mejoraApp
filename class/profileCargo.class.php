@@ -63,9 +63,16 @@ class profileCargo extends connection {
         $profile = $rows[0];
 
         foreach ($this->subTables as $key => $table) {
-            $profile[$key] = parent::getData(
-                "SELECT id, descripcion FROM $table WHERE idProfile = $id ORDER BY id ASC"
-            );
+            if ($key === 'epp') {
+                // Para EPP traemos también el idEppCatalog para referencia
+                $profile[$key] = parent::getData(
+                    "SELECT id, idEppCatalog, descripcion FROM $table WHERE idProfile = $id ORDER BY id ASC"
+                );
+            } else {
+                $profile[$key] = parent::getData(
+                    "SELECT id, descripcion FROM $table WHERE idProfile = $id ORDER BY id ASC"
+                );
+            }
         }
 
         return $profile;
@@ -139,18 +146,28 @@ class profileCargo extends connection {
         $_answers = new answers;
         if (!$this->verifyToken($data, $_answers)) return $_answers->response;
 
-        $idProfile   = intval($data['idProfile'] ?? 0);
-        $type        = $this->sanitize($data['type'] ?? '');
-        $descripcion = $this->sanitize($data['descripcion'] ?? '');
+        $idProfile    = intval($data['idProfile'] ?? 0);
+        $type         = $this->sanitize($data['type'] ?? '');
+        $descripcion  = $this->sanitize($data['descripcion'] ?? '');
+        $idEppCatalog = intval($data['idEppCatalog'] ?? 0);
 
         if (!$idProfile || !isset($this->subTables[$type]) || !$descripcion) {
             return $_answers->error_400('Faltan parámetros: idProfile, type, descripcion');
         }
 
         $table = $this->subTables[$type];
-        $newId = parent::nonQueryId(
-            "INSERT INTO $table (idProfile, descripcion) VALUES ($idProfile, '$descripcion')"
-        );
+
+        // Para EPP: guardar también la FK al catálogo
+        if ($type === 'epp' && $idEppCatalog > 0) {
+            $newId = parent::nonQueryId(
+                "INSERT INTO $table (idProfile, idEppCatalog, descripcion)
+                 VALUES ($idProfile, $idEppCatalog, '$descripcion')"
+            );
+        } else {
+            $newId = parent::nonQueryId(
+                "INSERT INTO $table (idProfile, descripcion) VALUES ($idProfile, '$descripcion')"
+            );
+        }
 
         $resp = $_answers->response;
         $resp['result'] = ['id' => $newId];
