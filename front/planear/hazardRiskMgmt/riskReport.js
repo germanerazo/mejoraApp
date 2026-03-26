@@ -223,7 +223,112 @@ window.rrClearFilters = () => {
 };
 
 // ── Imprimir ──────────────────────────────────────────────────────────────────
-window.rrPrint = () => window.print();
+window.rrPrint = () => {
+    const table   = document.getElementById('rrTable');
+    const rowCount = document.getElementById('rrRowCount').textContent;
+    const now     = new Date().toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' });
+
+    const printStyles = `
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; font-size: 7.5pt; color: #1a1a1a; background: #fff; }
+
+        .print-header {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 12px 0 10px; border-bottom: 2px solid #22496d; margin-bottom: 12px;
+        }
+        .print-header h1 { font-size: 13pt; color: #22496d; font-weight: 700; }
+        .print-header p  { font-size: 8pt; color: #666; margin-top: 3px; }
+        .print-meta      { font-size: 7.5pt; color: #666; text-align: right; }
+
+        table { width: 100%; border-collapse: collapse; table-layout: auto; }
+        thead tr { background: #22496d !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        th {
+            background: #22496d; color: #fff; padding: 5px 4px;
+            font-size: 6.5pt; text-align: center; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.3px;
+            border: 1px solid rgba(255,255,255,0.2);
+            white-space: nowrap;
+        }
+        td {
+            padding: 4px 4px; border: 1px solid #d0d0d0;
+            vertical-align: middle; text-align: center;
+            font-size: 6.8pt; color: #1a1a1a;
+        }
+        tr:nth-child(even) td { background: #f0f4f8; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+        /* Badges: imprimir color de fondo */
+        .rr-badge, .badge-routine, .badge-routine-no,
+        .badge-high-risk, .badge-high-risk-yes,
+        .rr-accept-ok, .rr-accept-no, .rr-accept-ctrl {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            display: inline-block; padding: 1px 5px; border-radius: 8px;
+            font-size: 6.5pt; font-weight: 700;
+        }
+        .rr-nr-i    { background: #d4edda; color: #155724; }
+        .rr-nr-ii   { background: #fff3cd; color: #856404; }
+        .rr-nr-iii  { background: #fde8c8; color: #7a4200; }
+        .rr-nr-iv   { background: #f8d7da; color: #721c24; }
+        .rr-accept-ok   { background: #d4edda; color: #155724; }
+        .rr-accept-no   { background: #f8d7da; color: #721c24; }
+        .rr-accept-ctrl { background: #fff3cd; color: #856404; }
+        .badge-routine     { background: rgba(39,174,96,0.12); color: #27ae60; }
+        .badge-routine-no  { background: rgba(141,153,174,0.12); color: #8d99ae; }
+        .badge-high-risk-yes { background: rgba(231,76,60,0.15); color: #c0392b; }
+        .badge-high-risk     { background: rgba(231,76,60,0.08); color: #e74c3c; }
+        .rr-check-yes { color: #27ae60; }
+        .rr-check-no  { color: #ccc; }
+
+        /* Columna Actividad: texto a la izquierda */
+        td:first-child { text-align: left; font-weight: 700; color: #22496d; }
+        td:nth-child(2) { text-align: left; }
+        td:nth-child(5), td:nth-child(6), td:nth-child(7),
+        td:nth-child(17), td:nth-child(18), td:nth-child(19) { text-align: left; }
+
+        @page { size: A3 landscape; margin: 8mm 6mm; }
+    `;
+
+    const clonedTable = table.cloneNode(true);
+    // Quitar posición sticky para impresión
+    clonedTable.querySelectorAll('[class*="rr-sticky"]').forEach(el => {
+        el.style.position = 'static';
+    });
+
+    const win = window.open('', '_blank', 'width=1200,height=800');
+    win.document.write(`<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte Matriz de Peligros y Riesgos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>${printStyles}</style>
+</head>
+<body>
+    <div class="print-header">
+        <div>
+            <h1><i class="fas fa-shield-alt" style="color:#329bd6; margin-right:6px;"></i>Reporte Matriz de Peligros y Riesgos</h1>
+            <p>${rowCount} registro(s) · Generado el ${now}</p>
+        </div>
+        <div class="print-meta">
+            <strong>Gestión de Peligros y Riesgos</strong><br>
+            GTC-45
+        </div>
+    </div>
+    ${clonedTable.outerHTML}
+</body>
+</html>`);
+
+    win.document.close();
+
+    // Esperar a que Font Awesome cargue antes de imprimir
+    win.onload = () => {
+        setTimeout(() => {
+            win.focus();
+            win.print();
+            win.close();
+        }, 600);
+    };
+};
 
 // ── Exportar Excel ────────────────────────────────────────────────────────────
 window.rrExportExcel = () => {

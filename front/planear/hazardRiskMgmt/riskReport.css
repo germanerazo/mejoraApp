@@ -160,28 +160,6 @@
     color: #8d99ae;
 }
 
-/* ── Print styles ─────────────────────────────────────────── */
-@media print {
-    .filter-bar,
-    .rr-toolbar,
-    .page-header p,
-    .rr-btn-print,
-    .rr-btn-export { display: none !important; }
+/* La impresión se maneja abriendo una ventana emergente aislada
+   desde rrPrint() en riskReport.js — no se necesita @media print aquí */
 
-    .rr-table-wrapper {
-        max-height: none;
-        overflow: visible;
-    }
-
-    .rr-table {
-        font-size: 7pt;
-        min-width: auto;
-        width: 100%;
-    }
-
-    .rr-th {
-        background: #22496d !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-}
