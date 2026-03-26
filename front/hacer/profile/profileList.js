@@ -285,8 +285,8 @@ window.deleteProfile = (id, name) => {
     });
 };
 
-// ── RENDER responsabilidades (inputs editables) ───────────────────────────────
-const renderSubTable = (type, items, containerId, isRespList) => {
+// ── RENDER responsabilidades (lista de tarjetas guardadas) ──────────────────
+const renderSubTable = (type, items, containerId) => {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = '';
@@ -295,23 +295,69 @@ const renderSubTable = (type, items, containerId, isRespList) => {
 
 const renderResponsibilityRow = (dbId, text = '') => {
     const container = document.getElementById('responsibilitiesList');
-    const uid = `resp_${dbId || Date.now() + Math.random()}`;
+    const uid = `resp_${dbId}`;
     container.insertAdjacentHTML('beforeend', `
-        <div id="${uid}" style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
-            <input type="text" class="swal2-input" style="margin:0;background:white;flex:1;"
-                   value="${escapeAttr(text)}" placeholder="Describa la responsabilidad..."
-                   onblur="updateRespText(this, ${dbId || 0})">
+        <div id="${uid}" style="display:flex; gap:10px; margin-bottom:10px; align-items:flex-start;
+             background:#f8f9fa; border:1px solid #e9ecef; border-radius:8px; padding:10px 14px;">
+            <i class="fas fa-check-circle" style="color:#329bd6;margin-top:3px;flex-shrink:0;"></i>
+            <span style="flex:1; font-size:14px; color:#374151; line-height:1.5;">${escapeHtml(text)}</span>
             <button class="btn-delete-premium" title="Eliminar"
-                    onclick="removeSubItem(${dbId || 0}, 'responsabilidades', '${uid}')">
+                    onclick="removeSubItem(${dbId}, 'responsabilidades', '${uid}')">
                 <i class="fas fa-trash-alt"></i>
             </button>
         </div>`);
 };
 
-// Compatibilidad con el botón "+" de responsabilidades
-window.addResponsibility = (text = '') => renderResponsibilityRow(0, text);
+// Botón "+" de responsabilidades → Swal + API (igual que addSubsection)
+window.addResponsibility = async () => {
+    if (!currentProfile) {
+        Swal.fire('Aviso', 'Primero debe guardar el perfil de cargo.', 'warning');
+        return;
+    }
+
+    const { value: text } = await Swal.fire({
+        title:            'Agregar Responsabilidad',
+        input:            'textarea',
+        inputLabel:       'Descripción',
+        inputPlaceholder: 'Describa la responsabilidad del cargo...',
+        showCancelButton:  true,
+        confirmButtonText: 'Agregar',
+        cancelButtonText:  'Cancelar',
+        inputValidator:    (v) => !v.trim() ? 'Debe ingresar una descripción.' : null,
+    });
+
+    if (!text) return;
+
+    try {
+        const resp = await fetch(`${API}?action=addItem`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                token,
+                idProfile:   currentProfile.id,
+                type:        'responsabilidades',
+                descripcion: text.trim(),
+            }),
+        });
+        const result = await resp.json();
+
+        if (result.status !== 'ok') {
+            Swal.fire('Error', 'No se pudo guardar la responsabilidad.', 'error');
+            return;
+        }
+
+        renderResponsibilityRow(result.result.id, text.trim());
+        Swal.fire({ icon: 'success', title: 'Responsabilidad agregada', timer: 1000, showConfirmButton: false });
+    } catch (err) {
+        console.error(err);
+        Swal.fire('Error', 'Error de conexión.', 'error');
+    }
+};
 
 // ── RENDER subtablas estándar (tabla con fila) ────────────────────────────────
+const escapeHtml = (str) =>
+    String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
 const renderSubTableRows = (type, items, tableId) => {
     const tbody = document.querySelector(`#${tableId} tbody`);
     if (!tbody) return;

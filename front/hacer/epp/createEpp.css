@@ -1,0 +1,49 @@
+@import url("../../styles/colors.css");
+
+/* ── Tabla ────────────────────────────────────────────────── */
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.modern-table th,
+.modern-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+}
+
+.modern-table th {
+    background: linear-gradient(135deg, #22496d 0%, #329bd6 100%);
+    color: #fff;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+
+.modern-table tbody tr:hover {
+    background: #f0f7ff;
+    transition: background 0.15s;
+}
+
+/* ── Action buttons ───────────────────────────────────────── */
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 5px 8px;
+    border-radius: 6px;
+    margin: 0 2px;
+    transition: all 0.2s;
+}
+
+.action-btn.edit   { color: #f39c12; }
+.action-btn.delete { color: #e74c3c; }
+.action-btn.edit:hover   { background: rgba(243,156,18,0.1);  transform: scale(1.15); }
+.action-btn.delete:hover { background: rgba(231,76,60,0.1);   transform: scale(1.15); }
