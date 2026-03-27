@@ -36,6 +36,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
             echo json_encode($_mgmt->getActivityDangers($_GET['idActivity']));
         } else if ($action === 'fullReport' && isset($_GET['idEmpresa'])) {
             echo json_encode($_mgmt->getFullReport($_GET['idEmpresa']));
+        } else if ($action === 'getRiskPrograms' && isset($_GET['idPlan'])) {
+            echo json_encode($_mgmt->getRiskPrograms($_GET['idPlan']));
         } else {
             http_response_code(400);
             echo json_encode($_answers->error_400());
@@ -55,6 +57,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
             $resp = $_mgmt->addConsequence($data);
         } else if ($action === 'addMeasure') {
             $resp = $_mgmt->addMeasure($data);
+        } else if ($action === 'saveRiskProgram') {
+            $resp = $_mgmt->saveRiskProgram($data);
         } else {
             http_response_code(400);
             echo json_encode($_answers->error_400());

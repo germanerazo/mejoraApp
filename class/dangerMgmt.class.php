@@ -285,6 +285,37 @@ class dangerMgmt extends connection {
         return $resp;
     }
 
+    // ── PROGRAMAS DE GESTIÓN (CONSOLIDACIÓN) ──────────────────────
+
+    public function getRiskPrograms($idPlan) {
+        $idPlan = intval($idPlan);
+        return parent::getData("SELECT * FROM risk_consolidation_programs WHERE idPlan = $idPlan");
+    }
+
+    public function saveRiskProgram($data) {
+        $_answers = new answers;
+        if(!$this->verifyToken($data, $_answers)) return $_answers->response;
+
+        $idPlan = intval($data['idPlan']);
+        $adc_id = intval($data['adc_id']);
+        $programas = $this->sanitize($data['programas'] ?? '');
+        $pve = $this->sanitize($data['pve'] ?? '');
+        $subProgramas = $this->sanitize($data['subProgramas'] ?? '');
+
+        // Validar si ya existe
+        $exists = parent::getData("SELECT id FROM risk_consolidation_programs WHERE idPlan = $idPlan AND adc_id = $adc_id");
+        if (!empty($exists)) {
+            $id = $exists[0]['id'];
+            parent::nonQuery("UPDATE risk_consolidation_programs SET programas = '$programas', pve = '$pve', subProgramas = '$subProgramas' WHERE id = $id");
+        } else {
+            $id = parent::nonQueryId("INSERT INTO risk_consolidation_programs (idPlan, adc_id, programas, pve, subProgramas) VALUES ($idPlan, $adc_id, '$programas', '$pve', '$subProgramas')");
+        }
+
+        $resp = $_answers->response;
+        $resp['result'] = ["id" => $id];
+        return $resp;
+    }
+
     // ── ELIMINAR ASOCIACIONES ─────────────────────────────────────
 
     public function removeActivityDanger($data) {

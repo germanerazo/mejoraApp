@@ -78,9 +78,11 @@ const renderPeriodsList = () => {
   tbody.innerHTML = html;
 };
 
-window.viewPeriodConsolidation = (periodId) => {
+window.viewPeriodConsolidation = async (periodId) => {
   const period = periodsData.find((p) => p.id == periodId);
   if (!period) return;
+
+  window.currentPeriod = period;
 
   // Hide list view, show detail view
   document.getElementById("listView").style.display = "none";
@@ -98,11 +100,31 @@ window.viewPeriodConsolidation = (periodId) => {
   if (searchInput) searchInput.addEventListener("input", applyFilters);
   if (filterProcess) filterProcess.addEventListener("change", applyFilters);
 
+  // Fetch db programs for this period
+  try {
+      const resProg = await fetch(`${DANGER_API}?action=getRiskPrograms&idPlan=${period.id}`);
+      const progData = await resProg.json();
+      
+      if (Array.isArray(progData)) {
+          consolidationData.forEach(risk => {
+              const found = progData.find(p => parseInt(p.adc_id) === parseInt(risk.id));
+              if (found) {
+                  risk.programas = found.programas;
+                  risk.pve = found.pve;
+                  risk.subProgramas = found.subProgramas;
+              } else {
+                  risk.programas = "";
+                  risk.pve = "";
+                  risk.subProgramas = "";
+              }
+          });
+      }
+  } catch (err) {
+      console.error("Error loading programs for period", err);
+  }
+
   // Render table
   renderTable(consolidationData);
-
-  // Store selected period
-  window.currentPeriod = period;
 };
 
 window.goBackToList = () => {
@@ -190,7 +212,7 @@ const applyFilters = () => {
 };
 
 window.editRisk = (id) => {
-  const risk = consolidationData.find((r) => r.id === id);
+  const risk = consolidationData.find((r) => r.id == id);
   Swal.fire({
     title: "Editar Controles",
     html: `
@@ -219,7 +241,7 @@ window.editRisk = (id) => {
 };
 
 window.addProgramData = (id) => {
-  const risk = consolidationData.find((r) => r.id === id);
+  const risk = consolidationData.find((r) => r.id == id);
   Swal.fire({
     title: "Crear/Editar Programas y Planes",
     html: `
@@ -265,17 +287,40 @@ window.addProgramData = (id) => {
       // Sub Programas es opcional
       return { programas, pve, subProgramas };
     },
-  }).then((result) => {
+  }).then(async (result) => {
     if (result.isConfirmed) {
-      risk.programas = result.value.programas;
-      risk.pve = result.value.pve;
-      risk.subProgramas = result.value.subProgramas;
-      renderTable(consolidationData);
-      Swal.fire(
-        "¡Guardado!",
-        "Los programas y planes han sido creados/actualizados.",
-        "success",
-      );
+      const dataToSave = {
+          token: getToken(),
+          idPlan: window.currentPeriod.id,
+          adc_id: risk.id,
+          programas: result.value.programas,
+          pve: result.value.pve,
+          subProgramas: result.value.subProgramas
+      };
+
+      try {
+          const res = await fetch(`${DANGER_API}?action=saveRiskProgram`, {
+              method: 'POST',
+              body: JSON.stringify(dataToSave)
+          });
+          const resp = await res.json();
+
+          if (resp.status === 'ok') {
+              risk.programas = result.value.programas;
+              risk.pve = result.value.pve;
+              risk.subProgramas = result.value.subProgramas;
+              renderTable(consolidationData);
+              Swal.fire(
+                "¡Guardado!",
+                "Los programas y planes han sido vinculados correctamente al período.",
+                "success"
+              );
+          } else {
+              Swal.fire('Error', resp.result?.error_msg || 'Ocurrió un error al guardar', 'error');
+          }
+      } catch (e) {
+          Swal.fire('Error', 'Problema de conexión con el servidor', 'error');
+      }
     }
   });
 };
@@ -285,7 +330,7 @@ window.goBackRisk = () => {
 };
 
 window.viewRiskActions = (id) => {
-  const risk = consolidationData.find((r) => r.id === id);
+  const risk = consolidationData.find((r) => r.id == id);
   if (!risk) {
     console.error('Riesgo no encontrado');
     return;
