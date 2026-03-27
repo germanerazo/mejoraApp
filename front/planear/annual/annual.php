@@ -134,9 +134,6 @@
         </table>
     </div>
 
-    <div style="margin-bottom: 10px;">
-        <button class="btn-new-record" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('programs')"><i class="fas fa-plus-circle"></i> Nuevo Registro</button>
-    </div>
     <div class="table-container">
         <table class="annual-table" id="tablePrograms">
             <thead>

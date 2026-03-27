@@ -104,6 +104,7 @@ class dangerMgmt extends connection {
             "SELECT
                 pa.idActivity     AS idActivity,
                 pa.name           AS activity_name,
+                p.name            AS process_name,
                 pa.area           AS area,
                 pa.routine        AS routine,
                 pa.highRisk       AS high_risk,
@@ -120,6 +121,7 @@ class dangerMgmt extends connection {
                 adc.worst_consequence,
                 adc.legal_requirements
              FROM process_sheet ps
+             LEFT JOIN processes p                    ON p.code               = ps.code AND p.idEmpresa = ps.idEmpresa
              INNER JOIN process_activity pa          ON pa.idFicha          = ps.idFicha
              INNER JOIN activity_dangers ad           ON ad.idActivity        = pa.idActivity
              INNER JOIN dangers d                     ON d.id                 = ad.danger_id
@@ -128,7 +130,7 @@ class dangerMgmt extends connection {
                                                       ON adc.activity_danger_id = ad.id
              INNER JOIN consequences c                ON c.id                 = adc.consequence_id
              WHERE ps.idEmpresa = $idEmpresa
-             ORDER BY pa.name, d.name, c.name"
+             ORDER BY p.name, pa.name, d.name, c.name"
         );
 
         // Para cada fila agregar medidas agrupadas y flags de tipo de control

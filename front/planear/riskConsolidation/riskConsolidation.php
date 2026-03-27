@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <title>Consolidación de Riesgos</title>
     <!-- Common CSS -->
-    <link rel="stylesheet" href="/mejoraApp/front/styles/colors.css">
-    <link rel="stylesheet" href="/mejoraApp/front/planear/risk/risk.css?v=1.0">
+    <link rel="stylesheet" href="../styles/colors.css">
+    <link rel="stylesheet" href="../planear/risk/risk.css?v=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
@@ -129,7 +129,7 @@
 
     <!-- Script -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script type="module" src="/mejoraApp/front/planear/riskConsolidation/riskConsolidation.js?v=1.0"></script>
+    <script type="module" src="../planear/riskConsolidation/riskConsolidation.js?v=1.3"></script>
 </body>
 
 </html>

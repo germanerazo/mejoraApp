@@ -1,222 +1,68 @@
-// Períodos mock data
-const periodsData = [
-  { id: 1, startDate: "2017-04-01", endDate: "2018-03-31" },
-  { id: 2, startDate: "2018-04-01", endDate: "2019-04-01" },
-  { id: 3, startDate: "2019-06-15", endDate: "2020-06-30" },
-  { id: 4, startDate: "2020-06-30", endDate: "2021-06-01" },
-  { id: 5, startDate: "2021-06-02", endDate: "2022-06-30" },
-  { id: 6, startDate: "2022-07-01", endDate: "2023-07-30" },
-  { id: 7, startDate: "2023-08-01", endDate: "2024-08-30" },
-  { id: 8, startDate: "2024-08-31", endDate: "2025-09-01" },
-  { id: 9, startDate: "2025-09-01", endDate: "2026-09-02" },
-];
+import config from "../../js/config.js";
 
-// Mock Data for Consolidation (mimicking a real database dump)
-const consolidationData = [
-  {
-    id: 101,
-    proceso: "Gestión Administrativa",
-    peligro: "Movimientos Repetitivos",
-    medidas: "Pausas activas, Sillas ergonómicas, Descansos cada 2 horas",
-    programas: "Ergonomía y Bienestar",
-    pve: "PVE-01",
-    subProgramas: "Pausas activas",
-  },
-  {
-    id: 102,
-    proceso: "Operaciones",
-    peligro: "Ruido intermitente > 85dB",
-    medidas:
-      "Protección auditiva, Mantenimiento de equipos, Audiometrías anuales",
-    programas: "Protección Auditiva",
-    pve: "PVE-02",
-    subProgramas: "Equipos de protección",
-  },
-  {
-    id: 103,
-    proceso: "Mantenimiento",
-    peligro: "Caída a distinto nivel",
-    medidas: "Línea de vida, Arnés, Permiso de altura, Capacitación",
-    programas: "Trabajo en Alturas",
-    pve: "PVE-03",
-    subProgramas: "Líneas de vida",
-  },
-  {
-    id: 104,
-    proceso: "Gestión Administrativa",
-    peligro: "Estrés laboral y carga mental",
-    medidas: "Distribución de cargas, batería psicosocial, Apoyo psicológico",
-    programas: "Salud Mental",
-    pve: "PVE-04",
-    subProgramas: "Evaluación psicosocial",
-  },
-  {
-    id: 105,
-    proceso: "Operaciones",
-    peligro: "Inhalación de vapores",
-    medidas:
-      "Mascarilla media cara, Ventilación forzada, Hojas de seguridad, Monitoreo",
-    programas: "",
-    pve: "",
-    subProgramas: "",
-  },
-  {
-    id: 106,
-    proceso: "Operaciones",
-    peligro: "Contacto con energía eléctrica",
-    medidas:
-      "Aislamiento de circuitos, Puesta a tierra, EPP eléctrico, Señalización",
-    programas: "Seguridad Eléctrica",
-    pve: "PVE-06",
-    subProgramas: "Instalaciones seguras",
-  },
-  {
-    id: 107,
-    proceso: "Mantenimiento",
-    peligro: "Atrapamiento por máquinas",
-    medidas:
-      "Guardas de protección, Paros de emergencia, Bloqueos, Capacitación",
-    programas: "Máquinas y Equipos",
-    pve: "PVE-07",
-    subProgramas: "Guardas y dispositivos",
-  },
-  {
-    id: 108,
-    proceso: "Gestión Administrativa",
-    peligro: "Carga visual excesiva",
-    medidas:
-      "Descansos visuales, Pantallas antirreflejantes, Iluminación adecuada",
-    programas: "Ergonomía y Bienestar",
-    pve: "PVE-01",
-    subProgramas: "Espacios de trabajo",
-  },
-  {
-    id: 109,
-    proceso: "Operaciones",
-    peligro: "Exposición a temperaturas extremas",
-    medidas:
-      "Ropa térmica, Aclimatación gradual, Rotación de personal, Monitoreo",
-    programas: "",
-    pve: "",
-    subProgramas: "",
-  },
-  {
-    id: 110,
-    proceso: "Mantenimiento",
-    peligro: "Heridas punzocortantes",
-    medidas: "Guantes reforzados, Herramientas seguras, Botiquín de emergencia",
-    programas: "Prevención de Lesiones",
-    pve: "PVE-09",
-    subProgramas: "EPP especializado",
-  },
-  {
-    id: 111,
-    proceso: "Gestión Administrativa",
-    peligro: "Falta de pausas activas",
-    medidas: "Programa de pausas cada 60 minutos, Ejercicios de estiramiento",
-    programas: "Ergonomía y Bienestar",
-    pve: "PVE-01",
-    subProgramas: "Pausa Saludable",
-  },
-  {
-    id: 112,
-    proceso: "Operaciones",
-    peligro: "Proyección de fragmentos",
-    medidas:
-      "Gafas de seguridad, Pantallas protectoras, Mantenimiento preventivo",
-    programas: "Protección Personal",
-    pve: "PVE-10",
-    subProgramas: "Protección ocular",
-  },
-  {
-    id: 113,
-    proceso: "Mantenimiento",
-    peligro: "Exposición a polvo",
-    medidas: "Mascarilla N95, Sistema de extracción, Limpieza periódica",
-    programas: "",
-    pve: "",
-    subProgramas: "",
-  },
-  {
-    id: 114,
-    proceso: "Gestión Administrativa",
-    peligro: "Traslado manual de cargas",
-    medidas:
-      "Técnicas de levantamiento, Carros de carga, Límite de peso máximo",
-    programas: "Ergonomía y Bienestar",
-    pve: "PVE-01",
-    subProgramas: "Manipulación segura",
-  },
-  {
-    id: 115,
-    proceso: "Operaciones",
-    peligro: "Resbalones y caídas",
-    medidas:
-      "Suelos antideslizantes, Señalización de peligro, Limpieza constante",
-    programas: "Orden y Limpieza",
-    pve: "PVE-11",
-    subProgramas: "5S implementado",
-  },
-  {
-    id: 116,
-    proceso: "Mantenimiento",
-    peligro: "Incendios y explosiones",
-    medidas:
-      "Extintores, Salidas de emergencia, Plan de evacuación, Inspecciones",
-    programas: "Preparación para Emergencias",
-    pve: "PVE-12",
-    subProgramas: "Primeros auxilios",
-  },
-  {
-    id: 117,
-    proceso: "Gestión Administrativa",
-    peligro: "Acoso laboral",
-    medidas:
-      "Política de buen trato, Denuncias anónimas, Mediación, Seguimiento",
-    programas: "",
-    pve: "",
-    subProgramas: "",
-  },
-  {
-    id: 118,
-    proceso: "Operaciones",
-    peligro: "Golpes por objetos",
-    medidas: "Cascos de seguridad, Zonas de carga restringidas, Señalización",
-    programas: "Protección Personal",
-    pve: "PVE-10",
-    subProgramas: "EPP obligatorio",
-  },
-  {
-    id: 119,
-    proceso: "Mantenimiento",
-    peligro: "Radiación ionizante",
-    medidas:
-      "Dosímetros personales, Blindaje, Control de exposición, Monitoreo",
-    programas: "Seguridad Radiológica",
-    pve: "PVE-13",
-    subProgramas: "Control ambiental",
-  },
-  {
-    id: 120,
-    proceso: "Gestión Administrativa",
-    peligro: "Síndrome del túnel carpiano",
-    medidas:
-      "Mousepad ergonómico, Teclados especiales, Fisioterapia preventiva",
-    programas: "Ergonomía y Bienestar",
-    pve: "PVE-01",
-    subProgramas: "Prevención RSL",
-  },
-];
+const ANNUAL_API = `${config.BASE_API_URL}annual.php`;
+const DANGER_API = `${config.BASE_API_URL}dangerMgmt.php`;
 
-const initConsolidation = () => {
-  renderPeriodsList();
+let periodsData = [];
+let consolidationData = [];
+let idEmpresa = null;
+
+const getToken = () => sessionStorage.getItem('token');
+
+const initConsolidation = async () => {
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    if (user && user.idClient) {
+        idEmpresa = user.idClient;
+        await loadInitialData();
+        renderPeriodsList();
+    } else {
+        Swal.fire('Error', 'No se ha encontrado la sesión de la empresa.', 'error');
+    }
+};
+
+const loadInitialData = async () => {
+    try {
+        // Load Periods from annual
+        const resPeriods = await fetch(`${ANNUAL_API}?idEmpresa=${idEmpresa}`);
+        const periodsRaw = await resPeriods.json();
+        if (Array.isArray(periodsRaw)) {
+            periodsData = periodsRaw.map(p => ({
+                id: p.idPlan,
+                startDate: p.startDate,
+                endDate: p.endDate
+            }));
+        }
+
+        // Load Dangers and Measures from dangerMgmt
+        const resDangers = await fetch(`${DANGER_API}?action=fullReport&idEmpresa=${idEmpresa}`);
+        const dangersRaw = await resDangers.json();
+        
+        if (Array.isArray(dangersRaw)) {
+            consolidationData = dangersRaw.map(item => ({
+                id: item.adc_id,
+                proceso: item.process_name || "Sin proceso", // Use actual process name from DB
+                peligro: item.danger_name, // Map danger_name to peligro
+                medidas: item.measures, // Map measures 
+                programas: "", // Initially empty until API supports saving these dynamically
+                pve: "",
+                subProgramas: ""
+            }));
+        }
+    } catch (err) {
+        console.error("Error loading data:", err);
+    }
 };
 
 const renderPeriodsList = () => {
-  const tbody = document.getElementById("periodBody");
-  if (!tbody) return;
+    const tbody = document.getElementById("periodBody");
+    if (!tbody) return;
 
-  let html = "";
+    if (!Array.isArray(periodsData) || periodsData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; padding: 20px;">No hay períodos registrados.</td></tr>`;
+        return;
+    }
+
+    let html = "";
   periodsData.forEach((period) => {
     html += `
       <tr>
@@ -233,7 +79,7 @@ const renderPeriodsList = () => {
 };
 
 window.viewPeriodConsolidation = (periodId) => {
-  const period = periodsData.find((p) => p.id === periodId);
+  const period = periodsData.find((p) => p.id == periodId);
   if (!period) return;
 
   // Hide list view, show detail view
