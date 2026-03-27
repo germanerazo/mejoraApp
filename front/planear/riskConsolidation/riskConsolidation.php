@@ -129,7 +129,7 @@
 
     <!-- Script -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script type="module" src="../planear/riskConsolidation/riskConsolidation.js?v=1.5"></script>
+    <script type="module" src="../planear/riskConsolidation/riskConsolidation.js?v=1.6"></script>
 </body>
 
 </html>

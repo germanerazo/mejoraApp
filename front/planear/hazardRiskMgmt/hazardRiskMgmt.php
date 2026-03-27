@@ -184,4 +184,4 @@
 </div>
 
 <!-- JS Principal -->
-<script type="module" src="../planear/hazardRiskMgmt/hazardRiskMgmt.js?v=1.2"></script>
+<script type="module" src="../planear/hazardRiskMgmt/hazardRiskMgmt.js?v=1.1"></script>

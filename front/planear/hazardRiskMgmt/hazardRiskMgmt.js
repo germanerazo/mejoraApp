@@ -14,6 +14,7 @@ let annualPlans = [];
 let currentPlanData = null; // full plan with activities
 let selectedActivity = null; // for screen 4
 let currentDangers = []; // list of dangers for the selected activity
+let currentPlanId = null; // To bind dangers to the selected Plan
 
 // ── Initialization ──────────────────────────────────────────────────────────
 async function init() {
@@ -233,6 +234,7 @@ window.backToProcessList = function() {
 // ══════════════════════════════════════════════════════════════════════════════
 
 window.goToRiskManagement = async function(idPlan, startDate, endDate) {
+    currentPlanId = idPlan;
     const startFormatted = formatDate(startDate);
     const endFormatted = formatDate(endDate);
 
@@ -392,7 +394,7 @@ async function loadActivityDangers() {
     }
 
     try {
-        const res = await fetch(`${DANGER_API}?action=activityDangers&idActivity=${selectedActivity.idActivity}`);
+        const res = await fetch(`${DANGER_API}?action=activityDangers&idActivity=${selectedActivity.idActivity}&idPlan=${currentPlanId}`);
         currentDangers = await res.json();
         renderDangerCards();
     } catch (err) {
@@ -594,7 +596,8 @@ window.openAddDangerModal = async function() {
             if (result.isConfirmed) {
                 await postAction('addDanger', {
                     idActivity: selectedActivity.idActivity,
-                    danger_id: result.value
+                    danger_id: result.value,
+                    idPlan: currentPlanId
                 });
             }
         });

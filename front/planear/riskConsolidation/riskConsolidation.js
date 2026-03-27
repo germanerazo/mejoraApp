@@ -33,21 +33,7 @@ const loadInitialData = async () => {
             }));
         }
 
-        // Load Dangers and Measures from dangerMgmt
-        const resDangers = await fetch(`${DANGER_API}?action=fullReport&idEmpresa=${idEmpresa}`);
-        const dangersRaw = await resDangers.json();
-        
-        if (Array.isArray(dangersRaw)) {
-            consolidationData = dangersRaw.map(item => ({
-                id: item.adc_id,
-                proceso: item.process_name || "Sin proceso", // Use actual process name from DB
-                peligro: item.danger_name, // Map danger_name to peligro
-                medidas: item.measures, // Map measures 
-                programas: "", // Initially empty until API supports saving these dynamically
-                pve: "",
-                subProgramas: ""
-            }));
-        }
+        // We no longer load Dangers here globally. They are loaded per period in viewPeriodConsolidation.
     } catch (err) {
         console.error("Error loading data:", err);
     }
@@ -99,6 +85,29 @@ window.viewPeriodConsolidation = async (periodId) => {
   // Add new listeners
   if (searchInput) searchInput.addEventListener("input", applyFilters);
   if (filterProcess) filterProcess.addEventListener("change", applyFilters);
+
+  // Fetch risks (consolidation) for this specific plan
+  try {
+      const resDangers = await fetch(`${DANGER_API}?action=fullReport&idEmpresa=${idEmpresa}&idPlan=${period.id}`);
+      const dangersRaw = await resDangers.json();
+      
+      if (Array.isArray(dangersRaw)) {
+          consolidationData = dangersRaw.map(item => ({
+              id: item.adc_id,
+              proceso: item.process_name || "Sin proceso",
+              peligro: item.danger_name,
+              medidas: item.measures,
+              programas: "",
+              pve: "",
+              subProgramas: ""
+          }));
+      } else {
+          consolidationData = [];
+      }
+  } catch (err) {
+      console.error("Error loading dangers for period", err);
+      consolidationData = [];
+  }
 
   // Fetch db programs for this period
   try {

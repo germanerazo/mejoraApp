@@ -33,9 +33,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
         } else if ($action === 'measuresByDanger' && isset($_GET['dangerId'])) {
             echo json_encode($_mgmt->getMeasuresByDanger($_GET['dangerId']));
         } else if ($action === 'activityDangers' && isset($_GET['idActivity'])) {
-            echo json_encode($_mgmt->getActivityDangers($_GET['idActivity']));
+            $idP = isset($_GET['idPlan']) ? $_GET['idPlan'] : null;
+            echo json_encode($_mgmt->getActivityDangers($_GET['idActivity'], $idP));
         } else if ($action === 'fullReport' && isset($_GET['idEmpresa'])) {
-            echo json_encode($_mgmt->getFullReport($_GET['idEmpresa']));
+            $idP = isset($_GET['idPlan']) ? $_GET['idPlan'] : null;
+            echo json_encode($_mgmt->getFullReport($_GET['idEmpresa'], $idP));
         } else if ($action === 'getRiskPrograms' && isset($_GET['idPlan'])) {
             echo json_encode($_mgmt->getRiskPrograms($_GET['idPlan']));
         } else {

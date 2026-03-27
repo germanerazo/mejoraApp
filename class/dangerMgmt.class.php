@@ -44,15 +44,21 @@ class dangerMgmt extends connection {
 
     // ── ASOCIACIONES POR ACTIVIDAD ────────────────────────────────
 
-    public function getActivityDangers($idActivity) {
+    public function getActivityDangers($idActivity, $idPlan = null) {
         $idActivity = intval($idActivity);
+        
+        $planFilter = "";
+        if ($idPlan !== null) {
+            $idP = intval($idPlan);
+            $planFilter = "AND ad.idPlan = $idP";
+        }
 
         $dangers = parent::getData(
             "SELECT ad.id as activity_danger_id, d.id as danger_id, d.name as danger_name, dt.name as type_name
              FROM activity_dangers ad
              JOIN dangers d ON ad.danger_id = d.id
              JOIN danger_types dt ON d.danger_type_id = dt.id
-             WHERE ad.idActivity = $idActivity
+             WHERE ad.idActivity = $idActivity $planFilter
              ORDER BY dt.name, d.name"
         );
 
@@ -91,14 +97,20 @@ class dangerMgmt extends connection {
 
     // ── REPORTE COMPLETO (una fila por actividad+peligro+consecuencia) ────────
 
-    public function getFullReport($idEmpresa) {
+    public function getFullReport($idEmpresa, $idPlan = null) {
         $idEmpresa = intval($idEmpresa);
         if (!$idEmpresa) return [];
+
+        $planFilter = "";
+        if ($idPlan !== null) {
+            $idP = intval($idPlan);
+            $planFilter = "AND ad.idPlan = $idP";
+        }
 
         // Tablas reales:
         //   process_sheet      (idFicha, idEmpresa, code, ...)
         //   process_activity   (idActivity, idFicha, name, area, routine, highRisk)
-        //   activity_dangers   (id, idActivity, danger_id)
+        //   activity_dangers   (id, idActivity, danger_id, idPlan)
         //   activity_danger_consequences (id, activity_danger_id, consequence_id, ...)
         $rows = parent::getData(
             "SELECT
@@ -129,7 +141,7 @@ class dangerMgmt extends connection {
              INNER JOIN activity_danger_consequences adc
                                                       ON adc.activity_danger_id = ad.id
              INNER JOIN consequences c                ON c.id                 = adc.consequence_id
-             WHERE ps.idEmpresa = $idEmpresa
+             WHERE ps.idEmpresa = $idEmpresa $planFilter
              ORDER BY p.name, pa.name, d.name, c.name"
         );
 
@@ -185,14 +197,17 @@ class dangerMgmt extends connection {
 
         $idActivity = intval($data['idActivity']);
         $dangerId = intval($data['danger_id']);
+        $idPlanStr = isset($data['idPlan']) ? ", idPlan" : "";
+        $idPlanVal = isset($data['idPlan']) ? ", " . intval($data['idPlan']) : "";
+        $planWhere = isset($data['idPlan']) ? "AND idPlan = " . intval($data['idPlan']) : "";
 
         // Check if already exists
-        $exists = parent::getData("SELECT id FROM activity_dangers WHERE idActivity = $idActivity AND danger_id = $dangerId");
+        $exists = parent::getData("SELECT id FROM activity_dangers WHERE idActivity = $idActivity AND danger_id = $dangerId $planWhere");
         if (!empty($exists)) {
-            return $_answers->error_400("Este peligro ya está asignado a la actividad.");
+            return $_answers->error_400("Este peligro ya está asignado a la actividad en este período.");
         }
 
-        $id = parent::nonQueryId("INSERT INTO activity_dangers (idActivity, danger_id) VALUES ($idActivity, $dangerId)");
+        $id = parent::nonQueryId("INSERT INTO activity_dangers (idActivity, danger_id$idPlanStr) VALUES ($idActivity, $dangerId$idPlanVal)");
         $resp = $_answers->response;
         $resp['result'] = ["id" => $id];
         return $resp;
