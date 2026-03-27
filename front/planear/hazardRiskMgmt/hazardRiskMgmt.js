@@ -254,6 +254,21 @@ window.goToRiskManagement = async function(idPlan, startDate, endDate) {
     document.getElementById('screenAnnualPlans').style.display = 'none';
     document.getElementById('screenRiskManagement').style.display = 'block';
 
+    // Link Process and Plan in DB (and clone risks if necessary)
+    try {
+        await fetch(`${DANGER_API}?action=initProcessRiskPlan`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                token: sessionStorage.getItem('token'),
+                idFicha: selectedProcess.idFicha,
+                idPlan: currentPlanId
+            })
+        });
+    } catch (e) {
+        console.error("Error initializing process risk plan:", e);
+    }
+
     // Load activities from the process sheet (ficha de proceso)
     await loadProcessActivities();
 }

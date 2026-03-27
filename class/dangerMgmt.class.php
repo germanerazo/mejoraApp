@@ -331,6 +331,98 @@ class dangerMgmt extends connection {
         return $resp;
     }
 
+    public function initProcessRiskPlan($data) {
+        $_answers = new answers;
+        if(!$this->verifyToken($data, $_answers)) return $_answers->response;
+
+        $idFicha = intval($data['idFicha']);
+        $idPlan = intval($data['idPlan']);
+
+        // Check if already related
+        $exists = parent::getData("SELECT id FROM risk_process_periods WHERE idFicha = $idFicha AND idPlan = $idPlan");
+        if (!empty($exists)) {
+            $resp = $_answers->response;
+            $resp['result'] = ["status" => "already_related"];
+            return $resp;
+        }
+
+        // Relate the process to the plan
+        $fichaData = parent::getData("SELECT idEmpresa FROM process_sheet WHERE idFicha = $idFicha");
+        if(empty($fichaData)) {
+            return $_answers->error_400("Proceso no encontrado");
+        }
+        $idEmpresa = intval($fichaData[0]['idEmpresa']);
+
+        parent::nonQueryId("INSERT INTO risk_process_periods (idEmpresa, idFicha, idPlan) VALUES ($idEmpresa, $idFicha, $idPlan)");
+
+        // Clone risks from previous available assessment for this process's activities
+        $activities = parent::getData("SELECT idActivity FROM process_activity WHERE idFicha = $idFicha");
+        if (!empty($activities)) {
+            foreach($activities as $act) {
+                $idAct = intval($act['idActivity']);
+                // Buscar el idPlan con configuración previa: el más reciente menor que el actual, o el original (NULL).
+                $prev = parent::getData("
+                    SELECT idPlan 
+                    FROM activity_dangers 
+                    WHERE idActivity = $idAct 
+                      AND (idPlan < $idPlan OR idPlan IS NULL) 
+                    ORDER BY idPlan DESC LIMIT 1
+                ");
+                
+                if (!empty($prev)) {
+                    $prevIdPlan = $prev[0]['idPlan'];
+                    $planWhere = $prevIdPlan === null ? "IS NULL" : "= $prevIdPlan";
+
+                    // Clonar riesgos
+                    $dangers = parent::getData("SELECT id, danger_id FROM activity_dangers WHERE idActivity = $idAct AND idPlan $planWhere");
+                    foreach($dangers as $d) {
+                        $oldAdId = intval($d['id']);
+                        $dangerId = intval($d['danger_id']);
+                        
+                        // Insert new danger
+                        $newAdId = parent::nonQueryId("INSERT INTO activity_dangers (idActivity, danger_id, idPlan) VALUES ($idAct, $dangerId, $idPlan)");
+                        
+                        // Clone consequences
+                        $cons = parent::getData("SELECT id, consequence_id, existing_controls, deficiency_level, exposure_level, consequence_level, exposed_count, worst_consequence, legal_requirements FROM activity_danger_consequences WHERE activity_danger_id = $oldAdId");
+                        foreach($cons as $c) {
+                            $oldConsId = intval($c['id']);
+                            $cid = intval($c['consequence_id']);
+                            $ec = $this->sanitize($c['existing_controls'] ?? '');
+                            $nd = $c['deficiency_level'] !== null ? intval($c['deficiency_level']) : 'NULL';
+                            $ne = $c['exposure_level'] !== null ? intval($c['exposure_level']) : 'NULL';
+                            $nc = $c['consequence_level'] !== null ? intval($c['consequence_level']) : 'NULL';
+                            $ex = $c['exposed_count'] !== null ? intval($c['exposed_count']) : 'NULL';
+                            $wc = $this->sanitize($c['worst_consequence'] ?? '');
+                            $lr = $this->sanitize($c['legal_requirements'] ?? '');
+                            
+                            $newConsId = parent::nonQueryId("INSERT INTO activity_danger_consequences (activity_danger_id, consequence_id, existing_controls, deficiency_level, exposure_level, consequence_level, exposed_count, worst_consequence, legal_requirements) 
+                                                             VALUES ($newAdId, $cid, '$ec', $nd, $ne, $nc, $ex, '$wc', '$lr')");
+
+                            // Clone measures
+                            $meas = parent::getData("SELECT preventive_measure_id, elimination, substitution, engineering_control, administrative_control, ppe FROM activity_danger_consequence_measures WHERE activity_danger_consequence_id = $oldConsId");
+                            foreach($meas as $m) {
+                                $pmid = intval($m['preventive_measure_id']);
+                                $eli = intval($m['elimination']);
+                                $sub = intval($m['substitution']);
+                                $eng = intval($m['engineering_control']);
+                                $adm = intval($m['administrative_control']);
+                                $ppe = intval($m['ppe']);
+                                
+                                parent::nonQueryId("INSERT INTO activity_danger_consequence_measures (activity_danger_consequence_id, preventive_measure_id, elimination, substitution, engineering_control, administrative_control, ppe)
+                                                    VALUES ($newConsId, $pmid, $eli, $sub, $eng, $adm, $ppe)");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        $resp = $_answers->response;
+        $resp['result'] = ["status" => "related_and_cloned"];
+        return $resp;
+    }
+
+
     // ── ELIMINAR ASOCIACIONES ─────────────────────────────────────
 
     public function removeActivityDanger($data) {

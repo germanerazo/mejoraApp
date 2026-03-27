@@ -61,6 +61,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
             $resp = $_mgmt->addMeasure($data);
         } else if ($action === 'saveRiskProgram') {
             $resp = $_mgmt->saveRiskProgram($data);
+        } else if ($action === 'initProcessRiskPlan') {
+            $resp = $_mgmt->initProcessRiskPlan($data);
         } else {
             http_response_code(400);
             echo json_encode($_answers->error_400());
