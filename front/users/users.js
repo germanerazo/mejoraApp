@@ -2,6 +2,7 @@ import config from '../js/config.js';
 
 const API_URL = `${config.BASE_API_URL}users.php`;
 let currentEditingId = null;
+let originalIdCliente = null; // Guarda el idCliente original al editar
 
 // Inicializa DataTables
 function initDataTable() {
@@ -126,6 +127,7 @@ function showFormView(user = null) {
     
     // Cargar empresas
     loadCompaniesOptions(user ? user.idCliente : null);
+    originalIdCliente = user ? user.idCliente : null; // Guardar empresa original
 
     if (user) {
         formTitle.innerHTML = '<i class="fas fa-edit"></i> Editar Usuario';
@@ -179,6 +181,9 @@ function saveUser(e) {
         if (!data.password) delete data.password; // No enviar si está vacío
         console.log("update",data);
         
+        const newIdClient = data.idClient;
+        const empresaCambio = originalIdCliente && newIdClient && String(originalIdCliente) !== String(newIdClient);
+
         fetch(API_URL, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -187,9 +192,34 @@ function saveUser(e) {
         .then(res => res.json())
         .then(resp => {
             if (resp.status == "ok") {
-                Swal.fire('Éxito', 'Usuario actualizado correctamente', 'success');
-                hideFormView();
-                loadUsers();
+                if (empresaCambio) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Usuario actualizado correctamente',
+                        html: '<p style="margin-top:8px;color:#555;">El usuario fue asignado a una nueva empresa cliente.<br>¿Desea cerrar sesión o continuar trabajando?</p>',
+                        showCancelButton: true,
+                        confirmButtonColor: '#e74c3c',
+                        cancelButtonColor: '#27ae60',
+                        confirmButtonText: '<i class="fas fa-sign-out-alt"></i> Cerrar sesión',
+                        cancelButtonText: '<i class="fas fa-briefcase"></i> Continuar trabajando',
+                        reverseButtons: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Cerrar sesión
+                            sessionStorage.clear();
+                            localStorage.removeItem('token');
+                            window.location.href = '../../front/login/login.php';
+                        } else {
+                            // Continuar trabajando
+                            hideFormView();
+                            loadUsers();
+                        }
+                    });
+                } else {
+                    Swal.fire('Éxito', 'Usuario actualizado correctamente', 'success');
+                    hideFormView();
+                    loadUsers();
+                }
             } else {
                 Swal.fire('Error', resp.result.error_message || 'Error al actualizar', 'error');
             }
