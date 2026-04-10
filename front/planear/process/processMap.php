@@ -18,7 +18,7 @@
     </div>
 
     <div class="tabs-container">
-        <button id="btnEstrategico" class="tab-btn active" onclick="switchTab('Estratégicos')">Direccionamiento Corpporativo</button>
+        <button id="btnEstrategico" class="tab-btn active" onclick="switchTab('Estratégicos')">Direccionamiento Corporativo</button>
         <button id="btnOperacional" class="tab-btn" onclick="switchTab('Operacionales')">Core de Negocio</button>
         <button id="btnApoyo" class="tab-btn" onclick="switchTab('De Apoyo')">Soporte</button>
     </div>
