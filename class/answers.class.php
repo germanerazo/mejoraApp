@@ -57,4 +57,14 @@ class answers
         );
         return $this->response;
     }
+
+    public function error_404($valor = "Resource not found")
+    {
+        $this->response["status"] = "error";
+        $this->response["result"] = array(
+            "error_id" => "404",
+            "error_message" => $valor
+        );
+        return $this->response;
+    }
 }

@@ -1,8 +1,17 @@
 <!-- CSS Import -->
-<link rel="stylesheet" href="../verificar/budget/budget.css?v=1.0">
+<link rel="stylesheet" href="../verificar/budget/budget.css?v=1.1">
+
+<!-- Company Header (pantalla + impresión) -->
+<div id="budgetCompanyHeader" class="budget-company-header" style="display:none;">
+    <img id="budgetCompanyLogo" src="" alt="Logo empresa" class="budget-company-logo">
+    <div class="budget-company-info">
+        <span id="budgetCompanyName" class="budget-company-name"></span>
+        <span class="budget-company-label">Sistema de Gestión de Seguridad y Salud en el Trabajo</span>
+    </div>
+</div>
 
 <div class="page-header">
-    <h1 class="page-title">PRESUPUESTO POR AÑO</h1>
+    <h1 class="page-title">PRESUPUESTO — <span id="budgetPageCompanyName" style="color: var(--primary-color, #667eea);">...</span></h1>
 </div>
 
 <!-- List View -->

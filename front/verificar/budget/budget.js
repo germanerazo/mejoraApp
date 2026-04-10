@@ -3,12 +3,15 @@
 // ============================================================
 import config from "../../js/config.js";
 
-const API = `${config.BASE_API_URL}budget.php`;
+const API           = `${config.BASE_API_URL}budget.php`;
+const COMPANIES_API = `${config.BASE_API_URL}companies.php`;
 
 // ── Sesión ────────────────────────────────────────────────────────────────────
-let idEmpresa   = null;
-let token       = null;
+let idEmpresa      = null;
+let token          = null;
 let currentBudgetId = null;   // idBudget activo en el formulario
+let companyName    = '';
+let companyLogoUrl = '';
 
 const loadSession = () => {
     const user = JSON.parse(sessionStorage.getItem('user') || 'null');
@@ -28,7 +31,42 @@ const initBudget = async () => {
             <i class="fas fa-lock"></i> No se encontró sesión de empresa.</td></tr>`;
         return;
     }
+    await loadCompanyInfo();
     await renderBudgetList();
+};
+
+// ── Load company name & logo ──────────────────────────────────────────────────
+const loadCompanyInfo = async () => {
+    try {
+        const resp = await fetch(`${COMPANIES_API}?id=${idEmpresa}`);
+        const data = await resp.json();
+        if (data && data.length > 0) {
+            const company = data[0];
+            companyName    = company.nomEmpresa || '';
+            companyLogoUrl = company.ruta ? `${config.ASSETS_URL}${company.ruta}` : '';
+
+            // Update page title
+            const titleSpan = document.getElementById('budgetPageCompanyName');
+            if (titleSpan) titleSpan.textContent = companyName;
+
+            // Show company header card
+            const header = document.getElementById('budgetCompanyHeader');
+            const logoEl = document.getElementById('budgetCompanyLogo');
+            const nameEl = document.getElementById('budgetCompanyName');
+            if (header) {
+                if (nameEl) nameEl.textContent = companyName;
+                if (logoEl && companyLogoUrl) {
+                    logoEl.src = companyLogoUrl;
+                    logoEl.style.display = 'block';
+                } else if (logoEl) {
+                    logoEl.style.display = 'none';
+                }
+                header.style.display = 'flex';
+            }
+        }
+    } catch (err) {
+        console.warn('No se pudo cargar la info de la empresa:', err);
+    }
 };
 
 // ── LIST ──────────────────────────────────────────────────────────────────────
@@ -328,18 +366,109 @@ window.printBudget = () => {
         </tr>`;
     });
 
-    const grandTotal = document.getElementById('grandTotal').innerText;
+    const grandTotal   = document.getElementById('grandTotal').innerText;
+    const logoHtml     = companyLogoUrl
+        ? `<img src="${companyLogoUrl}" alt="Logo" style="height:70px;width:auto;object-fit:contain;">`
+        : '';
+    const today        = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
+
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
-        <html><head><title>Presupuesto ${year}</title>
+        <html><head><title>Presupuesto ${year} - ${companyName}</title>
         <style>
-            body { font-family: Arial, sans-serif; padding: 40px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th { background-color: #f8f9fa; border: 1px solid #ddd; padding: 10px; text-align: left; }
-            h1 { color: #333; border-bottom: 2px solid #ff9d00; padding-bottom: 10px; }
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: Arial, sans-serif; padding: 36px 44px; color: #1a1a2e; }
+
+            /* ─── Header empresarial ─── */
+            .print-header {
+                display: flex;
+                align-items: center;
+                gap: 18px;
+                border-bottom: 3px solid #ff9d00;
+                padding-bottom: 14px;
+                margin-bottom: 22px;
+            }
+            .print-company-info { flex: 1; }
+            .print-company-name {
+                font-size: 1.1rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: .4px;
+                color: #1a1a2e;
+            }
+            .print-company-sub {
+                font-size: 0.72rem;
+                color: #667eea;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: .6px;
+                margin-top: 3px;
+            }
+            .print-doc-title {
+                text-align: right;
+            }
+            .print-doc-title h1 {
+                font-size: 1.25rem;
+                color: #1a1a2e;
+                font-weight: 800;
+                text-transform: uppercase;
+            }
+            .print-doc-title .print-year-badge {
+                display: inline-block;
+                background: #ff9d00;
+                color: #fff;
+                font-size: 0.8rem;
+                font-weight: 700;
+                padding: 3px 12px;
+                border-radius: 20px;
+                margin-top: 4px;
+            }
+            .print-meta {
+                font-size: 0.75rem;
+                color: #888;
+                margin-top: 3px;
+            }
+
+            /* ─── Tabla ─── */
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            thead tr { background: #1a1a2e; color: #fff; }
+            th { padding: 10px 8px; font-size: 0.82rem; text-align: left; }
+            td { padding: 8px; font-size: 0.82rem; border-bottom: 1px solid #e8ecf0; }
+            tbody tr:nth-child(even) { background: #f8f9fa; }
+
+            /* ─── Total ─── */
+            tfoot tr td {
+                font-weight: 800;
+                font-size: 0.9rem;
+                border-top: 2px solid #1a1a2e;
+                background: #f0f2ff;
+                padding: 10px 8px;
+            }
+
+            /* ─── Footer ─── */
+            .print-footer {
+                margin-top: 30px;
+                font-size: 0.7rem;
+                color: #aaa;
+                text-align: center;
+                border-top: 1px solid #e8ecf0;
+                padding-top: 10px;
+            }
         </style></head>
         <body>
-            <h1>Presupuesto Año: ${year}</h1>
+            <div class="print-header">
+                <div>${logoHtml}</div>
+                <div class="print-company-info">
+                    <div class="print-company-name">${companyName}</div>
+                    <div class="print-company-sub">Sistema de Gestión de SST</div>
+                </div>
+                <div class="print-doc-title">
+                    <h1>Presupuesto</h1>
+                    <div class="print-year-badge">Año ${year}</div>
+                    <div class="print-meta">Generado: ${today}</div>
+                </div>
+            </div>
+
             <table>
                 <thead>
                     <tr>
@@ -353,11 +482,13 @@ window.printBudget = () => {
                 <tbody>${printRows}</tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="4" style="text-align:right;padding:10px;font-weight:bold;border-top:2px solid #333;">TOTAL</td>
-                        <td style="text-align:right;padding:10px;font-weight:bold;border-top:2px solid #333;">${grandTotal}</td>
+                        <td colspan="4" style="text-align:right;">TOTAL PRESUPUESTO</td>
+                        <td style="text-align:right;">${grandTotal}</td>
                     </tr>
                 </tfoot>
             </table>
+
+            <div class="print-footer">${companyName} &bull; Presupuesto SST ${year} &bull; Documento generado el ${today}</div>
             <script>window.print();<\/script>
         </body></html>
     `);
