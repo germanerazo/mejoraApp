@@ -31,7 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 } else if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     // Fetch logs (would need token validation for admin in real scenario)
-    $query = "SELECT * FROM audit_logs ORDER BY date_time DESC LIMIT 100";
+    $query = "SELECT a.*, IFNULL(c.nomEmpresa, 'N/A') as company_name 
+              FROM audit_logs a 
+              LEFT JOIN companies c ON a.company_id = c.idEmpresa 
+              ORDER BY a.date_time DESC LIMIT 1000";
     $data = $_audit->getData($query);
     http_response_code(200);
     echo json_encode($data);
