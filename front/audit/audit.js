@@ -38,11 +38,7 @@ function initDataTable() {
                 targets: 7, // Detalles Column
                 orderable: false
             }
-        ],
-        drawCallback: function () {
-            // Populate selects after data is loaded and filtered
-            buildSelectFilters();
-        }
+        ]
     });
 }
 
@@ -105,6 +101,9 @@ async function loadAuditData() {
         });
         
         auditDataTable.draw();
+        
+        // Populate filters now that data is fully loaded
+        buildSelectFilters();
     }
 
     // Function exposed to global window to be callable from string templates
