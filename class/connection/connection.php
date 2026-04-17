@@ -112,12 +112,13 @@ class connection
 
         if ($token != '') {
             $safeToken = $this->connection->real_escape_string($token);
-            $qToken = "SELECT u.nombre, u.codusr FROM users u INNER JOIN users_token ut ON u.idUsuario = ut.userId WHERE ut.token = '$safeToken' AND ut.state = 0";
+            $qToken = "SELECT u.nombre, u.codusr, u.idCliente FROM users u INNER JOIN users_token ut ON u.idUsuario = ut.userId WHERE ut.token = '$safeToken' AND ut.state = 0";
             $resToken = $this->connection->query($qToken);
             if ($resToken && $resToken->num_rows > 0) {
                 $row = $resToken->fetch_assoc();
                 $user['nombre'] = $row['nombre'];
                 $user['codusr'] = $row['codusr'];
+                $user['company_id'] = $row['idCliente'];
             }
         }
         return $user;
@@ -163,6 +164,7 @@ class connection
             $userData = $this->getAuditUser();
             $user = $userData['nombre'];
             $userIdent = $userData['codusr'];
+            $companyId = isset($userData['company_id']) ? $userData['company_id'] : 'N/A';
             
             $ip = $this->getAuditIp();
             $date_time = date('Y-m-d H:i:s');
@@ -176,20 +178,22 @@ class connection
 
             $safeUser = $this->connection->real_escape_string($user);
             $safeUserIdent = $this->connection->real_escape_string($userIdent);
+            $safeCompanyId = $this->connection->real_escape_string($companyId);
             $safeAction = $this->connection->real_escape_string($action);
             $safeTableName = $this->connection->real_escape_string($tableName);
             $safeDetails = $this->connection->real_escape_string($sqlstr);
             $safeIp = $this->connection->real_escape_string($ip);
 
-            $auditSql = "INSERT INTO audit_logs (user, user_ident, date_time, ip, action, table_name, details) VALUES ('$safeUser', '$safeUserIdent', '$date_time', '$safeIp', '$safeAction', '$safeTableName', '$safeDetails')";
+            $auditSql = "INSERT INTO audit_logs (user, user_ident, company_id, date_time, ip, action, table_name, details) VALUES ('$safeUser', '$safeUserIdent', '$safeCompanyId', '$date_time', '$safeIp', '$safeAction', '$safeTableName', '$safeDetails')";
             $this->connection->query($auditSql);
         }
     }
 
-    public function auditAction($action, $details = '', $userLabel = null, $userIdentLabel = null) {
+    public function auditAction($action, $details = '', $userLabel = null, $userIdentLabel = null, $companyIdLabel = null) {
         $userData = $this->getAuditUser();
         $user = $userLabel ? $userLabel : $userData['nombre'];
         $userIdent = $userIdentLabel ? $userIdentLabel : $userData['codusr'];
+        $companyId = $companyIdLabel ? $companyIdLabel : (isset($userData['company_id']) ? $userData['company_id'] : 'N/A');
         
         $ip = $this->getAuditIp();
         $date_time = date('Y-m-d H:i:s');
@@ -197,12 +201,13 @@ class connection
 
         $safeUser = $this->connection->real_escape_string($user);
         $safeUserIdent = $this->connection->real_escape_string($userIdent);
+        $safeCompanyId = $this->connection->real_escape_string($companyId);
         $safeAction = $this->connection->real_escape_string($action);
         $safeTableName = $this->connection->real_escape_string($tableName);
         $safeDetails = $this->connection->real_escape_string($details);
         $safeIp = $this->connection->real_escape_string($ip);
 
-        $auditSql = "INSERT INTO audit_logs (user, user_ident, date_time, ip, action, table_name, details) VALUES ('$safeUser', '$safeUserIdent', '$date_time', '$safeIp', '$safeAction', '$safeTableName', '$safeDetails')";
+        $auditSql = "INSERT INTO audit_logs (user, user_ident, company_id, date_time, ip, action, table_name, details) VALUES ('$safeUser', '$safeUserIdent', '$safeCompanyId', '$date_time', '$safeIp', '$safeAction', '$safeTableName', '$safeDetails')";
         $this->connection->query($auditSql);
     }
 

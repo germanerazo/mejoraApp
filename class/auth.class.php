@@ -20,7 +20,7 @@ class auth  extends connection {
                     if($data[0]['estado'] == 0) {
                         $validate = $this->insertToken($data[0]['idUsuario']);
                         if($validate) {
-                            $this->auditAction('Login', 'User logged in successfully', $data[0]['nombre'], $data[0]['codusr']);
+                            $this->auditAction('Login', 'User logged in successfully', $data[0]['nombre'], $data[0]['codusr'], $data[0]['idCliente']);
                             $result = $_answers->response;
                             $result['result'] = array(
                                 "token" => $validate,

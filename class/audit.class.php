@@ -4,10 +4,11 @@ require_once 'answers.class.php';
 
 class audit extends connection {
 
-    public function createAudit($action, $details = '', $tableName = 'N/A') {
+    public function createAudit($action, $details = '', $tableName = 'N/A', $companyIdParam = 'N/A') {
         try {
             $user = 'System';
             $userIdent = 'N/A';
+            $companyId = $companyIdParam;
             $ip = $this->getUserIP();
             $date_time = date('Y-m-d H:i:s');
             
@@ -19,11 +20,12 @@ class audit extends connection {
                 if ($userData && isset($userData[0]['nombre'])) {
                     $user = $userData[0]['nombre'];
                     $userIdent = isset($userData[0]['codusr']) ? $userData[0]['codusr'] : 'N/A';
+                    $companyId = isset($userData[0]['idCliente']) ? $userData[0]['idCliente'] : $companyId;
                 }
             }
 
-            $query = "INSERT INTO audit_logs (user, user_ident, date_time, ip, action, table_name, details) ";
-            $query .= "VALUES ('" . $this->escapeString($user) . "', '" . $this->escapeString($userIdent) . "', '$date_time', '$ip', '" . $this->escapeString($action) . "', '" . $this->escapeString($tableName) . "', '" . $this->escapeString($details) . "')";
+            $query = "INSERT INTO audit_logs (user, user_ident, company_id, date_time, ip, action, table_name, details) ";
+            $query .= "VALUES ('" . $this->escapeString($user) . "', '" . $this->escapeString($userIdent) . "', '" . $this->escapeString($companyId) . "', '$date_time', '$ip', '" . $this->escapeString($action) . "', '" . $this->escapeString($tableName) . "', '" . $this->escapeString($details) . "')";
             
             $result = parent::nonQueryId($query);
             return $result;
@@ -35,7 +37,7 @@ class audit extends connection {
     }
 
     private function getUserByToken($token) {
-        $query = "SELECT u.nombre, u.codusr FROM users u INNER JOIN users_token ut ON u.idUsuario = ut.userId WHERE ut.token = '$token' AND ut.state = 0";
+        $query = "SELECT u.nombre, u.codusr, u.idCliente FROM users u INNER JOIN users_token ut ON u.idUsuario = ut.userId WHERE ut.token = '$token' AND ut.state = 0";
         return parent::getData($query);
     }
 
