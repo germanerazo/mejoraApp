@@ -75,7 +75,7 @@ class connection
     }
 
     private function getAuditUser() {
-        $user = 'System';
+        $user = array('nombre' => 'System', 'codusr' => 'N/A');
         $headers = array();
         if (function_exists('apache_request_headers')) {
             $headers = apache_request_headers();
@@ -92,11 +92,12 @@ class connection
 
         if ($token != '') {
             $safeToken = $this->connection->real_escape_string($token);
-            $qToken = "SELECT u.nombre FROM users u INNER JOIN users_token ut ON u.idUsuario = ut.userId WHERE ut.token = '$safeToken' AND ut.state = 0";
+            $qToken = "SELECT u.nombre, u.codusr FROM users u INNER JOIN users_token ut ON u.idUsuario = ut.userId WHERE ut.token = '$safeToken' AND ut.state = 0";
             $resToken = $this->connection->query($qToken);
             if ($resToken && $resToken->num_rows > 0) {
                 $row = $resToken->fetch_assoc();
-                $user = $row['nombre'];
+                $user['nombre'] = $row['nombre'];
+                $user['codusr'] = $row['codusr'];
             }
         }
         return $user;
@@ -114,6 +115,24 @@ class connection
         return $ip;
     }
 
+    private function extractTableName($sqlstr, $action) {
+        $tableName = '';
+        if ($action === 'Record creation') {
+            if (preg_match('/insert\s+into\s+([a-zA-Z0-9_\.]+)/i', $sqlstr, $matches)) {
+                $tableName = $matches[1];
+            }
+        } else if ($action === 'Record modification') {
+            if (preg_match('/update\s+([a-zA-Z0-9_\.]+)/i', $sqlstr, $matches)) {
+                $tableName = $matches[1];
+            }
+        } else if ($action === 'Record deletion') {
+            if (preg_match('/delete\s+from\s+([a-zA-Z0-9_\.]+)/i', $sqlstr, $matches)) {
+                $tableName = $matches[1];
+            }
+        }
+        return $tableName;
+    }
+
     private function auditQuery($sqlstr) {
         $sqlUpper = strtoupper(trim($sqlstr));
         if (strpos($sqlUpper, 'INSERT') === 0 || strpos($sqlUpper, 'UPDATE') === 0 || strpos($sqlUpper, 'DELETE') === 0) {
@@ -121,7 +140,10 @@ class connection
                 return; // Prevent infinite loop format
             }
 
-            $user = $this->getAuditUser();
+            $userData = $this->getAuditUser();
+            $user = $userData['nombre'];
+            $userIdent = $userData['codusr'];
+            
             $ip = $this->getAuditIp();
             $date_time = date('Y-m-d H:i:s');
             
@@ -130,28 +152,37 @@ class connection
             if (strpos($sqlUpper, 'UPDATE') === 0) $action = 'Record modification';
             if (strpos($sqlUpper, 'DELETE') === 0) $action = 'Record deletion';
 
+            $tableName = $this->extractTableName($sqlstr, $action);
+
             $safeUser = $this->connection->real_escape_string($user);
+            $safeUserIdent = $this->connection->real_escape_string($userIdent);
             $safeAction = $this->connection->real_escape_string($action);
-            // Provide a shorter/cleaner description in details, truncating if it's too large, or just keep full SQL
+            $safeTableName = $this->connection->real_escape_string($tableName);
             $safeDetails = $this->connection->real_escape_string($sqlstr);
             $safeIp = $this->connection->real_escape_string($ip);
 
-            $auditSql = "INSERT INTO audit_logs (user, date_time, ip, action, details) VALUES ('$safeUser', '$date_time', '$safeIp', '$safeAction', '$safeDetails')";
+            $auditSql = "INSERT INTO audit_logs (user, user_ident, date_time, ip, action, table_name, details) VALUES ('$safeUser', '$safeUserIdent', '$date_time', '$safeIp', '$safeAction', '$safeTableName', '$safeDetails')";
             $this->connection->query($auditSql);
         }
     }
 
-    public function auditAction($action, $details = '', $userLabel = null) {
-        $user = $userLabel ? $userLabel : $this->getAuditUser();
+    public function auditAction($action, $details = '', $userLabel = null, $userIdentLabel = null) {
+        $userData = $this->getAuditUser();
+        $user = $userLabel ? $userLabel : $userData['nombre'];
+        $userIdent = $userIdentLabel ? $userIdentLabel : $userData['codusr'];
+        
         $ip = $this->getAuditIp();
         $date_time = date('Y-m-d H:i:s');
+        $tableName = 'N/A'; // Since it's an abstract action like login
 
         $safeUser = $this->connection->real_escape_string($user);
+        $safeUserIdent = $this->connection->real_escape_string($userIdent);
         $safeAction = $this->connection->real_escape_string($action);
+        $safeTableName = $this->connection->real_escape_string($tableName);
         $safeDetails = $this->connection->real_escape_string($details);
         $safeIp = $this->connection->real_escape_string($ip);
 
-        $auditSql = "INSERT INTO audit_logs (user, date_time, ip, action, details) VALUES ('$safeUser', '$date_time', '$safeIp', '$safeAction', '$safeDetails')";
+        $auditSql = "INSERT INTO audit_logs (user, user_ident, date_time, ip, action, table_name, details) VALUES ('$safeUser', '$safeUserIdent', '$date_time', '$safeIp', '$safeAction', '$safeTableName', '$safeDetails')";
         $this->connection->query($auditSql);
     }
 

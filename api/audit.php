@@ -20,7 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     if (isset($data['action'])) {
         $details = isset($data['details']) ? json_encode($data['details']) : '';
-        $resp = $_audit->createAudit($data['action'], $details);
+        $tableName = isset($data['table_name']) ? $data['table_name'] : 'N/A';
+        $resp = $_audit->createAudit($data['action'], $details, $tableName);
         http_response_code(200);
         echo json_encode(["status" => "ok", "audit_id" => $resp]);
     } else {
