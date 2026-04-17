@@ -16,6 +16,47 @@ let chartInstance     = null;
 const months = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO',
                  'JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
 
+// ── Currency helpers ──────────────────────────────────────────────────────────
+// Convert a raw number to display string: 1500000 → "$ 1.500.000"
+const formatCurrency = (val) => {
+    const n = parseFloat(val) || 0;
+    return '$ ' + n.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+};
+
+// Strip formatting and return a float: "$ 1.500.000" → 1500000
+const parseCurrency = (str) => {
+    if (str === null || str === undefined) return 0;
+    // Remove everything except digits and commas/dots used as decimal separator
+    // In es-CO, the thousands separator is '.' and decimal is ','
+    const cleaned = String(str)
+        .replace(/\$/g, '')
+        .replace(/\s/g, '')
+        .replace(/\./g, '')   // remove thousands separators
+        .replace(/,/g, '.');  // convert decimal comma to dot
+    return parseFloat(cleaned) || 0;
+};
+
+// Called on every keystroke of a currency input
+window.onCurrencyInput = (el) => {
+    const raw     = parseCurrency(el.value);
+    const pos     = el.selectionStart;
+    const oldLen  = el.value.length;
+    el.value      = formatCurrency(raw);
+    // Restore caret roughly
+    const diff    = el.value.length - oldLen;
+    try { el.setSelectionRange(pos + diff, pos + diff); } catch(e) {}
+    // Trigger recalculation
+    const idx = parseInt(el.dataset.index);
+    if (!isNaN(idx)) calculateTracking(idx);
+};
+
+// Color class based on percentage
+const percentClass = (pct) => {
+    if (pct >= 90)  return 'pct-green';
+    if (pct >= 50)  return 'pct-yellow';
+    return 'pct-red';
+};
+
 const loadSession = () => {
     const user = JSON.parse(sessionStorage.getItem('user') || 'null');
     if (user && user.idClient) {
@@ -115,23 +156,31 @@ const loadTrackingData = async () => {
 const renderGrid = () => {
     const tbody = document.getElementById('trackingGridBody');
 
-    let rowBudget   = `<tr><td style="font-weight:bold;text-align:left;">PRESUPUESTO</td>`;
-    let rowExecuted = `<tr><td style="font-weight:bold;text-align:left;">EJECUTADO</td>`;
-    let rowPercent  = `<tr><td style="font-weight:bold;text-align:left;">PORCENTAJE</td>`;
+    let rowBudget   = `<tr><td class="row-label">PRESUPUESTO</td>`;
+    let rowExecuted = `<tr><td class="row-label">EJECUTADO</td>`;
+    let rowPercent  = `<tr><td class="row-label">PORCENTAJE</td>`;
 
     for (let i = 0; i < 12; i++) {
         const d       = currentMonthsData[i] || { budget: 0, executed: 0 };
         const bVal    = parseFloat(d.budget)   || 0;
         const eVal    = parseFloat(d.executed) || 0;
-        const percent = bVal > 0 ? ((eVal / bVal) * 100).toFixed(1) : '0';
+        const pct     = bVal > 0 ? ((eVal / bVal) * 100) : 0;
+        const pctStr  = pct.toFixed(1);
+        const pctCls  = percentClass(pct);
 
-        rowBudget   += `<td><input type="number" class="tracking-input input-budget"
-                            data-index="${i}" value="${bVal}"
-                            oninput="calculateTracking(${i})"></td>`;
-        rowExecuted += `<td><input type="number" class="tracking-input input-executed"
-                            data-index="${i}" value="${eVal}"
-                            oninput="calculateTracking(${i})"></td>`;
-        rowPercent  += `<td class="tracking-percent" id="percent_${i}">${percent}%</td>`;
+        rowBudget   += `<td><input type="text" inputmode="numeric"
+                            class="tracking-input input-budget currency-input"
+                            data-index="${i}"
+                            value="${formatCurrency(bVal)}"
+                            oninput="onCurrencyInput(this)"
+                            onfocus="this.select()"></td>`;
+        rowExecuted += `<td><input type="text" inputmode="numeric"
+                            class="tracking-input input-executed currency-input"
+                            data-index="${i}"
+                            value="${formatCurrency(eVal)}"
+                            oninput="onCurrencyInput(this)"
+                            onfocus="this.select()"></td>`;
+        rowPercent  += `<td class="tracking-percent ${pctCls}" id="percent_${i}">${pctStr}%</td>`;
     }
 
     rowBudget   += '</tr>';
@@ -146,11 +195,15 @@ window.calculateTracking = (index) => {
     const bInputs = document.querySelectorAll('.input-budget');
     const eInputs = document.querySelectorAll('.input-executed');
 
-    const bVal    = parseFloat(bInputs[index].value) || 0;
-    const eVal    = parseFloat(eInputs[index].value) || 0;
-    const percent = bVal > 0 ? ((eVal / bVal) * 100).toFixed(1) : '0';
+    const bVal  = parseCurrency(bInputs[index]?.value);
+    const eVal  = parseCurrency(eInputs[index]?.value);
+    const pct   = bVal > 0 ? (eVal / bVal) * 100 : 0;
 
-    document.getElementById(`percent_${index}`).innerText = `${percent}%`;
+    const cell  = document.getElementById(`percent_${index}`);
+    if (cell) {
+        cell.innerText = `${pct.toFixed(1)}%`;
+        cell.className = `tracking-percent ${percentClass(pct)}`;
+    }
 
     // Sync to memory
     if (currentMonthsData[index]) {
@@ -171,8 +224,8 @@ window.saveTracking = async () => {
     for (let i = 0; i < 12; i++) {
         monthsPayload.push({
             month:    i + 1,
-            budget:   parseFloat(bInputs[i]?.value) || 0,
-            executed: parseFloat(eInputs[i]?.value) || 0,
+            budget:   parseCurrency(bInputs[i]?.value),
+            executed: parseCurrency(eInputs[i]?.value),
         });
     }
 
@@ -268,7 +321,7 @@ window.renderChart = () => {
             responsive: true,
             maintainAspectRatio: false,
             layout: { padding: { top: 30 } },
-            scales: { y: { beginAtZero: true, max: 120 } },
+            scales: { y: { beginAtZero: true, suggestedMax: 120 } },
             plugins: {
                 legend: { position: 'top' },
                 title:  { display: true, text: `Cumplimiento Presupuestal ${currentYear}` },
