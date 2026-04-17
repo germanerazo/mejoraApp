@@ -76,18 +76,38 @@ class connection
 
     private function getAuditUser() {
         $user = array('nombre' => 'System', 'codusr' => 'N/A');
+        
+        $token = '';
+        
+        // 1. Check in headers
         $headers = array();
         if (function_exists('apache_request_headers')) {
             $headers = apache_request_headers();
-        } else if (isset($_SERVER['HTTP_TOKEN'])) {
+        } 
+        if (isset($_SERVER['HTTP_TOKEN'])) {
             $headers['token'] = $_SERVER['HTTP_TOKEN'];
         }
-
-        $token = '';
+        
         if (isset($headers['token'])) {
             $token = $headers['token'];
         } else if (isset($headers['Token'])) {
             $token = $headers['Token'];
+        }
+        
+        // 2. Check in GET parameters
+        if (empty($token) && isset($_GET['token'])) {
+            $token = $_GET['token'];
+        }
+        
+        // 3. Check in JSON Body payload (used by lots of endpoints in the system)
+        if (empty($token)) {
+            $inputBody = file_get_contents('php://input');
+            if (!empty($inputBody)) {
+                $data = json_decode($inputBody, true);
+                if (isset($data['token'])) {
+                    $token = $data['token'];
+                }
+            }
         }
 
         if ($token != '') {
