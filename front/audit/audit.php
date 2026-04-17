@@ -27,6 +27,18 @@
             
             <div class="filters-container">
                 <div class="filter-group">
+                     <label><i class="fas fa-user"></i> Usuario</label>
+                     <select id="userFilter" class="filter-input">
+                         <option value="">Todos los Usuarios</option>
+                     </select>
+                </div>
+                <div class="filter-group">
+                     <label><i class="fas fa-building"></i> Compañía</label>
+                     <select id="companyFilter" class="filter-input">
+                         <option value="">Todas las Compañías</option>
+                     </select>
+                </div>
+                <div class="filter-group">
                      <label><i class="fas fa-filter"></i> Modulo (Tabla)</label>
                      <select id="tableFilter" class="filter-input">
                          <option value="">Todos los Módulos</option>

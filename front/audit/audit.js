@@ -1,62 +1,79 @@
-$(document).ready(function () {
-    let auditDataTable;
+import config from "../js/config.js";
 
-    // Retrieve the auth token (simulated for front-end integration if handled globally)
-    const token = localStorage.getItem('token'); 
+const API = `${config.BASE_API_URL}audit.php`;
+
+let token = null;
+let auditDataTable;
+
+const loadSession = () => {
+    token = sessionStorage.getItem('token') || '';
+    return token !== '';
+};
+
+const initAudit = () => {
+    if (!loadSession()) {
+        Swal.fire('Sesión Inválida', 'No se ha encontrado una sesión válida. Inicia sesión nuevamente.', 'error');
+        return;
+    }
     
     // Initialize Data table
     initDataTable();
     loadAuditData();
+};
 
-    function initDataTable() {
-        auditDataTable = $('#auditTable').DataTable({
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
-            },
-            pageLength: 25,
-            order: [[0, "desc"]], // Default sort by date_time descending
-            columnDefs: [
-                {
-                    targets: 7, // Detalles Column
-                    orderable: false
-                }
-            ],
-            drawCallback: function () {
-                // Populate selects after data is loaded and filtered
-                buildSelectFilters();
-            }
-        });
+function initDataTable() {
+    // Check if DataTable is already initialized, if so, destroy it first
+    if ($.fn.DataTable.isDataTable('#auditTable')) {
+        $('#auditTable').DataTable().destroy();
     }
 
-    function loadAuditData() {
-        Swal.fire({
-            title: 'Cargando Reportes',
-            text: 'Extrayendo historial de auditoría...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
+    auditDataTable = $('#auditTable').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+        },
+        pageLength: 25,
+        order: [[0, "desc"]], // Default sort by date_time descending
+        columnDefs: [
+            {
+                targets: 7, // Detalles Column
+                orderable: false
             }
-        });
+        ],
+        drawCallback: function () {
+            // Populate selects after data is loaded and filtered
+            buildSelectFilters();
+        }
+    });
+}
 
-        // Use standard Fetch method to hit API
-        fetch('../../api/audit.php', {
+async function loadAuditData() {
+    Swal.fire({
+        title: 'Cargando Reportes',
+        text: 'Extrayendo historial de auditoría...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    try {
+        const resp = await fetch(API, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'token': token
             }
-        })
-        .then(response => response.json())
-        .then(data => {
-            Swal.close();
-            populateTable(data);
-        })
-        .catch(error => {
-            Swal.close();
-            Swal.fire('Error', 'No se pudo cargar la auditoría', 'error');
-            console.error('Audit Load Error:', error);
         });
+        
+        const data = await resp.json();
+        Swal.close();
+        populateTable(data);
+    } catch (error) {
+        Swal.close();
+        Swal.fire('Error', 'No se pudo cargar la auditoría', 'error');
+        console.error('Audit Load Error:', error);
     }
+}
 
     function populateTable(data) {
         auditDataTable.clear();
@@ -133,14 +150,32 @@ $(document).ready(function () {
     let filtersBuilt = false;
     function buildSelectFilters() {
         if(filtersBuilt) return; // run once
+        let users = new Set();
+        let companies = new Set();
         let modules = new Set();
         let actions = new Set();
         
         auditDataTable.rows().data().each(function(row) {
+            users.add(row[1]); // Usuario
+            companies.add(row[3]); // Compañia
             modules.add(row[5]); // Modulo / Table
             // Extracts plain text from badge HTML
             let actionText = $(row[6]).text(); 
             actions.add(actionText);
+        });
+
+        const userFilter = $('#userFilter');
+        users.forEach(u => {
+            if(u && u !== '') {
+                userFilter.append(`<option value="${u}">${u}</option>`);
+            }
+        });
+
+        const compFilter = $('#companyFilter');
+        companies.forEach(c => {
+            if(c && c !== '') {
+                compFilter.append(`<option value="${c}">${c}</option>`);
+            }
         });
 
         const tblFilter = $('#tableFilter');
@@ -160,17 +195,35 @@ $(document).ready(function () {
         filtersBuilt = true;
 
         // Apply Select2 for premium look
-        $('#tableFilter, #actionFilter').select2({ width: '100%' });
+        $('#userFilter, #companyFilter, #tableFilter, #actionFilter').select2({ width: '100%' });
 
         // Event Listeners for Filters
+        $('#userFilter').on('change', function() {
+            // Using exact Regex match to avoid matching partial names mistakenly
+            let val = $.fn.dataTable.util.escapeRegex($(this).val());
+            auditDataTable.column(1).search(val ? '^' + val + '$' : '', true, false).draw();
+        });
+
+        $('#companyFilter').on('change', function() {
+            let val = $.fn.dataTable.util.escapeRegex($(this).val());
+            auditDataTable.column(3).search(val ? '^' + val + '$' : '', true, false).draw();
+        });
+
         $('#tableFilter').on('change', function() {
-            auditDataTable.column(5).search(this.value).draw();
+            let val = $.fn.dataTable.util.escapeRegex($(this).val());
+            auditDataTable.column(5).search(val ? '^' + val + '$' : '', true, false).draw();
         });
 
         $('#actionFilter').on('change', function() {
-            // Because badge holds HTML, DataTables search matches actual text. It works natively.
-            auditDataTable.column(6).search(this.value).draw();
+            // Because badge holds HTML, DataTables search matches actual text natively.
+            let val = $.fn.dataTable.util.escapeRegex($(this).val());
+            auditDataTable.column(6).search(val ? val : '', true, false).draw();
         });
     }
 
-});
+// ── Init ──────────────────────────────────────────────────────────────────────
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAudit);
+} else {
+    initAudit();
+}
