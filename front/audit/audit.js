@@ -193,30 +193,22 @@ async function loadAuditData() {
 
         filtersBuilt = true;
 
-        // Apply Select2 for premium look
-        $('#userFilter, #companyFilter, #tableFilter, #actionFilter').select2({ width: '100%' });
-
-        // Event Listeners for Filters
+        // Apply native filters, removing select2 to avoid routing library collisions inside SPA
+        // Event Listeners for native select Filters
         $('#userFilter').on('change', function() {
-            // Using exact Regex match to avoid matching partial names mistakenly
-            let val = $.fn.dataTable.util.escapeRegex($(this).val());
-            auditDataTable.column(1).search(val ? '^' + val + '$' : '', true, false).draw();
+            auditDataTable.column(1).search(this.value).draw();
         });
 
         $('#companyFilter').on('change', function() {
-            let val = $.fn.dataTable.util.escapeRegex($(this).val());
-            auditDataTable.column(3).search(val ? '^' + val + '$' : '', true, false).draw();
+            auditDataTable.column(3).search(this.value).draw();
         });
 
         $('#tableFilter').on('change', function() {
-            let val = $.fn.dataTable.util.escapeRegex($(this).val());
-            auditDataTable.column(5).search(val ? '^' + val + '$' : '', true, false).draw();
+            auditDataTable.column(5).search(this.value).draw();
         });
 
         $('#actionFilter').on('change', function() {
-            // Because badge holds HTML, DataTables search matches actual text natively.
-            let val = $.fn.dataTable.util.escapeRegex($(this).val());
-            auditDataTable.column(6).search(val ? val : '', true, false).draw();
+            auditDataTable.column(6).search(this.value).draw();
         });
     }
 
