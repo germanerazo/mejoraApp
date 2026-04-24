@@ -181,7 +181,7 @@ window.addActivity = async function() {
         title: 'Nueva Actividad',
         html: `
             <input id="swal-activity" class="swal2-input" placeholder="Nombre de la actividad">
-            <input id="swal-area" class="swal2-input" placeholder="Área">
+            <input id="swal-area" class="swal2-input" placeholder="Proceso">
             <div style="margin-top: 20px; display: flex; gap: 20px; justify-content: center;">
                 <label style="display: flex; align-items: center; cursor: pointer; font-size: 15px;">
                     <input type="checkbox" id="swal-routine" style="width: 20px; height: 20px; margin-right: 8px; accent-color: #4CAF50;"> 
