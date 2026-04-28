@@ -678,7 +678,18 @@ window.openAddConsequenceModal = async function(activity_danger_id, danger_id) {
                 </div>
 
                 <label style="display:block; font-weight:600; margin-bottom:5px; font-size:14px; color:#4a5568;">2. Seleccione la Consecuencia (<span id="modalConsCount" style="color:#329bd6;">0</span>)</label>
-                <div id="modalConsList" style="max-height: 180px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 6px; padding: 5px; background: #fafafa; margin-bottom: 20px;">
+                <div id="modalConsList" style="max-height: 180px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 6px; padding: 5px; background: #fafafa; margin-bottom: 15px;">
+                </div>
+
+                <div style="display: flex; align-items: center; margin: 15px 0;">
+                    <hr style="flex-grow: 1; border:0; border-top:1px dashed #ccc;">
+                    <span style="padding: 0 10px; color: #888; font-size: 13px; font-weight: 600;">O CREAR UNA NUEVA</span>
+                    <hr style="flex-grow: 1; border:0; border-top:1px dashed #ccc;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Si la consecuencia no existe en la lista, escríbala aquí para registrarla:</label>
+                    <input type="text" id="modalNewConsequence" class="swal2-input" autocomplete="off" style="width:100%; margin:0; font-size:14px;" placeholder="Ej: Fractura de extremidades superiores...">
                 </div>
 
                 <hr style="border:0; border-top:1px dashed #ccc; margin: 20px 0;">
@@ -773,13 +784,21 @@ window.openAddConsequenceModal = async function(activity_danger_id, danger_id) {
             },
             preConfirm: () => {
                 const selected = document.querySelector('.cons-option.selected');
-                if (!selected) {
-                    Swal.showValidationMessage('⚠️ Debe seleccionar una consecuencia del listado');
+                const newConsVal = document.getElementById('modalNewConsequence').value.trim();
+
+                if (!selected && newConsVal === '') {
+                    Swal.showValidationMessage('⚠️ Debe seleccionar una consecuencia de la lista o escribir una nueva.');
                     return false;
                 }
-                
+
+                if (selected && newConsVal !== '') {
+                    Swal.showValidationMessage('⚠️ Seleccione una consecuencia de la lista O escriba una nueva, no ambas.');
+                    return false;
+                }
+
                 return {
-                    consequence_id: selected.dataset.id,
+                    consequence_id: selected ? selected.dataset.id : '',
+                    new_consequence_name: newConsVal,
                     existing_controls: document.getElementById('modalExistingControls').value,
                     deficiency_level: document.getElementById('modalND').value,
                     exposure_level: document.getElementById('modalNE').value,

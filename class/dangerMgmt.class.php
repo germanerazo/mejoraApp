@@ -217,19 +217,42 @@ class dangerMgmt extends connection {
         $_answers = new answers;
         if(!$this->verifyToken($data, $_answers)) return $_answers->response;
 
-        $adId = intval($data['activity_danger_id']);
-        $consId = intval($data['consequence_id']);
+        $adId   = intval($data['activity_danger_id']);
+        $consId = isset($data['consequence_id']) && $data['consequence_id'] !== '' ? intval($data['consequence_id']) : null;
+        $newConsName = isset($data['new_consequence_name']) ? $this->sanitize($data['new_consequence_name']) : '';
+
+        // Si se envía un nombre nuevo, crear o recuperar la consecuencia del catálogo
+        if (!$consId && $newConsName !== '') {
+            $existing = parent::getData("SELECT id FROM consequences WHERE name = '$newConsName'");
+            if (empty($existing)) {
+                $consId = parent::nonQueryId("INSERT INTO consequences (name) VALUES ('$newConsName')");
+            } else {
+                $consId = $existing[0]['id'];
+            }
+        }
+
+        if (!$consId) {
+            return $_answers->error_400("Falta el ID de la consecuencia o el nombre de la nueva consecuencia.");
+        }
+
+        // Obtener el danger_id a partir de activity_danger_id para vincularlo en el catálogo
+        $adRow = parent::getData("SELECT danger_id FROM activity_dangers WHERE id = $adId");
+        if (!empty($adRow)) {
+            $dangerId = intval($adRow[0]['danger_id']);
+            $linkExists = parent::getData("SELECT id FROM danger_consequences WHERE danger_id = $dangerId AND consequence_id = $consId");
+            if (empty($linkExists)) {
+                parent::nonQueryId("INSERT INTO danger_consequences (danger_id, consequence_id) VALUES ($dangerId, $consId)");
+            }
+        }
         
         $existing_controls = $this->sanitize($data['existing_controls'] ?? '');
-        $def_lvl = isset($data['deficiency_level']) && $data['deficiency_level'] !== '' ? intval($data['deficiency_level']) : 'NULL';
-        $exp_lvl = isset($data['exposure_level']) && $data['exposure_level'] !== '' ? intval($data['exposure_level']) : 'NULL';
+        $def_lvl  = isset($data['deficiency_level'])  && $data['deficiency_level']  !== '' ? intval($data['deficiency_level'])  : 'NULL';
+        $exp_lvl  = isset($data['exposure_level'])    && $data['exposure_level']    !== '' ? intval($data['exposure_level'])    : 'NULL';
         $cons_lvl = isset($data['consequence_level']) && $data['consequence_level'] !== '' ? intval($data['consequence_level']) : 'NULL';
-        $exp_count = isset($data['exposed_count']) && $data['exposed_count'] !== '' ? intval($data['exposed_count']) : 'NULL';
+        $exp_count= isset($data['exposed_count'])     && $data['exposed_count']     !== '' ? intval($data['exposed_count'])     : 'NULL';
         $worst_cons = $this->sanitize($data['worst_consequence'] ?? '');
-        $legal_req = $this->sanitize($data['legal_requirements'] ?? '');
+        $legal_req  = $this->sanitize($data['legal_requirements'] ?? '');
 
-        // Se quita la verificación de "ya existe" para permitir varias evaluaciones de la misma consecuencia si se desea,
-        // o se puede mantener. A pedido del usuario no cambia esa regla, pero la consecuencia puede ser única por peligro.
         $exists = parent::getData("SELECT id FROM activity_danger_consequences WHERE activity_danger_id = $adId AND consequence_id = $consId");
         if (!empty($exists)) {
             return $_answers->error_400("Esta consecuencia ya está asignada a este peligro.");
