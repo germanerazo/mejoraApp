@@ -1,9 +1,21 @@
-// Mock Data
-let proceduresData = [
-    { id: 1, name: 'SST-MA-02 MANUAL DE SELECCION', date: '2024-03-10' },
-    { id: 2, name: 'SST-PR-05 PROCEDIMIENTO DE COMPRAS', date: '2024-02-15' }
-];
-    
+import config from "../../js/config.js";
+
+const API_URL = `${config.BASE_API_URL}procedures.php`;
+
+let proceduresData = [];
+let idEmpresa = null;
+
+// Initialization
+const initProcedures = () => {
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    if (user && user.idClient) {
+        idEmpresa = user.idClient;
+        loadProcedures();
+    } else {
+        Swal.fire('Error', 'No se ha encontrado la sesión de la empresa.', 'error');
+    }
+};
+
 window.updateProceduresFileName = (input) => {
     const fileNameDisplay = document.getElementById('procFileNameDisplay');
     const wrapper = input.parentElement;
@@ -32,15 +44,31 @@ window.updateProceduresFileName = (input) => {
     }
 };
 
-const initProcedures = () => {
-    renderProceduresList();
-};
+function loadProcedures() {
+    fetch(`${API_URL}?idEmpresa=${idEmpresa}`)
+        .then(res => res.json())
+        .then(data => {
+            if (Array.isArray(data)) {
+                proceduresData = data;
+            } else if (data.result) {
+                proceduresData = data.result;
+            } else {
+                proceduresData = [];
+            }
+            renderProceduresList();
+        })
+        .catch(err => {
+            console.error('Error loading procedures:', err);
+            proceduresData = [];
+            renderProceduresList();
+        });
+}
 
 window.renderProceduresList = () => {
     const tbody = document.querySelector('#tableProcedures tbody');
     if (!tbody) return;
 
-    if (proceduresData.length === 0) {
+    if (!proceduresData || proceduresData.length === 0) {
         tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #999;">No hay documentos cargados.</td></tr>`;
         return;
     }
@@ -49,18 +77,25 @@ window.renderProceduresList = () => {
     proceduresData.forEach(item => {
         html += `<tr>
             <td style="text-align: center;">
-                <button class="btn-delete-premium" onclick="deleteProcedures(${item.id})" title="Eliminar">
+                <button class="btn-delete-premium" onclick="deleteProcedures(${item.idProcedimiento})" title="Eliminar">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </td>
-            <td>${item.name}</td>
-            <td>${item.date}</td>
-            <td style="text-align: center;">
-                <button class="btn-view-premium" title="Descargar" onclick="downloadProcedures(${item.id})" style="color: #27ae60 !important;">
+            <td>${item.nomProcedimiento}</td>
+            <td>${item.fechaCreacion}</td>
+            <td style="text-align: center;">`;
+            
+        if (item.rutaArchivo) {
+            const apiDownloadLink = config.BASE_API_URL + 'download.php?file=' + item.rutaArchivo;
+            html += `
+                <a href="${apiDownloadLink}" class="btn-view-premium" title="Descargar" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; color: #27ae60 !important;">
                     <i class="fas fa-file-download"></i>
-                </button>
-            </td>
-        </tr>`;
+                </a>`;
+        } else {
+            html += `<span style="color: #999; font-size: 0.9em;">N/A</span>`;
+        }
+
+        html += `</td></tr>`;
     });
     tbody.innerHTML = html;
 };
@@ -86,24 +121,47 @@ window.hideCreateProcedures = () => {
 window.saveProcedures = () => {
     const name = document.getElementById('fieldProcName').value;
     const date = document.getElementById('fieldProcDate').value;
-    
-    // File validation logic would go here
+    const fileInput = document.getElementById('fieldProcFile');
 
     if (!date || !name) {
         Swal.fire('Error', 'Debe completar nombre y fecha', 'error');
         return;
     }
-    
-    const newItem = {
-        id: proceduresData.length > 0 ? Math.max(...proceduresData.map(i => i.id)) + 1 : 1,
-        name: name,
-        date: date
-    };
 
-    proceduresData.push(newItem);
-    Swal.fire('Guardado', 'Documento guardado correctamente', 'success');
-    renderProceduresList();
-    hideCreateProcedures();
+    const formData = new FormData();
+    formData.append('token', sessionStorage.getItem('token'));
+    formData.append('idEmpresa', idEmpresa);
+    formData.append('nomProcedimiento', name);
+    formData.append('fechaCreacion', date);
+    
+    if (fileInput.files.length > 0) {
+        formData.append('archivo', fileInput.files[0]);
+    }
+
+    fetch(API_URL, {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(response => {
+        if (response.status === 'ok' || response.result) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Guardado',
+                text: 'Documento guardado correctamente',
+                timer: 1500,
+                showConfirmButton: false
+            });
+            hideCreateProcedures();
+            loadProcedures();
+        } else {
+            Swal.fire('Error', response.result?.error_message || 'No se pudo guardar el documento', 'error');
+        }
+    })
+    .catch(err => {
+        console.error('Error saving procedure:', err);
+        Swal.fire('Error', 'Ocurrió un error al conectar con el servidor', 'error');
+    });
 };
 
 window.deleteProcedures = (id) => {
@@ -112,20 +170,46 @@ window.deleteProcedures = (id) => {
         text: "No podrás revertir esto",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--colorRed2').trim(), // Use CSS var if possible or hex
+        confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--colorRed2').trim() || '#e74c3c',
         cancelButtonColor: '#aaa',
         confirmButtonText: 'Sí, eliminar'
     }).then((result) => {
         if (result.isConfirmed) {
-            proceduresData = proceduresData.filter(i => i.id !== id);
-            renderProceduresList();
-            Swal.fire('Eliminado', 'El documento ha sido eliminado.', 'success');
+            const token = sessionStorage.getItem('token');
+            const data = {
+                token: token,
+                idProcedimiento: id,
+                idEmpresa: idEmpresa
+            };
+
+            fetch(API_URL, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === 'ok' || response.result) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Eliminado',
+                        text: 'El documento ha sido eliminado.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    loadProcedures();
+                } else {
+                    Swal.fire('Error', response.result?.error_message || 'No se pudo eliminar el documento', 'error');
+                }
+            })
+            .catch(err => {
+                console.error('Error deleting procedure:', err);
+                Swal.fire('Error', 'Ocurrió un error al conectar con el servidor', 'error');
+            });
         }
     });
-};
-
-window.downloadProcedures = (id) => {
-    Swal.fire('Descarga', 'Iniciando descarga del documento...', 'info');
 };
 
 // Check DOM Ready
