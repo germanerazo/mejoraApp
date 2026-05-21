@@ -33,7 +33,7 @@
                 <label for="objetoAlcance" style="display: block; margin-bottom: 8px; font-weight: 500;">Objeto y Alcance</label>
                 <textarea id="objetoAlcance" class="swal2-textarea" style="width: 100%; margin: 0; box-sizing: border-box; height: 100px;" placeholder="Describa el objeto y alcance del proceso..."></textarea>
             </div>
-            
+
             <div style="margin-bottom: 20px;">
                 <label for="responsable" style="display: block; margin-bottom: 8px; font-weight: 500;">Responsable del Proceso</label>
                 <input type="text" id="responsable" class="swal2-input" style="width: 100%; margin: 0; box-sizing: border-box;" placeholder="Nombre del responsable">
@@ -49,7 +49,7 @@
         <div id="detailsSection" class="activities-section" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h2 style="font-size: 18px; margin: 0;">Lista de Actividades</h2>
-                <button class="btn-new-record" onclick="addActivity()" style="padding: 8px 15px; font-size: 13px;" ><i class="fas fa-plus-circle"></i> Nuevo Registro</button>
+                <button class="btn-new-record" onclick="addActivity()" style="padding: 8px 15px; font-size: 13px;"><i class="fas fa-plus-circle"></i> Nuevo Registro</button>
             </div>
 
             <div class="table-responsive">
@@ -58,7 +58,7 @@
                         <tr>
                             <th>Acción</th>
                             <th>Lista de Actividades</th>
-                            <th>Área</th>
+                            <th>Proceso</th>
                             <th>Act. Rutinaria</th>
                             <th>Act. Alto Riesgo</th>
                         </tr>
@@ -71,87 +71,87 @@
                     </tbody>
                 </table>
             </div>
-        <!-- Resources Section -->
-        <div class="activities-section" style="margin-top: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="font-size: 18px; margin: 0;">Recursos</h2>
-                <button class="btn-new-record" onclick="addResource()" style="padding: 8px 15px; font-size: 13px;" ><i class="fas fa-plus-circle"></i> Nuevo Recurso</button>
+            <!-- Resources Section -->
+            <div class="activities-section" style="margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 style="font-size: 18px; margin: 0;">Recursos</h2>
+                    <button class="btn-new-record" onclick="addResource()" style="padding: 8px 15px; font-size: 13px;"><i class="fas fa-plus-circle"></i> Nuevo Recurso</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="modern-table" id="resourcesTable">
+                        <thead>
+                            <tr>
+                                <th>Acción</th>
+                                <th>Nombre del Recurso</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
-            <div class="table-responsive">
-                <table class="modern-table" id="resourcesTable">
-                    <thead>
-                        <tr>
-                            <th>Acción</th>
-                            <th>Nombre del Recurso</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
 
-        <!-- Inputs Section -->
-        <div class="activities-section" style="margin-top: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="font-size: 18px; margin: 0;">Insumos</h2>
-                <button class="btn-new-record" onclick="addInput()" style="padding: 8px 15px; font-size: 13px;" ><i class="fas fa-plus-circle"></i> Nuevo Insumo</button>
+            <!-- Inputs Section -->
+            <div class="activities-section" style="margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 style="font-size: 18px; margin: 0;">Insumos</h2>
+                    <button class="btn-new-record" onclick="addInput()" style="padding: 8px 15px; font-size: 13px;"><i class="fas fa-plus-circle"></i> Nuevo Insumo</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="modern-table" id="inputsTable">
+                        <thead>
+                            <tr>
+                                <th>Acción</th>
+                                <th>Nombre del Insumo</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
-            <div class="table-responsive">
-                <table class="modern-table" id="inputsTable">
-                    <thead>
-                        <tr>
-                            <th>Acción</th>
-                            <th>Nombre del Insumo</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
 
-        <!-- Procedures Section -->
-        <div class="activities-section" style="margin-top: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="font-size: 18px; margin: 0;">Procedimientos</h2>
-                <button class="btn-new-record" onclick="addProcedure()" style="padding: 8px 15px; font-size: 13px;" ><i class="fas fa-plus-circle"></i> Nuevo Procedimiento</button>
+            <!-- Procedures Section -->
+            <div class="activities-section" style="margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 style="font-size: 18px; margin: 0;">Procedimientos</h2>
+                    <button class="btn-new-record" onclick="addProcedure()" style="padding: 8px 15px; font-size: 13px;"><i class="fas fa-plus-circle"></i> Nuevo Procedimiento</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="modern-table" id="proceduresTable">
+                        <thead>
+                            <tr>
+                                <th>Acción</th>
+                                <th>Nombre del Procedimiento</th>
+                                <th>Archivo</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
-            <div class="table-responsive">
-                <table class="modern-table" id="proceduresTable">
-                    <thead>
-                        <tr>
-                            <th>Acción</th>
-                            <th>Nombre del Procedimiento</th>
-                            <th>Archivo</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
 
-        <!-- Personnel Section -->
-        <div class="activities-section" style="margin-top: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="font-size: 18px; margin: 0;">Personal del Proceso</h2>
-                <button class="btn-new-record" onclick="addPersonnel()" style="padding: 8px 15px; font-size: 13px;" ><i class="fas fa-plus-circle"></i> Nuevo Personal</button>
+            <!-- Personnel Section -->
+            <div class="activities-section" style="margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 style="font-size: 18px; margin: 0;">Personal del Proceso</h2>
+                    <button class="btn-new-record" onclick="addPersonnel()" style="padding: 8px 15px; font-size: 13px;"><i class="fas fa-plus-circle"></i> Nuevo Personal</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="modern-table" id="personnelTable">
+                        <thead>
+                            <tr>
+                                <th>Acción</th>
+                                <th>Cargo</th>
+                                <th>Cargo al que reporta</th>
+                                <th>Número de personas</th>
+                                <th>Gestión</th>
+                                <th>Responsabilidades</th>
+                                <th>Rendición de Cuentas</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
-            <div class="table-responsive">
-                <table class="modern-table" id="personnelTable">
-                    <thead>
-                        <tr>
-                            <th>Acción</th>
-                            <th>Cargo</th>
-                            <th>Cargo al que reporta</th>
-                            <th>Número de personas</th>
-                            <th>Gestión</th>
-                            <th>Responsabilidades</th>
-                            <th>Rendición de Cuentas</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
         </div>
     </div>
 
