@@ -400,6 +400,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   const chatInput = document.getElementById('chatInput');
   const sendMessageBtn = document.getElementById('sendMessageBtn');
   const chatMessages = document.getElementById('chatMessages');
+  const toggleBotVisibilityBtn = document.getElementById('toggleBotVisibilityBtn');
+
+  // Logic to hide/show chatbot globally
+  let botVisible = localStorage.getItem('botVisible') !== 'false'; // default true
+
+  const updateBotVisibility = () => {
+    if (botVisible) {
+      chatbotBtn.style.display = 'block';
+      toggleBotVisibilityBtn.classList.add('active-bot');
+      toggleBotVisibilityBtn.innerHTML = '<i class="fas fa-robot"></i>';
+      toggleBotVisibilityBtn.title = "Ocultar Asistente Virtual";
+    } else {
+      chatbotBtn.style.display = 'none';
+      chatWindow.classList.remove('active');
+      toggleBotVisibilityBtn.classList.remove('active-bot');
+      toggleBotVisibilityBtn.innerHTML = '<i class="fas fa-comment-slash"></i>';
+      toggleBotVisibilityBtn.title = "Mostrar Asistente Virtual";
+    }
+  };
+
+  updateBotVisibility();
+
+  if (toggleBotVisibilityBtn) {
+    toggleBotVisibilityBtn.addEventListener('click', () => {
+      botVisible = !botVisible;
+      localStorage.setItem('botVisible', botVisible);
+      updateBotVisibility();
+    });
+  }
 
   // Toggle chat window
   chatbotBtn.addEventListener('click', () => {

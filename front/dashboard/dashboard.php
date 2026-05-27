@@ -38,6 +38,9 @@
   <div class="main-content">
     <div class="header">
       <div class="header-info">
+        <button id="toggleBotVisibilityBtn" class="header-icon-btn" title="Ocultar/Mostrar Asistente Virtual">
+          <i class="fas fa-robot"></i>
+        </button>
         <div class="header-text">
           <span id="companyName" class="company-name"></span>
           <span id="userName" class="user-name"></span>
