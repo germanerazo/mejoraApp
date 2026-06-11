@@ -21,7 +21,7 @@ class dangerMgmt extends connection {
     }
 
     public function getAllDangers() {
-        return parent::getData("SELECT d.*, dt.name as typeName FROM dangers d JOIN danger_types dt ON d.danger_type_id = dt.id ORDER BY dt.name, d.name");
+        return parent::getData("SELECT d.*, d.description, dt.name as typeName FROM dangers d JOIN danger_types dt ON d.danger_type_id = dt.id ORDER BY dt.name, d.name");
     }
 
     public function getConsequences() {
@@ -54,7 +54,7 @@ class dangerMgmt extends connection {
         }
 
         $dangers = parent::getData(
-            "SELECT ad.id as activity_danger_id, d.id as danger_id, d.name as danger_name, dt.name as type_name
+            "SELECT ad.id as activity_danger_id, d.id as danger_id, d.name as danger_name, d.description as danger_description, dt.name as type_name
              FROM activity_dangers ad
              JOIN dangers d ON ad.danger_id = d.id
              JOIN danger_types dt ON d.danger_type_id = dt.id
