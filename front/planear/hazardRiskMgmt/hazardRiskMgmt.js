@@ -492,7 +492,10 @@ function renderDangerCards() {
                                 <i class="fas fa-biohazard" style="color: #e74c3c;"></i>
                                 Consecuencia: <strong>${cons.consequence_name}</strong>
                             </div>
-                            <button class="btn-icon-danger" onclick="removeConsequence(${cons.adc_id})" title="Eliminar Consecuencia"><i class="fas fa-trash-alt"></i></button>
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn-icon-danger" onclick="openEditConsequenceModal(${cons.adc_id})" title="Editar Evaluación" style="color: #329bd6; background: transparent; border: none; cursor: pointer; font-size: 14px; padding: 5px;"><i class="fas fa-edit"></i></button>
+                                <button class="btn-icon-danger" onclick="removeConsequence(${cons.adc_id})" title="Eliminar Consecuencia"><i class="fas fa-trash-alt"></i></button>
+                            </div>
                         </div>
                         ${evaluationHtml}
                         <div style="font-size: 13px; font-weight: 600; color: #8d99ae; margin-bottom: 8px; margin-top: 10px; padding-left: 24px;">Medidas Preventivas:</div>
@@ -560,7 +563,12 @@ window.openAddDangerModal = async function() {
 
         const htmlContent = `
             <div style="text-align: left;">
-                <label style="display:block; font-weight:600; margin-bottom:5px; font-size:14px; color:#4a5568;">1. Seleccione el Tipo</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <label style="font-weight:600; font-size:14px; color:#4a5568; margin: 0;">1. Seleccione el Tipo</label>
+                    <button type="button" class="btn-new-record" style="font-size: 12px; padding: 4px 8px; margin: 0;" onclick="goToDangerCatalog()">
+                        <i class="fas fa-plus-circle"></i> Gestionar/Crear Peligros
+                    </button>
+                </div>
                 <select id="modalDangerTypeSelect" class="swal2-select" style="width: 100%; margin: 0 0 15px 0; font-size:14px; padding:5px 10px; max-width:100%;">
                     ${typeOptions}
                 </select>
@@ -576,6 +584,12 @@ window.openAddDangerModal = async function() {
                 </div>
             </div>
         `;
+
+        // Function to go to danger catalog CRUD
+        window.goToDangerCatalog = function() {
+            Swal.close();
+            window.location.hash = encodeURIComponent('../planear/dangerCatalog/dangerCatalog.php');
+        };
 
         Swal.fire({
             title: 'Asociar nuevo Peligro',
@@ -647,9 +661,11 @@ function renderModalDangers() {
 
     let html = '';
     filtered.forEach(d => {
+        const descHtml = d.description ? `<div style="font-size:12px; color:#64748b; margin-top:4px; font-style:italic; border-left: 2px solid #cbd5e1; padding-left: 6px;">${d.description}</div>` : '';
         html += `<div class="danger-option" data-id="${d.id}" onclick="selectModalDanger(this)">
             <div style="font-size:11px; color:#8d99ae; text-transform:uppercase; margin-bottom:3px; font-weight: 700;">${d.typeName}</div>
-            <div style="color: #2b2d42;">${d.name}</div>
+            <div style="color: #2b2d42; font-weight: 600;">${d.name}</div>
+            ${descHtml}
         </div>`;
     });
 
@@ -820,6 +836,136 @@ window.openAddConsequenceModal = async function(activity_danger_id, danger_id) {
         Swal.fire('Error', 'Error al cargar consecuencias: ' + err.message, 'error');
     }
 }
+
+window.openEditConsequenceModal = async function(adc_id) {
+    // Find consequence data
+    let consData = null;
+    let consName = '';
+    for (const danger of currentDangers) {
+        if (danger.consequences) {
+            for (const cons of danger.consequences) {
+                if (cons.adc_id == adc_id) {
+                    consData = cons;
+                    consName = cons.consequence_name;
+                    break;
+                }
+            }
+        }
+        if (consData) break;
+    }
+
+    if (!consData) return;
+
+    const htmlContent = `
+        <div style="text-align: left;">
+            <div style="margin-bottom: 20px; font-size: 15px; color: #2c3e50;">
+                <i class="fas fa-biohazard" style="color: #e74c3c; margin-right: 5px;"></i> 
+                <strong>Consecuencia:</strong> ${consName}
+            </div>
+
+            <label style="display:block; font-weight:600; margin-bottom:15px; font-size:15px; color:#329bd6;">
+                <i class="fas fa-sliders-h"></i> Criterios de Evaluación
+            </label>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Controles Existentes <span style="font-weight:normal; color:#888;">(Ej: En la fuente, medio, individuo)</span></label>
+                <input type="text" id="modalEditExistingControls" class="swal2-input" style="width:100%; margin:0; font-size:14px;" value="${consData.existing_controls || ''}">
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 150px;">
+                    <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Nivel de Deficiencia</label>
+                    <select id="modalEditND" class="swal2-select" style="width:100%; margin:0; font-size:14px; padding:5px;">
+                        <option value="">Seleccione...</option>
+                        <option value="0" ${consData.deficiency_level == 0 && consData.deficiency_level !== null ? 'selected' : ''}>0 - Bajo</option>
+                        <option value="2" ${consData.deficiency_level == 2 ? 'selected' : ''}>2 - Medio</option>
+                        <option value="6" ${consData.deficiency_level == 6 ? 'selected' : ''}>6 - Alto</option>
+                        <option value="10" ${consData.deficiency_level == 10 ? 'selected' : ''}>10 - Muy Alto</option>
+                    </select>
+                </div>
+                <div style="flex: 1; min-width: 150px;">
+                    <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Nivel de Exposición</label>
+                    <select id="modalEditNE" class="swal2-select" style="width:100%; margin:0; font-size:14px; padding:5px;">
+                        <option value="">Seleccione...</option>
+                        <option value="1" ${consData.exposure_level == 1 ? 'selected' : ''}>1 - Esporádica</option>
+                        <option value="2" ${consData.exposure_level == 2 ? 'selected' : ''}>2 - Ocasional</option>
+                        <option value="3" ${consData.exposure_level == 3 ? 'selected' : ''}>3 - Frecuente</option>
+                        <option value="4" ${consData.exposure_level == 4 ? 'selected' : ''}>4 - Continua</option>
+                    </select>
+                </div>
+                <div style="flex: 1; min-width: 150px;">
+                    <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Nivel de Consecuencia</label>
+                    <select id="modalEditNC" class="swal2-select" style="width:100%; margin:0; font-size:14px; padding:5px;">
+                        <option value="">Seleccione...</option>
+                        <option value="10" ${consData.consequence_level == 10 ? 'selected' : ''}>10 - Leve</option>
+                        <option value="25" ${consData.consequence_level == 25 ? 'selected' : ''}>25 - Grave</option>
+                        <option value="60" ${consData.consequence_level == 60 ? 'selected' : ''}>60 - Muy Grave</option>
+                        <option value="100" ${consData.consequence_level == 100 ? 'selected' : ''}>100 - Mortal/Catastrófico</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr style="border:0; border-top:1px dashed #ccc; margin: 20px 0;">
+
+            <label style="display:block; font-weight:600; margin-bottom:15px; font-size:15px; color:#e67e22;">
+                <i class="fas fa-users-cog"></i> Criterios para Establecer Controles
+            </label>
+
+            <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 150px;">
+                    <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Número de Expuestos</label>
+                    <input type="number" id="modalEditExposed" class="swal2-input" min="0" max="1000" style="width:100%; margin:0; font-size:14px;" value="${consData.exposed_count !== null ? consData.exposed_count : ''}">
+                </div>
+                <div style="flex: 1; min-width: 150px;">
+                    <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Req. Legales Asociados</label>
+                    <select id="modalEditLegalCode" class="swal2-select" style="width:100%; margin:0; font-size:14px; padding:5px;">
+                        <option value="">Seleccione...</option>
+                        <option value="SI" ${consData.legal_requirements == 'SI' ? 'selected' : ''}>Sí</option>
+                        <option value="NO" ${consData.legal_requirements == 'NO' ? 'selected' : ''}>No</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; font-size:13px; font-weight:600; margin-bottom:5px;">Peor Consecuencia</label>
+                <input type="text" id="modalEditWorst" class="swal2-input" style="width:100%; margin:0; font-size:14px;" value="${consData.worst_consequence || ''}">
+            </div>
+
+        </div>
+    `;
+
+    Swal.fire({
+        title: 'Editar Evaluación',
+        html: htmlContent,
+        width: '750px',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fas fa-save"></i> Guardar Cambios',
+        cancelButtonText: 'Cancelar',
+        customClass: {
+            confirmButton: 'btn-new-record',
+            cancelButton: 'btn-secondary-premium'
+        },
+        buttonsStyling: false,
+        preConfirm: () => {
+            return {
+                adc_id: adc_id,
+                existing_controls: document.getElementById('modalEditExistingControls').value,
+                deficiency_level: document.getElementById('modalEditND').value,
+                exposure_level: document.getElementById('modalEditNE').value,
+                consequence_level: document.getElementById('modalEditNC').value,
+                exposed_count: document.getElementById('modalEditExposed').value,
+                worst_consequence: document.getElementById('modalEditWorst').value,
+                legal_requirements: document.getElementById('modalEditLegalCode').value,
+            };
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const payload = result.value;
+            await postAction('editConsequence', payload);
+        }
+    });
+}
+
 
 function renderModalCons() {
     const listContainer = document.getElementById('modalConsList');

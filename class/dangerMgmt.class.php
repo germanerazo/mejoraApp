@@ -268,6 +268,39 @@ class dangerMgmt extends connection {
         return $resp;
     }
 
+    public function editConsequence($data) {
+        $_answers = new answers;
+        if(!$this->verifyToken($data, $_answers)) return $_answers->response;
+
+        $adcId = intval($data['adc_id']);
+        if (!$adcId) {
+            return $_answers->error_400("Falta el ID de la consecuencia a editar.");
+        }
+
+        $existing_controls = $this->sanitize($data['existing_controls'] ?? '');
+        $def_lvl  = isset($data['deficiency_level'])  && $data['deficiency_level']  !== '' ? intval($data['deficiency_level'])  : 'NULL';
+        $exp_lvl  = isset($data['exposure_level'])    && $data['exposure_level']    !== '' ? intval($data['exposure_level'])    : 'NULL';
+        $cons_lvl = isset($data['consequence_level']) && $data['consequence_level'] !== '' ? intval($data['consequence_level']) : 'NULL';
+        $exp_count= isset($data['exposed_count'])     && $data['exposed_count']     !== '' ? intval($data['exposed_count'])     : 'NULL';
+        $worst_cons = $this->sanitize($data['worst_consequence'] ?? '');
+        $legal_req  = $this->sanitize($data['legal_requirements'] ?? '');
+
+        $query = "UPDATE activity_danger_consequences SET 
+                    existing_controls = '$existing_controls',
+                    deficiency_level = $def_lvl,
+                    exposure_level = $exp_lvl,
+                    consequence_level = $cons_lvl,
+                    exposed_count = $exp_count,
+                    worst_consequence = '$worst_cons',
+                    legal_requirements = '$legal_req'
+                  WHERE id = $adcId";
+                  
+        parent::nonQuery($query);
+        $resp = $_answers->response;
+        $resp['result'] = ["id" => $adcId];
+        return $resp;
+    }
+
     public function addMeasure($data) {
         $_answers = new answers;
         if(!$this->verifyToken($data, $_answers)) return $_answers->response;

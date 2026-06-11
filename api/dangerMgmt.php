@@ -57,6 +57,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
             $resp = $_mgmt->addActivityDanger($data);
         } else if ($action === 'addConsequence') {
             $resp = $_mgmt->addConsequence($data);
+        } else if ($action === 'editConsequence') {
+            $resp = $_mgmt->editConsequence($data);
         } else if ($action === 'addMeasure') {
             $resp = $_mgmt->addMeasure($data);
         } else if ($action === 'saveRiskProgram') {
