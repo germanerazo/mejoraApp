@@ -1,9 +1,11 @@
+import config from '../../js/config.js';
+
 let currentEditingId = null;
 
 async function loadEntities() {
     try {
         const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
-        const res = await fetch(`../../api/ss_entities.php?idEmpresa=${idEmpresa}`);
+        const res = await fetch(`${config.BASE_API_URL}ss_entities.php?idEmpresa=${idEmpresa}`);
         const data = await res.json();
         
         const tbody = document.querySelector('#dataTable tbody');
@@ -91,7 +93,7 @@ async function saveEntity() {
     }
 
     try {
-        const res = await fetch(`../../api/ss_entities.php?_method=${method}`, {
+        const res = await fetch(`${config.BASE_API_URL}ss_entities.php?_method=${method}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -127,7 +129,7 @@ function deleteEntity(id) {
                 const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
                 const token = sessionStorage.getItem('token') || '';
                 
-                const res = await fetch('../../api/ss_entities.php', {
+                const res = await fetch(`${config.BASE_API_URL}ss_entities.php`, {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ token, idEmpresa, idEntity: id })

@@ -1,3 +1,5 @@
+import config from '../../js/config.js';
+
 // Employees Data (To be fetched from API)
 let entryData = [];
 
@@ -32,7 +34,7 @@ async function initEntry() {
 async function loadSSEntities() {
     try {
         const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
-        const res = await fetch(`../../api/ss_entities.php?idEmpresa=${idEmpresa}`);
+        const res = await fetch(`${config.BASE_API_URL}ss_entities.php?idEmpresa=${idEmpresa}`);
         if (!res.ok) return;
         
         const data = await res.json();
