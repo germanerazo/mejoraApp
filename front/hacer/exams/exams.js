@@ -1,41 +1,5 @@
-// Mock Employees Data
-let employeesData = [
-    { 
-        id: 1, 
-        idNum: '1098765432', 
-        name: 'Carlos Perez', 
-        position: 'Operario', 
-        date: '2024-01-10'
-    },
-    { 
-        id: 2, 
-        idNum: '72345678', 
-        name: 'Maria Rodriguez', 
-        position: 'Analista', 
-        date: '2023-08-20'
-    },
-    { 
-        id: 3, 
-        idNum: '987654321', 
-        name: 'Juan Gomez', 
-        position: 'Supervisor', 
-        date: '2022-03-15'
-    },
-    { 
-        id: 4, 
-        idNum: '55667788', 
-        name: 'Ana Martinez', 
-        position: 'Asistente', 
-        date: '2024-02-01'
-    },
-    { 
-        id: 5, 
-        idNum: '11223344', 
-        name: 'Pedro Sanchez', 
-        position: 'Gerente', 
-        date: '2020-01-01'
-    }
-];
+// Employees Data (To be fetched from API)
+let employeesData = [];
 
 function initExams() {
     renderEmployeesList();
