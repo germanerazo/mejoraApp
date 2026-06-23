@@ -195,19 +195,29 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Horario de Trabajo</label>
-                    <input type="text" id="fieldSchedule" class="form-input">
+                    <select id="fieldSchedule" class="form-input" style="height: 35px;">
+                        <option value="">Seleccione...</option>
+                        <option value="Diurno">Diurno</option>
+                        <option value="Nocturno">Nocturno</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">EPS</label>
-                    <input type="text" id="fieldEPS" class="form-input">
+                    <select id="fieldEPS" class="form-input" style="height: 35px;">
+                        <option value="">Seleccione...</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">ARL</label>
-                    <input type="text" id="fieldARL" class="form-input">
+                    <select id="fieldARL" class="form-input" style="height: 35px;">
+                        <option value="">Seleccione...</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">AFP</label>
-                    <input type="text" id="fieldAFP" class="form-input">
+                    <select id="fieldAFP" class="form-input" style="height: 35px;">
+                        <option value="">Seleccione...</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Estado</label>

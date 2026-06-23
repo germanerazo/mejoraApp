@@ -208,7 +208,7 @@ function saveUser(e) {
                             // Cerrar sesión
                             sessionStorage.clear();
                             localStorage.removeItem('token');
-                            window.location.href = '../../front/login/login.php';
+                            window.location.href = '../../login/login.php';
                         } else {
                             // Continuar trabajando
                             hideFormView();

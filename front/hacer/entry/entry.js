@@ -24,8 +24,37 @@ window.addPeriodicExam = addPeriodicExam;
 window.addRetirementExam = addRetirementExam;
 window.filterEntry = filterEntry;
 
-function initEntry() {
+async function initEntry() {
     renderEntryList();
+    await loadSSEntities();
+}
+
+async function loadSSEntities() {
+    try {
+        const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+        const res = await fetch(`../../api/ss_entities.php?idEmpresa=${idEmpresa}`);
+        if (!res.ok) return;
+        
+        const data = await res.json();
+        const entities = Array.isArray(data) ? data : (data.result || []);
+        
+        const epsSelect = document.getElementById('fieldEPS');
+        const arlSelect = document.getElementById('fieldARL');
+        const afpSelect = document.getElementById('fieldAFP');
+
+        if (epsSelect) epsSelect.innerHTML = '<option value="">Seleccione...</option>';
+        if (arlSelect) arlSelect.innerHTML = '<option value="">Seleccione...</option>';
+        if (afpSelect) afpSelect.innerHTML = '<option value="">Seleccione...</option>';
+
+        entities.forEach(ent => {
+            const option = `<option value="${ent.nombre}">${ent.nombre}</option>`;
+            if (ent.tipo === 'EPS' && epsSelect) epsSelect.innerHTML += option;
+            if (ent.tipo === 'ARL' && arlSelect) arlSelect.innerHTML += option;
+            if (ent.tipo === 'AFP' && afpSelect) afpSelect.innerHTML += option;
+        });
+    } catch (e) {
+        console.error('Error loading SS Entities', e);
+    }
 }
 
 function renderEntryList(data = entryData) {
