@@ -2,6 +2,7 @@ import config from '../../js/config.js';
 
 const API_URL = `${config.BASE_API_URL}entry.php`;
 const MEDICAL_FILES_API = `${config.BASE_API_URL}entryMedicalFiles.php`;
+const MEDICAL_RECORDS_API = `${config.BASE_API_URL}entryMedicalRecords.php`;
 
 // Employees Data
 let entryData = [];
@@ -25,11 +26,11 @@ window.addPeriodicRestricFromModal = addPeriodicRestricFromModal;
 window.viewEntry = viewEntry;
 window.renderEntryList = renderEntryList;
 window.addMedicalExam = addMedicalExam;
-window.addPeriodicExam = addPeriodicExam;
 window.addRetirementExam = addRetirementExam;
 window.filterEntry = filterEntry;
 window.deleteMedicalFile = deleteMedicalFile;
 window.loadMedicalFiles = loadMedicalFiles;
+window.deleteMedicalRecord = deleteMedicalRecord;
 
 async function initEntry() {
     await loadEntryData();
@@ -269,30 +270,16 @@ function hideRecommendationModal() {
     document.getElementById('recoModal').style.display = 'none';
 }
 
-function addRecommendationFromModal() {
+async function addRecommendationFromModal() {
     const date = document.getElementById('modalRecoDate').value;
     const text = document.getElementById('modalRecoText').value;
     const status = document.getElementById('modalRecoStatus').value;
-
+    
     if (!date || !text) {
         Swal.fire('Error', 'Complete fecha y recomendación', 'error');
         return;
     }
-
-    const tbody = document.querySelector('#recoTable tbody');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>${date}</td>
-        <td>${text}</td>
-        <td></td> <!-- Seguimiento empty initially -->
-        <td>${status}</td>
-        <td style="text-align: center;">
-            <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar">
-                <i class="fas fa-trash-alt"></i>
-            </button>
-        </td>
-    `;
-    tbody.appendChild(tr);
+    await saveMedicalRecord('reco_ingreso', date, text, status);
     hideRecommendationModal();
 }
 
@@ -307,7 +294,7 @@ function hideRestricModal() {
     document.getElementById('restricModal').style.display = 'none';
 }
 
-function addRestricFromModal() {
+async function addRestricFromModal() {
     const date = document.getElementById('modalRestricDate').value;
     const text = document.getElementById('modalRestricText').value;
     const status = document.getElementById('modalRestricStatus').value;
@@ -316,19 +303,7 @@ function addRestricFromModal() {
         Swal.fire('Error', 'Complete fecha y restricción', 'error');
         return;
     }
-
-    const tbody = document.querySelector('#restricTable tbody');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>${date}</td>
-        <td>${text}</td>
-        <td></td> <!-- Seguimiento empty initially -->
-        <td>${status}</td>
-        <td style="text-align: center;">
-            <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
-        </td>
-    `;
-    tbody.appendChild(tr);
+    await saveMedicalRecord('restric_ingreso', date, text, status);
     hideRestricModal();
 }
 
@@ -374,8 +349,9 @@ async function viewEntry(id) {
     document.querySelector('#periodicRecoTable tbody').innerHTML = '';
     document.querySelector('#periodicRestricTable tbody').innerHTML = '';
 
-    // Load medical files from API
+    // Load medical files and records from API
     await loadMedicalFiles(item.idEntry);
+    await loadMedicalRecords(item.idEntry);
 }
 
 async function addMedicalExam() {
@@ -574,7 +550,7 @@ function hidePeriodicRecoModal() {
     document.getElementById('periodicRecoModal').style.display = 'none';
 }
 
-function addPeriodicRecoFromModal() {
+async function addPeriodicRecoFromModal() {
     const date = document.getElementById('modalPeriodicRecoDate').value;
     const text = document.getElementById('modalPeriodicRecoText').value;
     const status = document.getElementById('modalPeriodicRecoStatus').value;
@@ -583,19 +559,7 @@ function addPeriodicRecoFromModal() {
         Swal.fire('Error', 'Complete fecha y recomendación', 'error');
         return;
     }
-
-    const tbody = document.querySelector('#periodicRecoTable tbody');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>${date}</td>
-        <td>${text}</td>
-        <td></td> <!-- Seguimiento empty initially -->
-        <td>${status}</td>
-        <td style="text-align: center;">
-            <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
-        </td>
-    `;
-    tbody.appendChild(tr);
+    await saveMedicalRecord('reco_periodica', date, text, status);
     hidePeriodicRecoModal();
 }
 
@@ -610,7 +574,7 @@ function hidePeriodicRestricModal() {
     document.getElementById('periodicRestricModal').style.display = 'none';
 }
 
-function addPeriodicRestricFromModal() {
+async function addPeriodicRestricFromModal() {
     const date = document.getElementById('modalPeriodicRestricDate').value;
     const text = document.getElementById('modalPeriodicRestricText').value;
     const status = document.getElementById('modalPeriodicRestricStatus').value;
@@ -619,20 +583,128 @@ function addPeriodicRestricFromModal() {
         Swal.fire('Error', 'Complete fecha y restricción', 'error');
         return;
     }
-
-    const tbody = document.querySelector('#periodicRestricTable tbody');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>${date}</td>
-        <td>${text}</td>
-        <td></td> <!-- Seguimiento empty initially -->
-        <td>${status}</td>
-        <td style="text-align: center;">
-            <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
-        </td>
-    `;
-    tbody.appendChild(tr);
+    await saveMedicalRecord('restric_periodica', date, text, status);
     hidePeriodicRestricModal();
+}
+
+async function saveMedicalRecord(tipoRegistro, fecha, descripcion, estado) {
+    const editingId = document.getElementById('entryForm').dataset.editingId;
+    if (!editingId) {
+        Swal.fire('Atención', 'Debe guardar el empleado primero.', 'warning');
+        return;
+    }
+
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    const token = sessionStorage.getItem('token') || '';
+
+    const payload = {
+        token: token,
+        idEmpresa: idEmpresa,
+        idEntry: editingId,
+        tipoRegistro: tipoRegistro,
+        fecha: fecha,
+        descripcion: descripcion,
+        estado: estado
+    };
+
+    try {
+        const res = await fetch(MEDICAL_RECORDS_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const resp = await res.json();
+
+        if (resp.status === 'ok' || resp.result) {
+            Swal.fire({ title: 'Guardado', text: 'Registro guardado correctamente', icon: 'success', timer: 1500, showConfirmButton: false });
+            await loadMedicalRecords(editingId);
+        } else {
+            Swal.fire('Error', resp.result?.error_msg || 'Error al guardar el registro', 'error');
+        }
+    } catch (e) {
+        console.error('Error saving medical record', e);
+        Swal.fire('Error', 'No se pudo guardar el registro', 'error');
+    }
+}
+
+async function loadMedicalRecords(idEntry) {
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+
+    try {
+        const res = await fetch(`${MEDICAL_RECORDS_API}?idEmpresa=${idEmpresa}&idEntry=${idEntry}`);
+        const data = await res.json();
+        const records = Array.isArray(data) ? data : (data.result || []);
+
+        document.querySelector('#recoTable tbody').innerHTML = '';
+        document.querySelector('#restricTable tbody').innerHTML = '';
+        document.querySelector('#periodicRecoTable tbody').innerHTML = '';
+        document.querySelector('#periodicRestricTable tbody').innerHTML = '';
+
+        records.forEach(rec => {
+            let tbodySelector = '';
+            if (rec.tipoRegistro === 'reco_ingreso') tbodySelector = '#recoTable tbody';
+            else if (rec.tipoRegistro === 'restric_ingreso') tbodySelector = '#restricTable tbody';
+            else if (rec.tipoRegistro === 'reco_periodica') tbodySelector = '#periodicRecoTable tbody';
+            else if (rec.tipoRegistro === 'restric_periodica') tbodySelector = '#periodicRestricTable tbody';
+
+            if (!tbodySelector) return;
+
+            const tbody = document.querySelector(tbodySelector);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${rec.fecha || ''}</td>
+                <td>${rec.descripcion || ''}</td>
+                <td>${rec.seguimiento || ''}</td>
+                <td>${rec.estado || ''}</td>
+                <td style="text-align: center;">
+                    <button class="btn-delete-premium" onclick="deleteMedicalRecord(${rec.idRecord})" title="Eliminar">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (e) {
+        console.error('Error loading medical records', e);
+    }
+}
+
+async function deleteMedicalRecord(idRecord) {
+    const result = await Swal.fire({
+        title: '¿Eliminar registro?',
+        text: 'Esta acción no se puede deshacer',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) return;
+
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    const token = sessionStorage.getItem('token') || '';
+    const editingId = document.getElementById('entryForm').dataset.editingId;
+
+    try {
+        const res = await fetch(MEDICAL_RECORDS_API, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, idEmpresa, idRecord })
+        });
+        const resp = await res.json();
+
+        if (resp.status === 'ok' || resp.result) {
+            Swal.fire({ title: 'Eliminado', icon: 'success', timer: 1500, showConfirmButton: false });
+            await loadMedicalRecords(editingId);
+        } else {
+            Swal.fire('Error', 'No se pudo eliminar el registro', 'error');
+        }
+    } catch (e) {
+        console.error('Error deleting medical record', e);
+        Swal.fire('Error', 'Ocurrió un error', 'error');
+    }
 }
 
 // Sociodemographic Profile Logic
