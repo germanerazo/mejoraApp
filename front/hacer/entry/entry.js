@@ -1,6 +1,8 @@
 import config from '../../js/config.js';
 
-// Employees Data (To be fetched from API)
+const API_URL = `${config.BASE_API_URL}entry.php`;
+
+// Employees Data
 let entryData = [];
 
 // Make accessible to HTML onclick
@@ -27,8 +29,22 @@ window.addRetirementExam = addRetirementExam;
 window.filterEntry = filterEntry;
 
 async function initEntry() {
-    renderEntryList();
+    await loadEntryData();
     await loadSSEntities();
+}
+
+async function loadEntryData() {
+    try {
+        const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+        const res = await fetch(`${API_URL}?idEmpresa=${idEmpresa}`);
+        const data = await res.json();
+        entryData = Array.isArray(data) ? data : (data.result || []);
+        renderEntryList();
+    } catch (e) {
+        console.error('Error loading employees', e);
+        entryData = [];
+        renderEntryList();
+    }
 }
 
 async function loadSSEntities() {
@@ -70,14 +86,19 @@ function renderEntryList(data = entryData) {
 
     let html = '';
     data.forEach(item => {
+        const id = item.idEntry;
+        const idNum = item.identificacion || '';
+        const name = item.nombre || '';
+        const status = item.estado || 'Activo';
+        const date = item.fechaIngreso || '';
         html += `<tr>
-            <td>${item.idNum}</td>
-            <td>EMP-${item.id}</td>
-            <td>${item.name}</td>
-            <td><span style="padding: 4px 8px; border-radius: 4px; background: ${item.status === 'Activo' ? '#d4edda' : '#f8d7da'}; color: ${item.status === 'Activo' ? '#155724' : '#721c24'}">${item.status}</span></td>
-            <td>${item.date}</td>
+            <td>${idNum}</td>
+            <td>EMP-${id}</td>
+            <td>${name}</td>
+            <td><span style="padding: 4px 8px; border-radius: 4px; background: ${status === 'Activo' ? '#d4edda' : '#f8d7da'}; color: ${status === 'Activo' ? '#155724' : '#721c24'}">${status}</span></td>
+            <td>${date}</td>
             <td style="text-align: center;">
-                <button class="btn-view-premium" title="Ver Detalle" onclick="viewEntry(${item.id})">
+                <button class="btn-view-premium" title="Ver Detalle" onclick="viewEntry(${id})">
                     <i class="fas fa-eye"></i>
                 </button>
             </td>
@@ -91,8 +112,8 @@ function filterEntry() {
     const idTerm = document.getElementById('filterId').value.toLowerCase();
 
     const filtered = entryData.filter(item => {
-        const matchName = item.name.toLowerCase().includes(nameTerm);
-        const matchId = item.idNum.toLowerCase().includes(idTerm);
+        const matchName = (item.nombre || '').toLowerCase().includes(nameTerm);
+        const matchId = (item.identificacion || '').toLowerCase().includes(idTerm);
         return matchName && matchId;
     });
 
@@ -125,7 +146,7 @@ function hideCreateEntry() {
     document.getElementById('entryListView').style.display = 'block';
 }
 
-function saveEntry() {
+async function saveEntry() {
     const name = document.getElementById('fieldName').value;
     const idNum = document.getElementById('fieldIdNum').value;
     const medicalSections = document.getElementById('medicalSections');
@@ -137,159 +158,100 @@ function saveEntry() {
         return;
     }
 
-    // Determine ID (existing or new)
-    let newId;
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    const token = sessionStorage.getItem('token') || '';
+
+    // Build payload from form fields
+    const payload = {
+        token: token,
+        idEmpresa: idEmpresa,
+        nombre: name,
+        identificacion: idNum,
+        fechaIngreso: document.getElementById('fieldEntryDate').value || '',
+        fechaNacimiento: document.getElementById('fieldBirthDate').value || '',
+        lugarNacimiento: document.getElementById('fieldBirthPlace').value || '',
+        sexo: document.getElementById('fieldSex').value || '',
+        estadoCivil: document.getElementById('fieldCivilStatus').value || '',
+        rh: document.getElementById('fieldRH').value || '',
+        escolaridad: document.getElementById('fieldEducation').value || '',
+        telefono: document.getElementById('fieldPhone').value || '',
+        salario: document.getElementById('fieldSalary').value || 0,
+        estrato: document.getElementById('fieldStratum').value || 0,
+        personasCargo: document.getElementById('fieldDependents').value || 0,
+        cabezaFamilia: document.getElementById('fieldHeadHousehold').value || '',
+        numeroHijos: document.getElementById('fieldChildren').value || 0,
+        grupoEtnico: document.getElementById('fieldEthnicity').value || '',
+        cargo: document.getElementById('fieldPosition').value || '',
+        horario: document.getElementById('fieldSchedule').value || '',
+        eps: document.getElementById('fieldEPS').value || '',
+        arl: document.getElementById('fieldARL').value || '',
+        afp: document.getElementById('fieldAFP').value || '',
+        estado: document.getElementById('fieldStatus').value || 'Activo',
+        fechaRetiro: document.getElementById('fieldWithdrawalDate').value || '',
+        emergNombre: document.getElementById('fieldEmergName').value || '',
+        emergTelefono: document.getElementById('fieldEmergPhone').value || '',
+        alergias: document.getElementById('fieldAllergies').value || ''
+    };
+
+    let method = 'POST';
     if (editingId) {
-        newId = parseInt(editingId);
-    } else {
-        newId = entryData.length > 0 ? Math.max(...entryData.map(i => i.id)) + 1 : 1;
+        payload.idEntry = parseInt(editingId);
+        method = 'PUT';
     }
 
     if (!isMedicalVisible) {
         // Step 1: Save Basic Info and Show Medical Sections
-        medicalSections.style.display = 'block';
-        
-        // Save Mock Data (Basic)
-        if (!editingId) {
-            entryData.push({
-                id: newId,
-                name: name,
-                idNum: idNum,
-                date: document.getElementById('fieldEntryDate').value || new Date().toISOString().split('T')[0],
-                birthDate: document.getElementById('fieldBirthDate').value,
-                sex: document.getElementById('fieldSex').value,
-                civilStatus: document.getElementById('fieldCivilStatus').value,
-                education: document.getElementById('fieldEducation').value,
-                dependents: document.getElementById('fieldDependents').value,
-                headHousehold: document.getElementById('fieldHeadHousehold').value,
-                children: document.getElementById('fieldChildren').value,
-                ethnicity: document.getElementById('fieldEthnicity').value,
-                status: document.getElementById('fieldStatus').value,
-                withdrawalDate: document.getElementById('fieldWithdrawalDate').value,
-                recommendations: [],
-                restrictions: [],
-                medicalExams: [],
-                periodicExams: [],
-                periodicRecommendations: [],
-                periodicRestrictions: []
+        try {
+            const res = await fetch(`${API_URL}?_method=${method}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
-            document.getElementById('entryForm').dataset.editingId = newId; // Set ID for step 2
-        } else {
-             // Update existing basic info
-            const item = entryData.find(i => i.id === newId);
-            if(item) {
-                item.name = name;
-                item.idNum = idNum;
-                item.date = document.getElementById('fieldEntryDate').value;
-                item.birthDate = document.getElementById('fieldBirthDate').value;
-                item.sex = document.getElementById('fieldSex').value;
-                item.civilStatus = document.getElementById('fieldCivilStatus').value;
-                item.education = document.getElementById('fieldEducation').value;
-                item.dependents = document.getElementById('fieldDependents').value;
-                item.headHousehold = document.getElementById('fieldHeadHousehold').value;
-                item.children = document.getElementById('fieldChildren').value;
-                item.ethnicity = document.getElementById('fieldEthnicity').value;
-                item.status = document.getElementById('fieldStatus').value;
-                item.withdrawalDate = document.getElementById('fieldWithdrawalDate').value;
+            const resp = await res.json();
+
+            if (resp.status === 'ok' || resp.result) {
+                const savedId = resp.result?.idEntry || editingId;
+                document.getElementById('entryForm').dataset.editingId = savedId;
+                medicalSections.style.display = 'block';
+
+                Swal.fire({
+                    title: 'Información Básica Guardada',
+                    text: 'Ahora puede diligenciar los Registros Médicos, Recomendaciones y Restricciones.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire('Error', resp.result?.error_msg || 'Error al guardar el empleado', 'error');
             }
+        } catch (e) {
+            console.error('Error saving entry', e);
+            Swal.fire('Error', 'No se pudo guardar el empleado', 'error');
         }
-        
-        Swal.fire({
-            title: 'Información Básica Guardada', 
-            text: 'Ahora puede diligenciar los Registros Médicos, Recomendaciones y Restricciones.', 
-            icon: 'success',
-            timer: 2000,
-            showConfirmButton: false
-        });
-        
+
     } else {
-        // Step 2: Save Everything and Close
-        
-        const recos = [];
-        document.querySelectorAll('#recoTable tbody tr').forEach(tr => {
-            recos.push({
-                date: tr.cells[0].innerText,
-                reco: tr.cells[1].innerText,
-                follow: tr.cells[2].innerText,
-                status: tr.cells[3].innerText
-            });
-        });
+        // Step 2: Save again (update) and Close
+        payload.idEntry = parseInt(document.getElementById('entryForm').dataset.editingId);
 
-        const restrics = [];
-        document.querySelectorAll('#restricTable tbody tr').forEach(tr => {
-            restrics.push({
-                date: tr.cells[0].innerText,
-                restric: tr.cells[1].innerText,
-                follow: tr.cells[2].innerText,
-                status: tr.cells[3].innerText
+        try {
+            const res = await fetch(`${API_URL}?_method=PUT`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
-        });
+            const resp = await res.json();
 
-        const exams = [];
-        document.querySelectorAll('#tableExams tbody tr').forEach(tr => {
-            exams.push({
-                date: tr.cells[0].innerText,
-                file: tr.cells[1].innerText
-            });
-        });
-
-        const periodicExams = [];
-        document.querySelectorAll('#tablePeriodicExams tbody tr').forEach(tr => {
-            periodicExams.push({
-                date: tr.cells[0].innerText,
-                file: tr.cells[1].innerText
-            });
-        });
-
-        const periodicRecos = [];
-        document.querySelectorAll('#periodicRecoTable tbody tr').forEach(tr => {
-            periodicRecos.push({
-                date: tr.cells[0].innerText,
-                reco: tr.cells[1].innerText,
-                follow: tr.cells[2].innerText,
-                status: tr.cells[3].innerText
-            });
-        });
-
-        const periodicRestrics = [];
-        document.querySelectorAll('#periodicRestricTable tbody tr').forEach(tr => {
-            periodicRestrics.push({
-                date: tr.cells[0].innerText,
-                restric: tr.cells[1].innerText,
-                follow: tr.cells[2].innerText,
-                status: tr.cells[3].innerText
-            });
-        });
-
-        const retirementExams = []; // Should be max 1
-        document.querySelectorAll('#tableRetirementExam tbody tr').forEach(tr => {
-            retirementExams.push({
-                date: tr.cells[0].innerText,
-                file: tr.cells[1].innerText
-            });
-        });
-
-        // Update existing item
-        const item = entryData.find(i => i.id === newId);
-        if (item) {
-             item.name = name;
-             item.idNum = idNum;
-             item.date = document.getElementById('fieldEntryDate').value;
-             item.status = document.getElementById('fieldStatus').value;
-             item.withdrawalDate = document.getElementById('fieldWithdrawalDate').value;
-             item.recommendations = recos;
-             item.restrictions = restrics;
-             item.medicalExams = exams;
-             item.periodicExams = periodicExams;
-             item.periodicRecommendations = periodicRecos;
-             item.periodicRestrictions = periodicRestrics;
-             item.retirementExam = retirementExams;
-             // Add other fields to mock object as needed for completeness
+            if (resp.status === 'ok' || resp.result) {
+                Swal.fire('Guardado', 'Registro completo guardado correctamente', 'success');
+                await loadEntryData();
+                hideCreateEntry();
+            } else {
+                Swal.fire('Error', resp.result?.error_msg || 'Error al guardar', 'error');
+            }
+        } catch (e) {
+            console.error('Error saving entry', e);
+            Swal.fire('Error', 'No se pudo guardar el registro', 'error');
         }
-
-        Swal.fire('Guardado', 'Registro completo guardado correctamente', 'success');
-        renderEntryList();
-        hideCreateEntry();
     }
 }
 
@@ -368,119 +330,49 @@ function addRestricFromModal() {
 }
 
 function viewEntry(id) {
-    // Populate form with mock data for editing
-    const item = entryData.find(i => i.id === id);
+    const item = entryData.find(i => parseInt(i.idEntry) === id);
     if (!item) return;
 
     showCreateEntry();
-    document.getElementById('medicalSections').style.display = 'block'; // Show sections when editing/viewing
-    document.getElementById('entryForm').dataset.editingId = item.id; // Set editing ID
+    document.getElementById('medicalSections').style.display = 'block';
+    document.getElementById('entryForm').dataset.editingId = item.idEntry;
 
-    document.getElementById('fieldName').value = item.name;
-    document.getElementById('fieldIdNum').value = item.idNum;
-    document.getElementById('fieldEntryDate').value = item.date;
-    document.getElementById('fieldBirthDate').value = item.birthDate || '';
-    document.getElementById('fieldSex').value = item.sex || '';
-    document.getElementById('fieldCivilStatus').value = item.civilStatus || '';
-    document.getElementById('fieldEducation').value = item.education || '';
-    document.getElementById('fieldDependents').value = item.dependents || '';
-    document.getElementById('fieldHeadHousehold').value = item.headHousehold || '';
-    document.getElementById('fieldChildren').value = item.children || '';
-    document.getElementById('fieldEthnicity').value = item.ethnicity || 'Ninguno';
-    document.getElementById('fieldStatus').value = item.status;
-    document.getElementById('fieldWithdrawalDate').value = item.withdrawalDate || '';
-    
-    // Populate Medical Exams
+    // Populate all form fields from backend data
+    document.getElementById('fieldName').value = item.nombre || '';
+    document.getElementById('fieldIdNum').value = item.identificacion || '';
+    document.getElementById('fieldEntryDate').value = item.fechaIngreso || '';
+    document.getElementById('fieldBirthDate').value = item.fechaNacimiento || '';
+    document.getElementById('fieldBirthPlace').value = item.lugarNacimiento || '';
+    document.getElementById('fieldSex').value = item.sexo || '';
+    document.getElementById('fieldCivilStatus').value = item.estadoCivil || '';
+    document.getElementById('fieldRH').value = item.rh || '';
+    document.getElementById('fieldEducation').value = item.escolaridad || '';
+    document.getElementById('fieldPhone').value = item.telefono || '';
+    document.getElementById('fieldSalary').value = item.salario || '';
+    document.getElementById('fieldStratum').value = item.estrato || '';
+    document.getElementById('fieldDependents').value = item.personasCargo || '';
+    document.getElementById('fieldHeadHousehold').value = item.cabezaFamilia || '';
+    document.getElementById('fieldChildren').value = item.numeroHijos || '';
+    document.getElementById('fieldEthnicity').value = item.grupoEtnico || 'Ninguno';
+    document.getElementById('fieldPosition').value = item.cargo || '';
+    document.getElementById('fieldSchedule').value = item.horario || '';
+    document.getElementById('fieldEPS').value = item.eps || '';
+    document.getElementById('fieldARL').value = item.arl || '';
+    document.getElementById('fieldAFP').value = item.afp || '';
+    document.getElementById('fieldStatus').value = item.estado || 'Activo';
+    document.getElementById('fieldWithdrawalDate').value = item.fechaRetiro || '';
+    document.getElementById('fieldEmergName').value = item.emergNombre || '';
+    document.getElementById('fieldEmergPhone').value = item.emergTelefono || '';
+    document.getElementById('fieldAllergies').value = item.alergias || '';
+
+    // Clear sub-tables (medical exams, recommendations, etc.)
     document.querySelector('#tableExams tbody').innerHTML = '';
-    if (item.medicalExams && item.medicalExams.length > 0) {
-        item.medicalExams.forEach(exam => {
-            addMedicalExamRow(exam.date, exam.file);
-        });
-    }
-
-    // Populate Recommendations (Read Mode)
     document.querySelector('#recoTable tbody').innerHTML = '';
-    if (item.recommendations && item.recommendations.length > 0) {
-        const tbody = document.querySelector('#recoTable tbody');
-        item.recommendations.forEach(reco => {
-             const tr = document.createElement('tr');
-             tr.innerHTML = `
-                <td>${reco.date}</td>
-                <td>${reco.reco}</td>
-                <td>${reco.follow || ''}</td>
-                <td>${reco.status}</td>
-                <td style="text-align: center;">
-                    <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    // Populate Restrictions (Read Mode)
     document.querySelector('#restricTable tbody').innerHTML = '';
-    if (item.restrictions && item.restrictions.length > 0) {
-        const tbody = document.querySelector('#restricTable tbody');
-        item.restrictions.forEach(res => {
-             const tr = document.createElement('tr');
-             tr.innerHTML = `
-                <td>${res.date}</td>
-                <td>${res.restric}</td>
-                <td>${res.follow || ''}</td>
-                <td>${res.status}</td>
-                <td style="text-align: center;">
-                    <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    // Populate Periodic Recommendations (Read Mode)
+    document.querySelector('#tablePeriodicExams tbody').innerHTML = '';
     document.querySelector('#periodicRecoTable tbody').innerHTML = '';
-    if (item.periodicRecommendations && item.periodicRecommendations.length > 0) {
-        const tbody = document.querySelector('#periodicRecoTable tbody');
-        item.periodicRecommendations.forEach(reco => {
-             const tr = document.createElement('tr');
-             tr.innerHTML = `
-                <td>${reco.date}</td>
-                <td>${reco.reco}</td>
-                <td>${reco.follow || ''}</td>
-                <td>${reco.status}</td>
-                <td style="text-align: center;">
-                    <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    // Populate Periodic Restrictions (Read Mode)
     document.querySelector('#periodicRestricTable tbody').innerHTML = '';
-    if (item.periodicRestrictions && item.periodicRestrictions.length > 0) {
-        const tbody = document.querySelector('#periodicRestricTable tbody');
-        item.periodicRestrictions.forEach(res => {
-             const tr = document.createElement('tr');
-             tr.innerHTML = `
-                <td>${res.date}</td>
-                <td>${res.restric}</td>
-                <td>${res.follow || ''}</td>
-                <td>${res.status}</td>
-                <td style="text-align: center;">
-                    <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    // Populate Retirement Exam (Read Mode)
     document.querySelector('#tableRetirementExam tbody').innerHTML = '';
-    if (item.retirementExam && item.retirementExam.length > 0) {
-        item.retirementExam.forEach(exam => {
-            addRetirementExamRow(exam.date, exam.file);
-        });
-    }
 }
 
 function addMedicalExam() {
@@ -757,8 +649,8 @@ function renderAllCharts() {
     // 1. Age
     const ageBuckets = { '18-25': 0, '26-35': 0, '36-45': 0, '46-55': 0, '>55': 0 };
     entryData.forEach(item => {
-        if (item.birthDate) {
-            const age = calculateAge(item.birthDate);
+        if (item.fechaNacimiento) {
+            const age = calculateAge(item.fechaNacimiento);
             if (age >= 18 && age <= 25) ageBuckets['18-25']++;
             else if (age >= 26 && age <= 35) ageBuckets['26-35']++;
             else if (age >= 36 && age <= 45) ageBuckets['36-45']++;
@@ -771,7 +663,7 @@ function renderAllCharts() {
     // 2. Sex
     const sexCount = {};
     entryData.forEach(item => {
-        const val = item.sex || 'Sin Info';
+        const val = item.sexo || 'Sin Info';
         sexCount[val] = (sexCount[val] || 0) + 1;
     });
     createChart('sexChart', 'Sexo', Object.keys(sexCount), Object.values(sexCount), 'pie');
@@ -779,7 +671,7 @@ function renderAllCharts() {
     // 3. Civil Status
     const cvCount = {};
     entryData.forEach(item => {
-        const val = item.civilStatus || 'Sin Info';
+        const val = item.estadoCivil || 'Sin Info';
         cvCount[val] = (cvCount[val] || 0) + 1;
     });
     createChart('civilStatusChart', 'Estado Civil', Object.keys(cvCount), Object.values(cvCount), 'bar');
@@ -787,7 +679,7 @@ function renderAllCharts() {
     // 4. Education
     const eduCount = {};
     entryData.forEach(item => {
-        const val = item.education || 'Sin Info';
+        const val = item.escolaridad || 'Sin Info';
         eduCount[val] = (eduCount[val] || 0) + 1;
     });
     createChart('educationChart', 'Escolaridad', Object.keys(eduCount), Object.values(eduCount), 'bar');
@@ -795,7 +687,7 @@ function renderAllCharts() {
     // 5. Dependents
     const depCount = {};
     entryData.forEach(item => {
-        const val = item.dependents || '0';
+        const val = item.personasCargo || '0';
         depCount[val] = (depCount[val] || 0) + 1;
     });
     createChart('dependentsChart', 'Personas a Cargo', Object.keys(depCount), Object.values(depCount), 'bar');
@@ -803,15 +695,15 @@ function renderAllCharts() {
     // 6. Head Household
     const hhCount = { 'SI': 0, 'NO': 0 };
     entryData.forEach(item => {
-        if (item.headHousehold === 'SI') hhCount['SI']++;
-        else if (item.headHousehold === 'NO') hhCount['NO']++;
+        if (item.cabezaFamilia === 'SI') hhCount['SI']++;
+        else if (item.cabezaFamilia === 'NO') hhCount['NO']++;
     });
     createChart('headHouseholdChart', 'Cabeza de Familia', Object.keys(hhCount), Object.values(hhCount), 'pie');
 
     // 7. Children
     const childCount = {};
     entryData.forEach(item => {
-        const val = item.children || '0';
+        const val = item.numeroHijos || '0';
         childCount[val] = (childCount[val] || 0) + 1;
     });
     createChart('childrenChart', 'Número de Hijos', Object.keys(childCount), Object.values(childCount), 'bar');
@@ -819,7 +711,7 @@ function renderAllCharts() {
     // 8. Ethnicity
     const ethCount = {};
     entryData.forEach(item => {
-        const val = item.ethnicity || 'Ninguno';
+        const val = item.grupoEtnico || 'Ninguno';
         ethCount[val] = (ethCount[val] || 0) + 1;
     });
     createChart('ethnicityChart', 'Grupo Étnico', Object.keys(ethCount), Object.values(ethCount), 'bar');
