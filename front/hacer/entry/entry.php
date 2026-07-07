@@ -439,10 +439,14 @@
             <label class="form-label">Fecha</label>
             <input type="date" id="modalRecoDate" class="form-input">
         </div>
-        <div class="form-group">
-            <label class="form-label">Recomendación</label>
-            <textarea id="modalRecoText" class="form-input" rows="3"></textarea>
-        </div>
+            <div class="modal-form-group">
+                <label>Recomendación</label>
+                <textarea id="modalRecoText" rows="3" class="form-control"></textarea>
+            </div>
+            <div class="modal-form-group">
+                <label>Seguimiento</label>
+                <textarea id="modalRecoFollowup" rows="2" class="form-control" placeholder="Opcional"></textarea>
+            </div>
         <div class="form-group">
             <label class="form-label">Estado</label>
             <select id="modalRecoStatus" class="form-input">
@@ -469,10 +473,14 @@
             <label class="form-label">Fecha</label>
             <input type="date" id="modalRestricDate" class="form-input">
         </div>
-        <div class="form-group">
-            <label class="form-label">Restricción</label>
-            <textarea id="modalRestricText" class="form-input" rows="3"></textarea>
-        </div>
+            <div class="modal-form-group">
+                <label>Restricción</label>
+                <textarea id="modalRestricText" rows="3" class="form-control"></textarea>
+            </div>
+            <div class="modal-form-group">
+                <label>Seguimiento</label>
+                <textarea id="modalRestricFollowup" rows="2" class="form-control" placeholder="Opcional"></textarea>
+            </div>
         <div class="form-group">
             <label class="form-label">Estado</label>
             <select id="modalRestricStatus" class="form-input">
@@ -499,10 +507,14 @@
             <label class="form-label">Fecha</label>
             <input type="date" id="modalPeriodicRecoDate" class="form-input">
         </div>
-        <div class="form-group">
-            <label class="form-label">Recomendación</label>
-            <textarea id="modalPeriodicRecoText" class="form-input" rows="3"></textarea>
-        </div>
+            <div class="modal-form-group">
+                <label>Recomendación</label>
+                <textarea id="modalPeriodicRecoText" rows="3" class="form-control"></textarea>
+            </div>
+            <div class="modal-form-group">
+                <label>Seguimiento</label>
+                <textarea id="modalPeriodicRecoFollowup" rows="2" class="form-control" placeholder="Opcional"></textarea>
+            </div>
         <div class="form-group">
             <label class="form-label">Estado</label>
             <select id="modalPeriodicRecoStatus" class="form-input">
@@ -529,10 +541,14 @@
             <label class="form-label">Fecha</label>
             <input type="date" id="modalPeriodicRestricDate" class="form-input">
         </div>
-        <div class="form-group">
-            <label class="form-label">Restricción</label>
-            <textarea id="modalPeriodicRestricText" class="form-input" rows="3"></textarea>
-        </div>
+            <div class="modal-form-group">
+                <label>Restricción</label>
+                <textarea id="modalPeriodicRestricText" rows="3" class="form-control"></textarea>
+            </div>
+            <div class="modal-form-group">
+                <label>Seguimiento</label>
+                <textarea id="modalPeriodicRestricFollowup" rows="2" class="form-control" placeholder="Opcional"></textarea>
+            </div>
         <div class="form-group">
             <label class="form-label">Estado</label>
             <select id="modalPeriodicRestricStatus" class="form-input">
@@ -544,6 +560,27 @@
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
             <button class="btn-secondary-premium" onclick="hidePeriodicRestricModal()"><i class="fas fa-times"></i> Cancelar</button>
             <button class="btn-new-record" onclick="addPeriodicRestricFromModal()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div id="editFileModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="modal-content" style="background: var(--color5); padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+        <h3 style="margin-top: 0; color: var(--color1);">Editar Archivo</h3>
+        <div class="modal-body">
+            <div class="modal-form-group">
+                <label>Fecha Examen</label>
+                <input type="date" id="modalEditFileDate" class="form-control">
+            </div>
+            <div class="modal-form-group">
+                <label>Nuevo Archivo (Opcional)</label>
+                <input type="file" id="modalEditFile" class="form-control">
+                <small style="color: #666;">Deje vacío para mantener el archivo actual.</small>
+            </div>
+        </div>
+        <div class="modal-footer" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+            <button class="btn-primary-premium" onclick="updateMedicalFile()"><i class="fas fa-save"></i> Guardar</button>
+            <button class="btn-secondary-premium" onclick="hideEditFileModal()"><i class="fas fa-times"></i> Cancelar</button>
         </div>
     </div>
 </div>

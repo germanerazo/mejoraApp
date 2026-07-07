@@ -58,6 +58,51 @@ class entryMedicalFiles extends connection {
         return $_answers->error_500("Error al guardar el examen médico.");
     }
 
+    public function put($data, $files) {
+        $_answers = new answers;
+        if (!$this->verifyToken($data, $_answers)) return $_answers->response;
+
+        $idFile      = intval($data['idFile'] ?? 0);
+        $idEmpresa   = intval($data['idEmpresa'] ?? 0);
+        $fechaExamen = $this->sanitize($data['fechaExamen'] ?? '');
+
+        if (!$idFile || !$idEmpresa) return $_answers->error_400();
+
+        $updates = [];
+        if ($fechaExamen !== '') {
+            $updates[] = "fechaExamen='$fechaExamen'";
+        }
+
+        // Si viene un archivo nuevo, subirlo y reemplazar el antiguo
+        if (isset($files['archivo']) && $files['archivo']['error'] === UPLOAD_ERR_OK) {
+            // Eliminar el antiguo
+            $fileData = parent::getData("SELECT idEntry, rutaArchivo FROM {$this->table} WHERE idFile = $idFile AND idEmpresa = $idEmpresa");
+            if (is_array($fileData) && count($fileData) > 0) {
+                $oldPath = dirname(__DIR__) . "/" . $fileData[0]['rutaArchivo'];
+                if (file_exists($oldPath) && !is_dir($oldPath)) {
+                    unlink($oldPath);
+                }
+                
+                // Subir el nuevo
+                $idEntry = $fileData[0]['idEntry'];
+                $rutaArchivo = $this->processFile($idEmpresa, $idEntry, $files);
+                $nombreArchivo = $this->sanitize($files['archivo']['name']);
+
+                $updates[] = "rutaArchivo='$rutaArchivo'";
+                $updates[] = "nombreArchivo='$nombreArchivo'";
+            }
+        }
+
+        if (count($updates) > 0) {
+            $query = "UPDATE {$this->table} SET " . implode(', ', $updates) . " WHERE idFile=$idFile AND idEmpresa=$idEmpresa";
+            parent::nonQuery($query);
+        }
+
+        $resp = $_answers->response;
+        $resp['result'] = ['idFile' => $idFile];
+        return $resp;
+    }
+
     public function delete($data) {
         $_answers = new answers;
         if (!$this->verifyToken($data, $_answers)) return $_answers->response;

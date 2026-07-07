@@ -32,7 +32,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $data = $_POST;
         $files = $_FILES;
         
-        $resp = $_emf->post($data, $files);
+        if (isset($data['_method']) && $data['_method'] === 'PUT') {
+            $resp = $_emf->put($data, $files);
+        } else {
+            $resp = $_emf->post($data, $files);
+        }
         
         http_response_code(isset($resp['result']['error_id']) ? $resp['result']['error_id'] : 200);
         echo json_encode($resp);

@@ -6,6 +6,8 @@ const MEDICAL_RECORDS_API = `${config.BASE_API_URL}entryMedicalRecords.php`;
 
 // Employees Data
 let entryData = [];
+let currentMedicalRecords = [];
+let currentMedicalFiles = [];
 
 // Make accessible to HTML onclick
 window.showCreateEntry = showCreateEntry;
@@ -31,6 +33,10 @@ window.filterEntry = filterEntry;
 window.deleteMedicalFile = deleteMedicalFile;
 window.loadMedicalFiles = loadMedicalFiles;
 window.deleteMedicalRecord = deleteMedicalRecord;
+window.editMedicalRecord = editMedicalRecord;
+window.editMedicalFile = editMedicalFile;
+window.updateMedicalFile = updateMedicalFile;
+window.hideEditFileModal = hideEditFileModal;
 
 async function initEntry() {
     await loadEntryData();
@@ -260,9 +266,12 @@ async function saveEntry() {
 }
 
 function showRecommendationModal() {
-    document.getElementById('recoModal').style.display = 'flex';
+    const modal = document.getElementById('recoModal');
+    modal.dataset.editingId = '';
+    modal.style.display = 'flex';
     document.getElementById('modalRecoDate').value = '';
     document.getElementById('modalRecoText').value = '';
+    document.getElementById('modalRecoFollowup').value = '';
     document.getElementById('modalRecoStatus').value = 'Abierto';
 }
 
@@ -274,19 +283,24 @@ async function addRecommendationFromModal() {
     const date = document.getElementById('modalRecoDate').value;
     const text = document.getElementById('modalRecoText').value;
     const status = document.getElementById('modalRecoStatus').value;
+    const followup = document.getElementById('modalRecoFollowup').value;
+    const editingId = document.getElementById('recoModal').dataset.editingId;
     
     if (!date || !text) {
         Swal.fire('Error', 'Complete fecha y recomendación', 'error');
         return;
     }
-    await saveMedicalRecord('reco_ingreso', date, text, status);
+    await saveMedicalRecord('reco_ingreso', date, text, status, followup, editingId);
     hideRecommendationModal();
 }
 
 function showRestricModal() {
-    document.getElementById('restricModal').style.display = 'flex';
+    const modal = document.getElementById('restricModal');
+    modal.dataset.editingId = '';
+    modal.style.display = 'flex';
     document.getElementById('modalRestricDate').value = '';
     document.getElementById('modalRestricText').value = '';
+    document.getElementById('modalRestricFollowup').value = '';
     document.getElementById('modalRestricStatus').value = 'Abierto';
 }
 
@@ -298,12 +312,14 @@ async function addRestricFromModal() {
     const date = document.getElementById('modalRestricDate').value;
     const text = document.getElementById('modalRestricText').value;
     const status = document.getElementById('modalRestricStatus').value;
+    const followup = document.getElementById('modalRestricFollowup').value;
+    const editingId = document.getElementById('restricModal').dataset.editingId;
 
     if (!date || !text) {
         Swal.fire('Error', 'Complete fecha y restricción', 'error');
         return;
     }
-    await saveMedicalRecord('restric_ingreso', date, text, status);
+    await saveMedicalRecord('restric_ingreso', date, text, status, followup, editingId);
     hideRestricModal();
 }
 
@@ -462,17 +478,18 @@ async function loadMedicalFiles(idEntry) {
     try {
         const res = await fetch(`${MEDICAL_FILES_API}?idEmpresa=${idEmpresa}&idEntry=${idEntry}`);
         const data = await res.json();
-        const files = Array.isArray(data) ? data : (data.result || []);
+        currentMedicalFiles = Array.isArray(data) ? data : (data.result || []);
 
         // Clear all exam tables
         document.querySelector('#tableExams tbody').innerHTML = '';
         document.querySelector('#tablePeriodicExams tbody').innerHTML = '';
         document.querySelector('#tableRetirementExam tbody').innerHTML = '';
 
-        files.forEach(file => {
-            const downloadUrl = `${config.BASE_API_URL}download.php?file=${encodeURIComponent(file.rutaArchivo)}`;
+        currentMedicalFiles.forEach(file => {
+            const downloadUrl = `api/download.php?file=${encodeURIComponent(file.rutaArchivo)}`;
             let tbodySelector = '';
-            if (file.tipoExamen === 'ingreso') tbodySelector = '#tableExams tbody';
+            
+            if (file.tipoExamen === 'ingreso') tbodySelector = '#tableIngresoExams tbody';
             else if (file.tipoExamen === 'periodico') tbodySelector = '#tablePeriodicExams tbody';
             else if (file.tipoExamen === 'retiro') tbodySelector = '#tableRetirementExam tbody';
 
@@ -487,6 +504,9 @@ async function loadMedicalFiles(idEntry) {
                     <div style="display: flex; justify-content: center; gap: 5px;">
                         <button class="btn-view-premium" onclick="window.open('${downloadUrl}', '_blank')" title="Descargar" style="color: #27ae60 !important;">
                             <i class="fas fa-file-download"></i>
+                        </button>
+                        <button class="btn-edit-premium" onclick="editMedicalFile(${file.idFile})" title="Editar" style="color: #f39c12 !important; border: none; background: none; cursor: pointer; font-size: 1.1rem;">
+                            <i class="fas fa-edit"></i>
                         </button>
                         <button class="btn-delete-premium" onclick="deleteMedicalFile(${file.idFile})" title="Eliminar">
                             <i class="fas fa-trash-alt"></i>
@@ -540,9 +560,12 @@ async function deleteMedicalFile(idFile) {
 }
 
 function showPeriodicRecoModal() {
-    document.getElementById('periodicRecoModal').style.display = 'flex';
+    const modal = document.getElementById('periodicRecoModal');
+    modal.dataset.editingId = '';
+    modal.style.display = 'flex';
     document.getElementById('modalPeriodicRecoDate').value = '';
     document.getElementById('modalPeriodicRecoText').value = '';
+    document.getElementById('modalPeriodicRecoFollowup').value = '';
     document.getElementById('modalPeriodicRecoStatus').value = 'Abierto';
 }
 
@@ -554,19 +577,24 @@ async function addPeriodicRecoFromModal() {
     const date = document.getElementById('modalPeriodicRecoDate').value;
     const text = document.getElementById('modalPeriodicRecoText').value;
     const status = document.getElementById('modalPeriodicRecoStatus').value;
+    const followup = document.getElementById('modalPeriodicRecoFollowup').value;
+    const editingId = document.getElementById('periodicRecoModal').dataset.editingId;
 
     if (!date || !text) {
         Swal.fire('Error', 'Complete fecha y recomendación', 'error');
         return;
     }
-    await saveMedicalRecord('reco_periodica', date, text, status);
+    await saveMedicalRecord('reco_periodica', date, text, status, followup, editingId);
     hidePeriodicRecoModal();
 }
 
 function showPeriodicRestricModal() {
-    document.getElementById('periodicRestricModal').style.display = 'flex';
+    const modal = document.getElementById('periodicRestricModal');
+    modal.dataset.editingId = '';
+    modal.style.display = 'flex';
     document.getElementById('modalPeriodicRestricDate').value = '';
     document.getElementById('modalPeriodicRestricText').value = '';
+    document.getElementById('modalPeriodicRestricFollowup').value = '';
     document.getElementById('modalPeriodicRestricStatus').value = 'Abierto';
 }
 
@@ -578,16 +606,18 @@ async function addPeriodicRestricFromModal() {
     const date = document.getElementById('modalPeriodicRestricDate').value;
     const text = document.getElementById('modalPeriodicRestricText').value;
     const status = document.getElementById('modalPeriodicRestricStatus').value;
+    const followup = document.getElementById('modalPeriodicRestricFollowup').value;
+    const editingId = document.getElementById('periodicRestricModal').dataset.editingId;
 
     if (!date || !text) {
         Swal.fire('Error', 'Complete fecha y restricción', 'error');
         return;
     }
-    await saveMedicalRecord('restric_periodica', date, text, status);
+    await saveMedicalRecord('restric_periodica', date, text, status, followup, editingId);
     hidePeriodicRestricModal();
 }
 
-async function saveMedicalRecord(tipoRegistro, fecha, descripcion, estado) {
+async function saveMedicalRecord(tipoRegistro, fecha, descripcion, estado, seguimiento = '', idRecord = null) {
     const editingId = document.getElementById('entryForm').dataset.editingId;
     if (!editingId) {
         Swal.fire('Atención', 'Debe guardar el empleado primero.', 'warning');
@@ -604,12 +634,17 @@ async function saveMedicalRecord(tipoRegistro, fecha, descripcion, estado) {
         tipoRegistro: tipoRegistro,
         fecha: fecha,
         descripcion: descripcion,
+        seguimiento: seguimiento,
         estado: estado
     };
+    
+    if (idRecord) {
+        payload.idRecord = idRecord;
+    }
 
     try {
-        const res = await fetch(MEDICAL_RECORDS_API, {
-            method: 'POST',
+        const res = await fetch(MEDICAL_RECORDS_API + (idRecord ? '?_method=PUT' : ''), {
+            method: idRecord ? 'PUT' : 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
@@ -632,15 +667,15 @@ async function loadMedicalRecords(idEntry) {
 
     try {
         const res = await fetch(`${MEDICAL_RECORDS_API}?idEmpresa=${idEmpresa}&idEntry=${idEntry}`);
-        const data = await res.json();
-        const records = Array.isArray(data) ? data : (data.result || []);
+        const resp = await res.json();
+        currentMedicalRecords = Array.isArray(resp) ? resp : (resp.result || []);
 
-        document.querySelector('#recoTable tbody').innerHTML = '';
+        document.querySelector('#tableIngresoExams tbody').innerHTML = '';
         document.querySelector('#restricTable tbody').innerHTML = '';
         document.querySelector('#periodicRecoTable tbody').innerHTML = '';
         document.querySelector('#periodicRestricTable tbody').innerHTML = '';
 
-        records.forEach(rec => {
+        currentMedicalRecords.forEach(rec => {
             let tbodySelector = '';
             if (rec.tipoRegistro === 'reco_ingreso') tbodySelector = '#recoTable tbody';
             else if (rec.tipoRegistro === 'restric_ingreso') tbodySelector = '#restricTable tbody';
@@ -657,15 +692,114 @@ async function loadMedicalRecords(idEntry) {
                 <td>${rec.seguimiento || ''}</td>
                 <td>${rec.estado || ''}</td>
                 <td style="text-align: center;">
-                    <button class="btn-delete-premium" onclick="deleteMedicalRecord(${rec.idRecord})" title="Eliminar">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
+                    <div style="display: flex; justify-content: center; gap: 5px;">
+                        <button class="btn-edit-premium" onclick="editMedicalRecord(${rec.idRecord})" title="Editar" style="color: #f39c12 !important; border: none; background: none; cursor: pointer; font-size: 1.1rem;">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-delete-premium" onclick="deleteMedicalRecord(${rec.idRecord})" title="Eliminar">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
                 </td>
             `;
             tbody.appendChild(tr);
         });
     } catch (e) {
         console.error('Error loading medical records', e);
+    }
+}
+
+function editMedicalRecord(idRecord) {
+    const rec = currentMedicalRecords.find(r => parseInt(r.idRecord) === idRecord);
+    if (!rec) return;
+
+    if (rec.tipoRegistro === 'reco_ingreso') {
+        document.getElementById('modalRecoDate').value = rec.fecha;
+        document.getElementById('modalRecoText').value = rec.descripcion;
+        document.getElementById('modalRecoFollowup').value = rec.seguimiento || '';
+        document.getElementById('modalRecoStatus').value = rec.estado;
+        document.getElementById('recoModal').dataset.editingId = idRecord;
+        document.getElementById('recoModal').style.display = 'flex';
+    } else if (rec.tipoRegistro === 'restric_ingreso') {
+        document.getElementById('modalRestricDate').value = rec.fecha;
+        document.getElementById('modalRestricText').value = rec.descripcion;
+        document.getElementById('modalRestricFollowup').value = rec.seguimiento || '';
+        document.getElementById('modalRestricStatus').value = rec.estado;
+        document.getElementById('restricModal').dataset.editingId = idRecord;
+        document.getElementById('restricModal').style.display = 'flex';
+    } else if (rec.tipoRegistro === 'reco_periodica') {
+        document.getElementById('modalPeriodicRecoDate').value = rec.fecha;
+        document.getElementById('modalPeriodicRecoText').value = rec.descripcion;
+        document.getElementById('modalPeriodicRecoFollowup').value = rec.seguimiento || '';
+        document.getElementById('modalPeriodicRecoStatus').value = rec.estado;
+        document.getElementById('periodicRecoModal').dataset.editingId = idRecord;
+        document.getElementById('periodicRecoModal').style.display = 'flex';
+    } else if (rec.tipoRegistro === 'restric_periodica') {
+        document.getElementById('modalPeriodicRestricDate').value = rec.fecha;
+        document.getElementById('modalPeriodicRestricText').value = rec.descripcion;
+        document.getElementById('modalPeriodicRestricFollowup').value = rec.seguimiento || '';
+        document.getElementById('modalPeriodicRestricStatus').value = rec.estado;
+        document.getElementById('periodicRestricModal').dataset.editingId = idRecord;
+        document.getElementById('periodicRestricModal').style.display = 'flex';
+    }
+}
+
+function hideEditFileModal() {
+    document.getElementById('editFileModal').style.display = 'none';
+}
+
+function editMedicalFile(idFile) {
+    const file = currentMedicalFiles.find(f => parseInt(f.idFile) === idFile);
+    if (!file) return;
+
+    document.getElementById('modalEditFileDate').value = file.fechaExamen;
+    document.getElementById('modalEditFile').value = ''; // Reset file input
+    document.getElementById('editFileModal').dataset.editingId = idFile;
+    document.getElementById('editFileModal').style.display = 'flex';
+}
+
+async function updateMedicalFile() {
+    const idFile = document.getElementById('editFileModal').dataset.editingId;
+    const date = document.getElementById('modalEditFileDate').value;
+    const fileInput = document.getElementById('modalEditFile');
+    
+    if (!idFile || !date) {
+        Swal.fire('Error', 'La fecha es obligatoria', 'error');
+        return;
+    }
+
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    const token = sessionStorage.getItem('token') || '';
+    const editingId = document.getElementById('entryForm').dataset.editingId;
+
+    const formData = new FormData();
+    formData.append('token', token);
+    formData.append('idEmpresa', idEmpresa);
+    formData.append('idFile', idFile);
+    formData.append('fechaExamen', date);
+    formData.append('_method', 'PUT');
+
+    if (fileInput.files[0]) {
+        formData.append('archivo', fileInput.files[0]);
+    }
+
+    try {
+        const res = await fetch(MEDICAL_FILES_API, {
+            method: 'POST',
+            body: formData
+        });
+        const resp = await res.json();
+
+        if (resp.status === 'ok' || resp.result) {
+            Swal.fire({ title: 'Actualizado', icon: 'success', timer: 1500, showConfirmButton: false });
+            hideEditFileModal();
+            await loadMedicalFiles(editingId);
+        } else {
+            Swal.fire('Error', resp.result?.error_msg || 'No se pudo actualizar el archivo', 'error');
+        }
+    } catch (e) {
+        console.error('Error updating medical file', e);
+        Swal.fire('Error', 'Ocurrió un error al actualizar', 'error');
     }
 }
 
