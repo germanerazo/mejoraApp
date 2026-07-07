@@ -1,6 +1,7 @@
 import config from '../../js/config.js';
 
 const API_URL = `${config.BASE_API_URL}entry.php`;
+const MEDICAL_FILES_API = `${config.BASE_API_URL}entryMedicalFiles.php`;
 
 // Employees Data
 let entryData = [];
@@ -27,6 +28,8 @@ window.addMedicalExam = addMedicalExam;
 window.addPeriodicExam = addPeriodicExam;
 window.addRetirementExam = addRetirementExam;
 window.filterEntry = filterEntry;
+window.deleteMedicalFile = deleteMedicalFile;
+window.loadMedicalFiles = loadMedicalFiles;
 
 async function initEntry() {
     await loadEntryData();
@@ -329,7 +332,7 @@ function addRestricFromModal() {
     hideRestricModal();
 }
 
-function viewEntry(id) {
+async function viewEntry(id) {
     const item = entryData.find(i => parseInt(i.idEntry) === id);
     if (!item) return;
 
@@ -366,17 +369,22 @@ function viewEntry(id) {
     document.getElementById('fieldAllergies').value = item.alergias || '';
 
     // Clear sub-tables (medical exams, recommendations, etc.)
-    document.querySelector('#tableExams tbody').innerHTML = '';
     document.querySelector('#recoTable tbody').innerHTML = '';
     document.querySelector('#restricTable tbody').innerHTML = '';
-    document.querySelector('#tablePeriodicExams tbody').innerHTML = '';
     document.querySelector('#periodicRecoTable tbody').innerHTML = '';
     document.querySelector('#periodicRestricTable tbody').innerHTML = '';
-    document.querySelector('#tableRetirementExam tbody').innerHTML = '';
+
+    // Load medical files from API
+    await loadMedicalFiles(item.idEntry);
 }
 
-function addMedicalExam() {
-    // Check if exam already exists
+async function addMedicalExam() {
+    const editingId = document.getElementById('entryForm').dataset.editingId;
+    if (!editingId) {
+        Swal.fire('Atención', 'Debe guardar el empleado primero.', 'warning');
+        return;
+    }
+
     const existingRows = document.querySelectorAll('#tableExams tbody tr');
     if (existingRows.length > 0) {
         Swal.fire('Atención', 'Solo se puede cargar un Examen Médico de Ingreso. Elimine el existente para cargar uno nuevo.', 'warning');
@@ -385,45 +393,22 @@ function addMedicalExam() {
 
     const date = document.getElementById('fieldExamDate').value;
     const fileInput = document.getElementById('fieldExamFile');
-    const fileName = fileInput.files[0] ? fileInput.files[0].name : '';
 
-    if (!date || !fileName) {
+    if (!date || !fileInput.files[0]) {
         Swal.fire('Atención', 'Seleccione fecha y archivo', 'warning');
         return;
     }
 
-    addMedicalExamRow(date, fileName);
-    
-    // Clear inputs
-    document.getElementById('fieldExamDate').value = '';
-    fileInput.value = '';
+    await uploadMedicalFile(editingId, 'ingreso', date, fileInput);
 }
 
-function addMedicalExamRow(date, fileName) {
-    const tbody = document.querySelector('#tableExams tbody');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>${date}</td>
-        <td><a href="#" style="color: var(--color6); text-decoration: underline;">${fileName}</a></td>
-        <td style="text-align: center;">
-            <div style="display: flex; justify-content: center; gap: 5px;">
-                <button class="btn-view-premium" onclick="alert('Descargando documento...')" title="Descargar" style="color: #27ae60 !important;">
-                    <i class="fas fa-file-download"></i>
-                </button>
-                <button class="btn-delete-premium" onclick="this.closest('tr').remove()" title="Eliminar">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </div>
-        </td>
-    `;
-    tbody.appendChild(tr);
-}
+async function addRetirementExam() {
+    const editingId = document.getElementById('entryForm').dataset.editingId;
+    if (!editingId) {
+        Swal.fire('Atención', 'Debe guardar el empleado primero.', 'warning');
+        return;
+    }
 
-// Make accessible
-window.addMedicalExam = addMedicalExam;
-
-function addRetirementExam() {
-    // Check if exam already exists
     const existingRows = document.querySelectorAll('#tableRetirementExam tbody tr');
     if (existingRows.length > 0) {
         Swal.fire('Atención', 'Solo se puede cargar un Examen Médico de Retiro. Elimine el existente para cargar uno nuevo.', 'warning');
@@ -432,67 +417,150 @@ function addRetirementExam() {
 
     const date = document.getElementById('fieldRetirementDate').value;
     const fileInput = document.getElementById('fieldRetirementFile');
-    const fileName = fileInput.files[0] ? fileInput.files[0].name : '';
 
-    if (!date || !fileName) {
+    if (!date || !fileInput.files[0]) {
         Swal.fire('Atención', 'Seleccione fecha y archivo', 'warning');
         return;
     }
 
-    addRetirementExamRow(date, fileName);
-    
-    // Clear inputs
-    document.getElementById('fieldRetirementDate').value = '';
-    fileInput.value = '';
+    await uploadMedicalFile(editingId, 'retiro', date, fileInput);
 }
 
-function addRetirementExamRow(date, fileName) {
-    const tbody = document.querySelector('#tableRetirementExam tbody');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>${date}</td>
-        <td><a href="#" style="color: var(--color6); text-decoration: underline;">${fileName}</a></td>
-        <td style="text-align: center;">
-            <div style="display: flex; justify-content: center; gap: 5px;">
-                <div class="icon-download" onclick="alert('Descargando documento...')" style="width: 20px; height: 20px; font-size: 1rem; cursor: pointer;" title="Descargar">⬇️</div>
-                <div class="icon-delete" onclick="this.closest('tr').remove()" style="width: 20px; height: 20px; font-size: 1rem; cursor: pointer;" title="Eliminar">➖</div>
-            </div>
-        </td>
-    `;
-    tbody.appendChild(tr);
-}
+async function addPeriodicExam() {
+    const editingId = document.getElementById('entryForm').dataset.editingId;
+    if (!editingId) {
+        Swal.fire('Atención', 'Debe guardar el empleado primero.', 'warning');
+        return;
+    }
 
-function addPeriodicExam() {
     const date = document.getElementById('fieldPeriodicDate').value;
     const fileInput = document.getElementById('fieldPeriodicFile');
-    const fileName = fileInput.files[0] ? fileInput.files[0].name : '';
 
-    if (!date || !fileName) {
+    if (!date || !fileInput.files[0]) {
         Swal.fire('Atención', 'Seleccione fecha y archivo', 'warning');
         return;
     }
 
-    addPeriodicExamRow(date, fileName);
-    
-    // Clear inputs
-    document.getElementById('fieldPeriodicDate').value = '';
-    fileInput.value = '';
+    await uploadMedicalFile(editingId, 'periodico', date, fileInput);
 }
 
-function addPeriodicExamRow(date, fileName) {
-    const tbody = document.querySelector('#tablePeriodicExams tbody');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>${date}</td>
-        <td><a href="#" style="color: var(--color6); text-decoration: underline;">${fileName}</a></td>
-        <td style="text-align: center;">
-            <div style="display: flex; justify-content: center; gap: 5px;">
-                <div class="icon-download" onclick="alert('Descargando documento...')" style="width: 20px; height: 20px; font-size: 1rem; cursor: pointer;" title="Descargar">⬇️</div>
-                <div class="icon-delete" onclick="this.closest('tr').remove()" style="width: 20px; height: 20px; font-size: 1rem; cursor: pointer;" title="Eliminar">➖</div>
-            </div>
-        </td>
-    `;
-    tbody.appendChild(tr);
+async function uploadMedicalFile(idEntry, tipoExamen, fechaExamen, fileInput) {
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    const token = sessionStorage.getItem('token') || '';
+
+    const formData = new FormData();
+    formData.append('token', token);
+    formData.append('idEmpresa', idEmpresa);
+    formData.append('idEntry', idEntry);
+    formData.append('tipoExamen', tipoExamen);
+    formData.append('fechaExamen', fechaExamen);
+    formData.append('archivo', fileInput.files[0]);
+
+    try {
+        const res = await fetch(MEDICAL_FILES_API, {
+            method: 'POST',
+            body: formData
+        });
+        const resp = await res.json();
+
+        if (resp.status === 'ok' || resp.result) {
+            Swal.fire({ title: 'Cargado', text: 'Archivo cargado correctamente', icon: 'success', timer: 1500, showConfirmButton: false });
+            fileInput.value = '';
+            // Clear date inputs
+            if (tipoExamen === 'ingreso') document.getElementById('fieldExamDate').value = '';
+            if (tipoExamen === 'retiro') document.getElementById('fieldRetirementDate').value = '';
+            if (tipoExamen === 'periodico') document.getElementById('fieldPeriodicDate').value = '';
+            await loadMedicalFiles(idEntry);
+        } else {
+            Swal.fire('Error', resp.result?.error_msg || 'Error al cargar el archivo', 'error');
+        }
+    } catch (e) {
+        console.error('Error uploading medical file', e);
+        Swal.fire('Error', 'No se pudo cargar el archivo', 'error');
+    }
+}
+
+async function loadMedicalFiles(idEntry) {
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+
+    try {
+        const res = await fetch(`${MEDICAL_FILES_API}?idEmpresa=${idEmpresa}&idEntry=${idEntry}`);
+        const data = await res.json();
+        const files = Array.isArray(data) ? data : (data.result || []);
+
+        // Clear all exam tables
+        document.querySelector('#tableExams tbody').innerHTML = '';
+        document.querySelector('#tablePeriodicExams tbody').innerHTML = '';
+        document.querySelector('#tableRetirementExam tbody').innerHTML = '';
+
+        files.forEach(file => {
+            const downloadUrl = `${config.BASE_API_URL}download.php?file=${encodeURIComponent(file.rutaArchivo)}`;
+            let tbodySelector = '';
+            if (file.tipoExamen === 'ingreso') tbodySelector = '#tableExams tbody';
+            else if (file.tipoExamen === 'periodico') tbodySelector = '#tablePeriodicExams tbody';
+            else if (file.tipoExamen === 'retiro') tbodySelector = '#tableRetirementExam tbody';
+
+            if (!tbodySelector) return;
+
+            const tbody = document.querySelector(tbodySelector);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${file.fechaExamen || ''}</td>
+                <td><a href="${downloadUrl}" target="_blank" style="color: var(--color6); text-decoration: underline;">${file.nombreArchivo || 'Archivo'}</a></td>
+                <td style="text-align: center;">
+                    <div style="display: flex; justify-content: center; gap: 5px;">
+                        <button class="btn-view-premium" onclick="window.open('${downloadUrl}', '_blank')" title="Descargar" style="color: #27ae60 !important;">
+                            <i class="fas fa-file-download"></i>
+                        </button>
+                        <button class="btn-delete-premium" onclick="deleteMedicalFile(${file.idFile})" title="Eliminar">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (e) {
+        console.error('Error loading medical files', e);
+    }
+}
+
+async function deleteMedicalFile(idFile) {
+    const result = await Swal.fire({
+        title: '¿Eliminar archivo?',
+        text: 'Esta acción no se puede deshacer',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) return;
+
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    const token = sessionStorage.getItem('token') || '';
+    const editingId = document.getElementById('entryForm').dataset.editingId;
+
+    try {
+        const res = await fetch(MEDICAL_FILES_API, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, idEmpresa, idFile })
+        });
+        const resp = await res.json();
+
+        if (resp.status === 'ok' || resp.result) {
+            Swal.fire({ title: 'Eliminado', icon: 'success', timer: 1500, showConfirmButton: false });
+            await loadMedicalFiles(editingId);
+        } else {
+            Swal.fire('Error', 'No se pudo eliminar el archivo', 'error');
+        }
+    } catch (e) {
+        console.error('Error deleting medical file', e);
+        Swal.fire('Error', 'Ocurrió un error', 'error');
+    }
 }
 
 function showPeriodicRecoModal() {
