@@ -37,6 +37,8 @@ window.editMedicalRecord = editMedicalRecord;
 window.editMedicalFile = editMedicalFile;
 window.updateMedicalFile = updateMedicalFile;
 window.hideEditFileModal = hideEditFileModal;
+window.handleFileUI = handleFileUI;
+window.clearFileUI = clearFileUI;
 
 async function initEntry() {
     await loadEntryData();
