@@ -28,6 +28,7 @@ window.addPeriodicRestricFromModal = addPeriodicRestricFromModal;
 window.viewEntry = viewEntry;
 window.renderEntryList = renderEntryList;
 window.addMedicalExam = addMedicalExam;
+window.addPeriodicExam = addPeriodicExam;
 window.addRetirementExam = addRetirementExam;
 window.filterEntry = filterEntry;
 window.deleteMedicalFile = deleteMedicalFile;
