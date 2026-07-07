@@ -273,6 +273,7 @@ function showRecommendationModal() {
     document.getElementById('modalRecoText').value = '';
     document.getElementById('modalRecoFollowup').value = '';
     document.getElementById('modalRecoStatus').value = 'Abierto';
+    document.getElementById('grupoRecoFollowup').style.display = 'none';
 }
 
 function hideRecommendationModal() {
@@ -302,6 +303,7 @@ function showRestricModal() {
     document.getElementById('modalRestricText').value = '';
     document.getElementById('modalRestricFollowup').value = '';
     document.getElementById('modalRestricStatus').value = 'Abierto';
+    document.getElementById('grupoRestricFollowup').style.display = 'none';
 }
 
 function hideRestricModal() {
@@ -368,6 +370,32 @@ async function viewEntry(id) {
     // Load medical files and records from API
     await loadMedicalFiles(item.idEntry);
     await loadMedicalRecords(item.idEntry);
+}
+
+// File Upload UI Helpers
+function handleFileUI(inputEl, previewId, nameId, placeholderId) {
+    const preview = document.getElementById(previewId);
+    const nameEl = document.getElementById(nameId);
+    const placeholder = document.getElementById(placeholderId);
+
+    if (inputEl.files && inputEl.files.length > 0) {
+        nameEl.textContent = inputEl.files[0].name;
+        if(placeholder) placeholder.style.display = 'none';
+        if(preview) preview.style.display = 'flex';
+    } else {
+        if(placeholder) placeholder.style.display = 'flex';
+        if(preview) preview.style.display = 'none';
+    }
+}
+
+function clearFileUI(inputId, previewId, placeholderId) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    const placeholder = document.getElementById(placeholderId);
+    
+    if(input) input.value = '';
+    if(preview) preview.style.display = 'none';
+    if(placeholder) placeholder.style.display = 'flex';
 }
 
 async function addMedicalExam() {
@@ -458,10 +486,21 @@ async function uploadMedicalFile(idEntry, tipoExamen, fechaExamen, fileInput) {
         if (resp.status === 'ok' || resp.result) {
             Swal.fire({ title: 'Cargado', text: 'Archivo cargado correctamente', icon: 'success', timer: 1500, showConfirmButton: false });
             fileInput.value = '';
-            // Clear date inputs
-            if (tipoExamen === 'ingreso') document.getElementById('fieldExamDate').value = '';
-            if (tipoExamen === 'retiro') document.getElementById('fieldRetirementDate').value = '';
-            if (tipoExamen === 'periodico') document.getElementById('fieldPeriodicDate').value = '';
+            
+            // Clear specific UI based on exam type
+            if (tipoExamen === 'ingreso') {
+                document.getElementById('fieldExamDate').value = '';
+                clearFileUI('fieldExamFile', 'previewExamFile', 'placeholderExamFile');
+            }
+            if (tipoExamen === 'retiro') {
+                document.getElementById('fieldRetirementDate').value = '';
+                clearFileUI('fieldRetirementFile', 'previewRetirementFile', 'placeholderRetirementFile');
+            }
+            if (tipoExamen === 'periodico') {
+                document.getElementById('fieldPeriodicDate').value = '';
+                clearFileUI('fieldPeriodicFile', 'previewPeriodicFile', 'placeholderPeriodicFile');
+            }
+            
             await loadMedicalFiles(idEntry);
         } else {
             Swal.fire('Error', resp.result?.error_msg || 'Error al cargar el archivo', 'error');
@@ -489,7 +528,7 @@ async function loadMedicalFiles(idEntry) {
             const downloadUrl = `api/download.php?file=${encodeURIComponent(file.rutaArchivo)}`;
             let tbodySelector = '';
             
-            if (file.tipoExamen === 'ingreso') tbodySelector = '#tableIngresoExams tbody';
+            if (file.tipoExamen === 'ingreso') tbodySelector = '#tableExams tbody';
             else if (file.tipoExamen === 'periodico') tbodySelector = '#tablePeriodicExams tbody';
             else if (file.tipoExamen === 'retiro') tbodySelector = '#tableRetirementExam tbody';
 
@@ -567,6 +606,7 @@ function showPeriodicRecoModal() {
     document.getElementById('modalPeriodicRecoText').value = '';
     document.getElementById('modalPeriodicRecoFollowup').value = '';
     document.getElementById('modalPeriodicRecoStatus').value = 'Abierto';
+    document.getElementById('grupoPeriodicRecoFollowup').style.display = 'none';
 }
 
 function hidePeriodicRecoModal() {
@@ -596,6 +636,7 @@ function showPeriodicRestricModal() {
     document.getElementById('modalPeriodicRestricText').value = '';
     document.getElementById('modalPeriodicRestricFollowup').value = '';
     document.getElementById('modalPeriodicRestricStatus').value = 'Abierto';
+    document.getElementById('grupoPeriodicRestricFollowup').style.display = 'none';
 }
 
 function hidePeriodicRestricModal() {
@@ -670,7 +711,7 @@ async function loadMedicalRecords(idEntry) {
         const resp = await res.json();
         currentMedicalRecords = Array.isArray(resp) ? resp : (resp.result || []);
 
-        document.querySelector('#tableIngresoExams tbody').innerHTML = '';
+        document.querySelector('#recoTable tbody').innerHTML = '';
         document.querySelector('#restricTable tbody').innerHTML = '';
         document.querySelector('#periodicRecoTable tbody').innerHTML = '';
         document.querySelector('#periodicRestricTable tbody').innerHTML = '';
@@ -718,6 +759,7 @@ function editMedicalRecord(idRecord) {
         document.getElementById('modalRecoText').value = rec.descripcion;
         document.getElementById('modalRecoFollowup').value = rec.seguimiento || '';
         document.getElementById('modalRecoStatus').value = rec.estado;
+        document.getElementById('grupoRecoFollowup').style.display = 'block';
         document.getElementById('recoModal').dataset.editingId = idRecord;
         document.getElementById('recoModal').style.display = 'flex';
     } else if (rec.tipoRegistro === 'restric_ingreso') {
@@ -725,6 +767,7 @@ function editMedicalRecord(idRecord) {
         document.getElementById('modalRestricText').value = rec.descripcion;
         document.getElementById('modalRestricFollowup').value = rec.seguimiento || '';
         document.getElementById('modalRestricStatus').value = rec.estado;
+        document.getElementById('grupoRestricFollowup').style.display = 'block';
         document.getElementById('restricModal').dataset.editingId = idRecord;
         document.getElementById('restricModal').style.display = 'flex';
     } else if (rec.tipoRegistro === 'reco_periodica') {
@@ -732,6 +775,7 @@ function editMedicalRecord(idRecord) {
         document.getElementById('modalPeriodicRecoText').value = rec.descripcion;
         document.getElementById('modalPeriodicRecoFollowup').value = rec.seguimiento || '';
         document.getElementById('modalPeriodicRecoStatus').value = rec.estado;
+        document.getElementById('grupoPeriodicRecoFollowup').style.display = 'block';
         document.getElementById('periodicRecoModal').dataset.editingId = idRecord;
         document.getElementById('periodicRecoModal').style.display = 'flex';
     } else if (rec.tipoRegistro === 'restric_periodica') {
@@ -739,6 +783,7 @@ function editMedicalRecord(idRecord) {
         document.getElementById('modalPeriodicRestricText').value = rec.descripcion;
         document.getElementById('modalPeriodicRestricFollowup').value = rec.seguimiento || '';
         document.getElementById('modalPeriodicRestricStatus').value = rec.estado;
+        document.getElementById('grupoPeriodicRestricFollowup').style.display = 'block';
         document.getElementById('periodicRestricModal').dataset.editingId = idRecord;
         document.getElementById('periodicRestricModal').style.display = 'flex';
     }
@@ -753,7 +798,7 @@ function editMedicalFile(idFile) {
     if (!file) return;
 
     document.getElementById('modalEditFileDate').value = file.fechaExamen;
-    document.getElementById('modalEditFile').value = ''; // Reset file input
+    document.getElementById('modalEditFile').value = '';
     document.getElementById('editFileModal').dataset.editingId = idFile;
     document.getElementById('editFileModal').style.display = 'flex';
 }
@@ -791,7 +836,7 @@ async function updateMedicalFile() {
         const resp = await res.json();
 
         if (resp.status === 'ok' || resp.result) {
-            Swal.fire({ title: 'Actualizado', icon: 'success', timer: 1500, showConfirmButton: false });
+            Swal.fire({ title: 'Actualizado', text: 'Archivo actualizado correctamente', icon: 'success', timer: 1500, showConfirmButton: false });
             hideEditFileModal();
             await loadMedicalFiles(editingId);
         } else {

@@ -102,3 +102,113 @@
 .recommendations-table th {
     background-color: #f1f1f1;
 }
+
+/* Upload Area Styles */
+.eval-upload-area {
+    border: 2px dashed #c0c8f0;
+    border-radius: 12px;
+    background: #f5f7ff;
+    transition: border-color 0.3s, background 0.3s;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.eval-upload-area.drag-over {
+    border-color: #667eea;
+    background: #eef0ff;
+}
+
+.eval-upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.2s;
+}
+
+.eval-upload-placeholder:hover {
+    background: #eaedff;
+}
+
+.eval-upload-icon {
+    font-size: 2rem;
+    color: #667eea;
+    margin-bottom: 10px;
+    transition: transform 0.3s;
+}
+
+.eval-upload-placeholder:hover .eval-upload-icon {
+    transform: translateY(-4px);
+}
+
+.eval-upload-text {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 6px;
+}
+
+.eval-upload-link {
+    color: #667eea;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.eval-upload-hint {
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+.eval-file-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: #fff;
+    border-top: 1px solid #e0e6ff;
+}
+
+.eval-file-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.eval-file-icon {
+    font-size: 2rem;
+    color: #667eea;
+}
+
+.eval-file-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #2c3e50;
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.eval-file-remove {
+    background: #fdecea;
+    border: none;
+    color: #e74c3c;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.eval-file-remove:hover {
+    background: #e74c3c;
+    color: #fff;
+    transform: rotate(90deg);
+}

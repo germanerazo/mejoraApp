@@ -264,17 +264,34 @@
                 <div class="form-group">
                     <label class="form-label">Examen Médico Ingreso</label>
                     <div style="background: #f9f9f9; padding: 15px; border: 1px solid #eee; border-radius: 4px;">
-                        <div class="grid-3" style="margin-bottom: 10px;">
+                        <div class="grid-3" style="margin-bottom: 10px; align-items: start;">
                             <div>
                                 <label style="font-size: 0.85em; display: block; margin-bottom: 3px;">Fecha Examen</label>
                                 <input type="date" id="fieldExamDate" class="form-input" style="font-size: 13px;">
                             </div>
-                            <div>
-                                <label style="font-size: 0.85em; display: block; margin-bottom: 3px;">Archivo</label>
-                                <input type="file" id="fieldExamFile" class="form-input" style="font-size: 13px;">
-                            </div>
-                            <div style="display: flex; align-items: flex-end;">
-                                <button type="button" class="btn-new-record" onclick="addMedicalExam()" style="padding: 6px 12px; font-size: 13px;">+ Cargar</button>
+                            <div style="grid-column: span 2;">
+                                <label style="font-size: 0.85em; display: block; margin-bottom: 3px;">Archivo (PDF, Imagen)</label>
+                                <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                    <div class="eval-upload-area" style="flex: 1; margin-bottom: 0;">
+                                        <input type="file" id="fieldExamFile" style="display:none;" onchange="handleFileUI(this, 'previewExamFile', 'nameExamFile', 'placeholderExamFile')">
+                                        <div class="eval-upload-placeholder" id="placeholderExamFile" onclick="document.getElementById('fieldExamFile').click()" style="padding: 10px;">
+                                            <i class="fas fa-cloud-upload-alt eval-upload-icon" style="font-size: 1.5rem; margin-bottom: 5px;"></i>
+                                            <p class="eval-upload-text" style="font-size: 0.8rem;">Arrastra aquí o <span class="eval-upload-link">haz clic</span></p>
+                                        </div>
+                                        <div class="eval-file-preview" id="previewExamFile" style="display:none; padding: 10px;">
+                                            <div class="eval-file-info" style="gap: 10px;">
+                                                <i class="fas fa-file-alt eval-file-icon" style="font-size: 1.5rem;"></i>
+                                                <p class="eval-file-name" id="nameExamFile" style="font-size: 0.8rem;"></p>
+                                            </div>
+                                            <button type="button" class="eval-file-remove" style="width: 24px; height: 24px;" onclick="clearFileUI('fieldExamFile', 'previewExamFile', 'placeholderExamFile')">
+                                                <i class="fas fa-times" style="font-size: 0.7rem;"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-new-record" onclick="addMedicalExam()" style="padding: 8px 12px; font-size: 13px; height: fit-content; align-self: center;">
+                                        <i class="fas fa-upload"></i> Cargar
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         
@@ -330,17 +347,34 @@
                 <!-- 7. Exámenes Periódicos -->
                 <div class="form-section-title">7. EXÁMENES PERIÓDICOS</div>
                 <div style="background: #f9f9f9; padding: 15px; border: 1px solid #eee; border-radius: 4px;">
-                    <div class="grid-3" style="margin-bottom: 10px;">
+                    <div class="grid-3" style="margin-bottom: 10px; align-items: start;">
                         <div>
                             <label style="font-size: 0.85em; display: block; margin-bottom: 3px;">Fecha Examen</label>
                             <input type="date" id="fieldPeriodicDate" class="form-input" style="font-size: 13px;">
                         </div>
-                        <div>
-                            <label style="font-size: 0.85em; display: block; margin-bottom: 3px;">Archivo</label>
-                            <input type="file" id="fieldPeriodicFile" class="form-input" style="font-size: 13px;">
-                        </div>
-                        <div style="display: flex; align-items: flex-end;">
-                            <button type="button" class="btn-new-record" onclick="addPeriodicExam()" style="padding: 6px 12px; font-size: 13px;">+ Cargar</button>
+                        <div style="grid-column: span 2;">
+                            <label style="font-size: 0.85em; display: block; margin-bottom: 3px;">Archivo (PDF, Imagen)</label>
+                            <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                <div class="eval-upload-area" style="flex: 1; margin-bottom: 0;">
+                                    <input type="file" id="fieldPeriodicFile" style="display:none;" onchange="handleFileUI(this, 'previewPeriodicFile', 'namePeriodicFile', 'placeholderPeriodicFile')">
+                                    <div class="eval-upload-placeholder" id="placeholderPeriodicFile" onclick="document.getElementById('fieldPeriodicFile').click()" style="padding: 10px;">
+                                        <i class="fas fa-cloud-upload-alt eval-upload-icon" style="font-size: 1.5rem; margin-bottom: 5px;"></i>
+                                        <p class="eval-upload-text" style="font-size: 0.8rem;">Arrastra aquí o <span class="eval-upload-link">haz clic</span></p>
+                                    </div>
+                                    <div class="eval-file-preview" id="previewPeriodicFile" style="display:none; padding: 10px;">
+                                        <div class="eval-file-info" style="gap: 10px;">
+                                            <i class="fas fa-file-alt eval-file-icon" style="font-size: 1.5rem;"></i>
+                                            <p class="eval-file-name" id="namePeriodicFile" style="font-size: 0.8rem;"></p>
+                                        </div>
+                                        <button type="button" class="eval-file-remove" style="width: 24px; height: 24px;" onclick="clearFileUI('fieldPeriodicFile', 'previewPeriodicFile', 'placeholderPeriodicFile')">
+                                            <i class="fas fa-times" style="font-size: 0.7rem;"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-new-record" onclick="addPeriodicExam()" style="padding: 8px 12px; font-size: 13px; height: fit-content; align-self: center;">
+                                    <i class="fas fa-upload"></i> Cargar
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
@@ -397,17 +431,34 @@
                 <!-- 10. Examen Médico de Retiro -->
                 <div class="form-section-title">10. EXÁMEN MÉDICO DE RETIRO</div>
                 <div style="background: #f9f9f9; padding: 15px; border: 1px solid #eee; border-radius: 4px;">
-                    <div class="grid-3" style="margin-bottom: 10px;">
+                    <div class="grid-3" style="margin-bottom: 10px; align-items: start;">
                         <div>
                             <label style="font-size: 0.85em; display: block; margin-bottom: 3px;">Fecha Examen</label>
                             <input type="date" id="fieldRetirementDate" class="form-input" style="font-size: 13px;">
                         </div>
-                        <div>
-                            <label style="font-size: 0.85em; display: block; margin-bottom: 3px;">Archivo</label>
-                            <input type="file" id="fieldRetirementFile" class="form-input" style="font-size: 13px;">
-                        </div>
-                        <div style="display: flex; align-items: flex-end;">
-                            <button type="button" class="btn-new-record" onclick="addRetirementExam()" style="padding: 6px 12px; font-size: 13px;">+ Cargar</button>
+                        <div style="grid-column: span 2;">
+                            <label style="font-size: 0.85em; display: block; margin-bottom: 3px;">Archivo (PDF, Imagen)</label>
+                            <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                <div class="eval-upload-area" style="flex: 1; margin-bottom: 0;">
+                                    <input type="file" id="fieldRetirementFile" style="display:none;" onchange="handleFileUI(this, 'previewRetirementFile', 'nameRetirementFile', 'placeholderRetirementFile')">
+                                    <div class="eval-upload-placeholder" id="placeholderRetirementFile" onclick="document.getElementById('fieldRetirementFile').click()" style="padding: 10px;">
+                                        <i class="fas fa-cloud-upload-alt eval-upload-icon" style="font-size: 1.5rem; margin-bottom: 5px;"></i>
+                                        <p class="eval-upload-text" style="font-size: 0.8rem;">Arrastra aquí o <span class="eval-upload-link">haz clic</span></p>
+                                    </div>
+                                    <div class="eval-file-preview" id="previewRetirementFile" style="display:none; padding: 10px;">
+                                        <div class="eval-file-info" style="gap: 10px;">
+                                            <i class="fas fa-file-alt eval-file-icon" style="font-size: 1.5rem;"></i>
+                                            <p class="eval-file-name" id="nameRetirementFile" style="font-size: 0.8rem;"></p>
+                                        </div>
+                                        <button type="button" class="eval-file-remove" style="width: 24px; height: 24px;" onclick="clearFileUI('fieldRetirementFile', 'previewRetirementFile', 'placeholderRetirementFile')">
+                                            <i class="fas fa-times" style="font-size: 0.7rem;"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-new-record" onclick="addRetirementExam()" style="padding: 8px 12px; font-size: 13px; height: fit-content; align-self: center;">
+                                    <i class="fas fa-upload"></i> Cargar
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
@@ -443,7 +494,7 @@
                 <label>Recomendación</label>
                 <textarea id="modalRecoText" rows="3" class="form-control"></textarea>
             </div>
-            <div class="modal-form-group">
+            <div class="modal-form-group" id="grupoRecoFollowup" style="display: none;">
                 <label>Seguimiento</label>
                 <textarea id="modalRecoFollowup" rows="2" class="form-control" placeholder="Opcional"></textarea>
             </div>
@@ -477,7 +528,7 @@
                 <label>Restricción</label>
                 <textarea id="modalRestricText" rows="3" class="form-control"></textarea>
             </div>
-            <div class="modal-form-group">
+            <div class="modal-form-group" id="grupoRestricFollowup" style="display: none;">
                 <label>Seguimiento</label>
                 <textarea id="modalRestricFollowup" rows="2" class="form-control" placeholder="Opcional"></textarea>
             </div>
@@ -511,7 +562,7 @@
                 <label>Recomendación</label>
                 <textarea id="modalPeriodicRecoText" rows="3" class="form-control"></textarea>
             </div>
-            <div class="modal-form-group">
+            <div class="modal-form-group" id="grupoPeriodicRecoFollowup" style="display: none;">
                 <label>Seguimiento</label>
                 <textarea id="modalPeriodicRecoFollowup" rows="2" class="form-control" placeholder="Opcional"></textarea>
             </div>
@@ -545,7 +596,7 @@
                 <label>Restricción</label>
                 <textarea id="modalPeriodicRestricText" rows="3" class="form-control"></textarea>
             </div>
-            <div class="modal-form-group">
+            <div class="modal-form-group" id="grupoPeriodicRestricFollowup" style="display: none;">
                 <label>Seguimiento</label>
                 <textarea id="modalPeriodicRestricFollowup" rows="2" class="form-control" placeholder="Opcional"></textarea>
             </div>
@@ -573,9 +624,23 @@
                 <input type="date" id="modalEditFileDate" class="form-control">
             </div>
             <div class="modal-form-group">
-                <label>Nuevo Archivo (Opcional)</label>
-                <input type="file" id="modalEditFile" class="form-control">
-                <small style="color: #666;">Deje vacío para mantener el archivo actual.</small>
+                <label>Reemplazar Archivo <span style="font-size:0.8rem; color:#888;">(Opcional, esto eliminará el archivo viejo)</span></label>
+                <div class="eval-upload-area" style="margin-bottom: 0;">
+                    <input type="file" id="modalEditFile" style="display:none;" onchange="handleFileUI(this, 'previewEditFile', 'nameEditFile', 'placeholderEditFile')">
+                    <div class="eval-upload-placeholder" id="placeholderEditFile" onclick="document.getElementById('modalEditFile').click()" style="padding: 15px;">
+                        <i class="fas fa-cloud-upload-alt eval-upload-icon" style="font-size: 1.8rem;"></i>
+                        <p class="eval-upload-text">Selecciona un nuevo archivo</p>
+                    </div>
+                    <div class="eval-file-preview" id="previewEditFile" style="display:none;">
+                        <div class="eval-file-info">
+                            <i class="fas fa-file-alt eval-file-icon"></i>
+                            <p class="eval-file-name" id="nameEditFile"></p>
+                        </div>
+                        <button type="button" class="eval-file-remove" onclick="clearFileUI('modalEditFile', 'previewEditFile', 'placeholderEditFile')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="modal-footer" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
