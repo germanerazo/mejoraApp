@@ -143,7 +143,15 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Grado de Escolaridad</label>
-                    <input type="text" id="fieldEducation" class="form-input">
+                    <select id="fieldEducation" class="form-input" style="height: 35px;">
+                        <option value="">Seleccione...</option>
+                        <option value="Primaria">Primaria</option>
+                        <option value="Secundaria">Secundaria</option>
+                        <option value="Tecnico">Tecnico</option>
+                        <option value="Tecnologo">Tecnologo</option>
+                        <option value="Profesional">Profesional</option>
+                        <option value="Posgrado">Posgrado</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Teléfono</label>
@@ -225,6 +233,10 @@
                         <option value="Activo">ACTIVO</option>
                         <option value="Inactivo">INACTIVO</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fecha de Retiro</label>
+                    <input type="date" id="fieldWithdrawalDate" class="form-input">
                 </div>
             </div>
 

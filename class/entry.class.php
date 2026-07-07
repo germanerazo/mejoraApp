@@ -41,6 +41,7 @@ class entry extends connection {
         $arl             = $this->sanitize($data['arl'] ?? '');
         $afp             = $this->sanitize($data['afp'] ?? '');
         $estado          = $this->sanitize($data['estado'] ?? 'Activo');
+        $fechaRetiro     = $this->sanitize($data['fechaRetiro'] ?? '');
         $emergNombre     = $this->sanitize($data['emergNombre'] ?? '');
         $emergTelefono   = $this->sanitize($data['emergTelefono'] ?? '');
         $alergias        = $this->sanitize($data['alergias'] ?? '');
@@ -51,12 +52,12 @@ class entry extends connection {
                     idEmpresa, fechaIngreso, fechaNacimiento, lugarNacimiento, identificacion,
                     sexo, nombre, estadoCivil, rh, escolaridad, telefono, salario, estrato,
                     personasCargo, cabezaFamilia, numeroHijos, grupoEtnico, cargo, horario,
-                    eps, arl, afp, estado, emergNombre, emergTelefono, alergias
+                    eps, arl, afp, estado, fechaRetiro, emergNombre, emergTelefono, alergias
                   ) VALUES (
                     $idEmpresa, '$fechaIngreso', '$fechaNacimiento', '$lugarNacimiento', '$identificacion',
                     '$sexo', '$nombre', '$estadoCivil', '$rh', '$escolaridad', '$telefono', $salario, $estrato,
                     $personasCargo, '$cabezaFamilia', $numeroHijos, '$grupoEtnico', '$cargo', '$horario',
-                    '$eps', '$arl', '$afp', '$estado', '$emergNombre', '$emergTelefono', '$alergias'
+                    '$eps', '$arl', '$afp', '$estado', '$fechaRetiro', '$emergNombre', '$emergTelefono', '$alergias'
                   )";
 
         $idEntry = parent::nonQueryId($query);
@@ -101,6 +102,7 @@ class entry extends connection {
         if (isset($data['arl']))             $updates[] = "arl='" . $this->sanitize($data['arl']) . "'";
         if (isset($data['afp']))             $updates[] = "afp='" . $this->sanitize($data['afp']) . "'";
         if (isset($data['estado']))          $updates[] = "estado='" . $this->sanitize($data['estado']) . "'";
+        if (isset($data['fechaRetiro']))     $updates[] = "fechaRetiro='" . $this->sanitize($data['fechaRetiro']) . "'";
         if (isset($data['emergNombre']))     $updates[] = "emergNombre='" . $this->sanitize($data['emergNombre']) . "'";
         if (isset($data['emergTelefono']))   $updates[] = "emergTelefono='" . $this->sanitize($data['emergTelefono']) . "'";
         if (isset($data['alergias']))        $updates[] = "alergias='" . $this->sanitize($data['alergias']) . "'";

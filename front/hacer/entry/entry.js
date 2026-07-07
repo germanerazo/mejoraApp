@@ -165,6 +165,7 @@ function saveEntry() {
                 children: document.getElementById('fieldChildren').value,
                 ethnicity: document.getElementById('fieldEthnicity').value,
                 status: document.getElementById('fieldStatus').value,
+                withdrawalDate: document.getElementById('fieldWithdrawalDate').value,
                 recommendations: [],
                 restrictions: [],
                 medicalExams: [],
@@ -189,6 +190,7 @@ function saveEntry() {
                 item.children = document.getElementById('fieldChildren').value;
                 item.ethnicity = document.getElementById('fieldEthnicity').value;
                 item.status = document.getElementById('fieldStatus').value;
+                item.withdrawalDate = document.getElementById('fieldWithdrawalDate').value;
             }
         }
         
@@ -274,6 +276,7 @@ function saveEntry() {
              item.idNum = idNum;
              item.date = document.getElementById('fieldEntryDate').value;
              item.status = document.getElementById('fieldStatus').value;
+             item.withdrawalDate = document.getElementById('fieldWithdrawalDate').value;
              item.recommendations = recos;
              item.restrictions = restrics;
              item.medicalExams = exams;
@@ -385,6 +388,7 @@ function viewEntry(id) {
     document.getElementById('fieldChildren').value = item.children || '';
     document.getElementById('fieldEthnicity').value = item.ethnicity || 'Ninguno';
     document.getElementById('fieldStatus').value = item.status;
+    document.getElementById('fieldWithdrawalDate').value = item.withdrawalDate || '';
     
     // Populate Medical Exams
     document.querySelector('#tableExams tbody').innerHTML = '';
