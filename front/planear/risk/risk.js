@@ -1,31 +1,24 @@
-// Mock Data for Risk Matrix
+import config from '../../js/config.js';
+const API_URL = `${config.BASE_API_URL}risk.php`;
 
-// Section 1: Hazards
-const hazardData = [
-    { name: 'Biomecánico', noAceptable: 2, conControl: 5, mejorable: 1, aceptable: 0 },
-    { name: 'Físico', noAceptable: 0, conControl: 3, mejorable: 2, aceptable: 1 },
-    { name: 'Psicosocial', noAceptable: 1, conControl: 4, mejorable: 0, aceptable: 0 },
-    { name: 'Condiciones de Seguridad', noAceptable: 3, conControl: 2, mejorable: 1, aceptable: 0 }
-];
+let hazardData = [];
+let processData = [];
+let preventionData = [];
 
-// Section 2: Processes
-const processData = [
-    { name: 'Gestión Administrativa', noAceptable: 0, conControl: 2, mejorable: 1, aceptable: 5 },
-    { name: 'Operaciones', noAceptable: 4, conControl: 6, mejorable: 2, aceptable: 1 },
-    { name: 'Mantenimiento', noAceptable: 1, conControl: 3, mejorable: 0, aceptable: 2 }
-];
-
-// Section 3: Prevention Measures
-const preventionData = [
-    'Capacitación en manejo de cargas (Biomecánico)',
-    'Inspección de puestos de trabajo (Físico - Ruido)',
-    'Batería de Riesgo Psicosocial (Anual)',
-    'Mantenimiento preventivo de maquinaria',
-    'Señalización de áreas operativas',
-    'Entrega y reposición de EPP'
-];
-
-const initRisk = () => {
+const initRisk = async () => {
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    try {
+        const res = await fetch(`${API_URL}?idEmpresa=${idEmpresa}`);
+        const resp = await res.json();
+        
+        if (resp.status === 'ok') {
+            hazardData = resp.result.hazards || [];
+            processData = resp.result.processes || [];
+            preventionData = resp.result.prevention || [];
+        }
+    } catch (e) {
+        console.error("Error loading risk data", e);
+    }
     renderHazards();
     renderProcesses();
     renderPrevention();

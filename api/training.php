@@ -1,0 +1,75 @@
+<?php
+require_once 'config.php';
+require_once '../class/answers.class.php';
+require_once '../class/training.class.php';
+
+$_answers = new answers;
+$_training = new training;
+
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+switch ($_SERVER['REQUEST_METHOD']) {
+    case 'GET':
+        header('Content-Type: application/json');
+        if (isset($_GET['idEmpresa'])) {
+            $data = $_training->getTraining($_GET['idEmpresa']);
+            echo json_encode($data);
+            http_response_code(200);
+        } else {
+            http_response_code(400);
+            echo json_encode($_answers->error_400());
+        }
+        break;
+
+    case 'POST':
+        header('Content-Type: application/json');
+        
+        $file = isset($_FILES['file']) ? $_FILES['file'] : null;
+        
+        // El frontend puede enviar data via FormData
+        if (isset($_POST['idEmpresa'])) {
+            $dataArray = $_training->saveTraining($_POST, $file);
+            if (isset($dataArray["result"]["error_id"])) {
+                http_response_code($dataArray["result"]["error_id"]);
+            } else {
+                http_response_code(200);
+            }
+            echo json_encode($dataArray);
+        } else {
+            http_response_code(400);
+            echo json_encode($_answers->error_400());
+        }
+        break;
+
+    case 'DELETE':
+        header('Content-Type: application/json');
+        // Delete request podría venir por $_GET['id'] o $_POST
+        $id = isset($_GET['id']) ? $_GET['id'] : null;
+        if ($id) {
+            $dataArray = $_training->deleteTraining($id);
+            if (isset($dataArray["result"]["error_id"])) {
+                http_response_code($dataArray["result"]["error_id"]);
+            } else {
+                http_response_code(200);
+            }
+            echo json_encode($dataArray);
+        } else {
+            http_response_code(400);
+            echo json_encode($_answers->error_400());
+        }
+        break;
+
+    default:
+        header('Content-Type: application/json');
+        echo json_encode($_answers->error_405());
+        http_response_code(405);
+        break;
+}
+?>

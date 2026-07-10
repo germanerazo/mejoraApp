@@ -1,16 +1,7 @@
-// Mock Data for Training Plan
-let trainingData = [
-    { id: 1, name: 'INDUCCIÓN EN SST', date: '2024-01-10', file: 'induccion_sst.pdf' },
-    { id: 2, name: 'MANEJO DEL ESTRÉS', date: '2024-02-15', file: 'manejo_estres.pdf' },
-    { id: 3, name: 'USO DE EPP', date: '2024-03-20', file: 'uso_epp.pdf' },
-    { id: 4, name: 'RIESGO BIOMECÁNICO', date: '2024-04-05', file: 'riesgo_biomecanico.pdf' },
-    { id: 5, name: 'PRIMEROS AUXILIOS BÁSICOS', date: '2024-05-12', file: 'primeros_auxilios.pdf' },
-    { id: 6, name: 'PREVENCIÓN DE INCENDIOS', date: '2024-06-18', file: 'prevencion_incendios.pdf' },
-    { id: 7, name: 'SEGURIDAD VIAL', date: '2024-07-22', file: 'seguridad_vial.pdf' },
-    { id: 8, name: 'MANIPULACIÓN DE CARGAS', date: '2024-08-30', file: 'manipulacion_cargas.pdf' },
-    { id: 9, name: 'TRABAJO EN ALTURAS', date: '2024-09-14', file: 'trabajo_alturas.pdf' },
-    { id: 10, name: 'AUDITORÍA INTERNA', date: '2024-10-02', file: 'auditoria_interna.pdf' }
-];
+import config from '../../js/config.js';
+const API_URL = `${config.BASE_API_URL}training.php`;
+
+let trainingData = [];
     
 function updateTrainingFileName(input) {
     const fileNameDisplay = document.getElementById('trainingFileNameDisplay');
@@ -42,8 +33,22 @@ function updateTrainingFileName(input) {
 window.updateTrainingFileName = updateTrainingFileName;
 
 
-function initTraining() {
+async function initTraining() {
+    await loadTrainingData();
     renderTrainingList();
+}
+
+async function loadTrainingData() {
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    try {
+        const res = await fetch(`${API_URL}?idEmpresa=${idEmpresa}`);
+        const resp = await res.json();
+        if (resp.status === 'ok') {
+            trainingData = resp.result || [];
+        }
+    } catch (e) {
+        console.error("Error loading training", e);
+    }
 }
 
 function renderTrainingList() {
@@ -95,7 +100,7 @@ function hideCreateTraining() {
     document.getElementById('trainingListView').style.display = 'block';
 }
 
-function saveTraining() {
+async function saveTraining() {
     const name = document.getElementById('trainingName').value;
     const date = document.getElementById('trainingDate').value;
     const fileInput = document.getElementById('trainingFile');
@@ -105,27 +110,39 @@ function saveTraining() {
         return;
     }
     
-    // Simulate file upload
-    const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : 'documento_capacitacion.pdf';
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    const formData = new FormData();
+    formData.append('idEmpresa', idEmpresa);
+    formData.append('name', name);
+    formData.append('date', date);
+    if (fileInput && fileInput.files.length > 0) {
+        formData.append('file', fileInput.files[0]);
+    }
 
-    const newDoc = {
-        id: Date.now(),
-        name: name,
-        date: date,
-        file: fileName
-    };
-
-    trainingData.push(newDoc);
-    renderTrainingList();
-    
-    Swal.fire({
-        title: 'Guardado',
-        text: 'Capacitación registrada exitosamente',
-        icon: 'success',
-        confirmButtonColor: '#ff6b00'
-    }).then(() => {
-        hideCreateTraining();
-    });
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            body: formData
+        });
+        const resp = await res.json();
+        
+        if (resp.status === 'ok') {
+            await loadTrainingData();
+            renderTrainingList();
+            Swal.fire({
+                title: 'Guardado',
+                text: 'Capacitación registrada exitosamente',
+                icon: 'success',
+                confirmButtonColor: '#ff6b00'
+            }).then(() => {
+                hideCreateTraining();
+            });
+        } else {
+            Swal.fire('Error', 'Error al guardar el registro', 'error');
+        }
+    } catch(e) {
+        Swal.fire('Error', 'Ocurrió un error en la solicitud', 'error');
+    }
 }
 
 function deleteTraining(id) {
@@ -137,11 +154,23 @@ function deleteTraining(id) {
         confirmButtonColor: '#ff6b00',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Sí, eliminar'
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            trainingData = trainingData.filter(d => d.id !== id);
-            renderTrainingList();
-            Swal.fire('Eliminado', 'El registro ha sido eliminado.', 'success');
+            try {
+                const res = await fetch(`${API_URL}?id=${id}`, {
+                    method: 'DELETE'
+                });
+                const resp = await res.json();
+                if (resp.status === 'ok') {
+                    await loadTrainingData();
+                    renderTrainingList();
+                    Swal.fire('Eliminado', 'El registro ha sido eliminado.', 'success');
+                } else {
+                    Swal.fire('Error', 'Error al eliminar el registro', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error', 'Ocurrió un error', 'error');
+            }
         }
     });
 }

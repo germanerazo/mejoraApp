@@ -1,57 +1,19 @@
-// Mock Data for Personal Consolidation
-// In a real app, this might come from joining Profile and Process Employee tables
-let personalData = [
-    {
-        cargo: 'Gerente General',
-        reporta: 'Junta Directiva',
-        personas: 1,
-        responsabilidades: [
-            'Definir la estrategia corporativa',
-            'Aprobar presupuestos anuales',
-            'Representar legalmente a la compañía'
-        ],
-        rendicion: 'Informe de Gestión',
-        frecuencia: 'Anual'
-    },
-    {
-        cargo: 'Director Logístico',
-        reporta: 'Gerente General',
-        personas: 1,
-        responsabilidades: [
-            'Gestionar la cadena de suministro',
-            'Supervisar personal de bodega',
-            'Optimizar rutas de entrega'
-        ],
-        rendicion: 'Indicadores de Cumplimiento',
-        frecuencia: 'Mensual'
-    },
-    {
-        cargo: 'Analista de Operaciones',
-        reporta: 'Director Logístico',
-        personas: 3,
-        responsabilidades: [
-            'Procesar órdenes de compra',
-            'Coordinar despachos',
-            'Actualizar inventario'
-        ],
-        rendicion: 'Reporte de Operaciones',
-        frecuencia: 'Semanal'
-    },
-    {
-        cargo: 'Auxiliar de Bodega',
-        reporta: 'Director Logístico',
-        personas: 5,
-        responsabilidades: [
-            'Cargue y descargue de mercancía',
-            'Organización de bodega',
-            'Picking y Packing'
-        ],
-        rendicion: 'Novedades de Turno',
-        frecuencia: 'Diario'
-    }
-];
+import config from '../../js/config.js';
+const API_URL = `${config.BASE_API_URL}personnel.php`;
 
-const initPersonal = () => {
+let personalData = [];
+
+const initPersonal = async () => {
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    try {
+        const res = await fetch(`${API_URL}?idEmpresa=${idEmpresa}`);
+        const resp = await res.json();
+        if (resp.status === 'ok') {
+            personalData = resp.result || [];
+        }
+    } catch(e) {
+        console.error("Error loading personnel", e);
+    }
     renderPersonalTable(personalData);
 };
 
