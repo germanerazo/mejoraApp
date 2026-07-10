@@ -2,74 +2,49 @@
 const selectedRisk = JSON.parse(localStorage.getItem('selectedRisk') || '{}');
 const selectedPeriod = JSON.parse(localStorage.getItem('selectedPeriod') || '{}');
 
-// Mock data for Programa de Gestión
+import config from '../../js/config.js';
+const API_URL = `${config.BASE_API_URL}riskConsolidation.php`;
+
 let programaData = {
-    objetivo: 'Actividades encaminadas a prevenir y proteger la integridad física y mental de los trabajadores mediante la identificación, evaluación y control de los riesgos asociados.',
-    marcoLegal: 'Decreto 1072 de 2015, Resolución 312 de 2019, Ley 1562 de 2012',
-    peligrosAsociados: [
-        { id: 1, nombre: 'SARS-COV 2' },
-        { id: 2, nombre: 'Radiaciones no ionizantes' },
-        { id: 3, nombre: 'Locativo' }
-    ]
+    objetivo: '',
+    marcoLegal: '',
+    peligrosAsociados: []
 };
+let indicadoresData = [];
+let medidasData = [];
 
-// Indicadores mock data
-let indicadoresData = [
-    {
-        id: 1,
-        formula: '(N° DE CAPACITACIONES DESARROLLADAS/ N° DE CAPACITACIONES PROGRAMADAS)*100',
-        limiteEsperado: '>= 80',
-        limiteCritico: '20',
-        fuente: 'Plan de trabajo',
-        periodicidad: 'Trimestral',
-        dirigidoA: 'Trabajadores'
-    },
-    {
-        id: 2,
-        formula: '(N° DE INSPECCIONES REALIZADAS / N° DE INSPECCIONES PROGRAMADAS)*100',
-        limiteEsperado: '>= 90',
-        limiteCritico: '30',
-        fuente: 'Cronograma de inspecciones',
-        periodicidad: 'Semestral',
-        dirigidoA: 'Áreas operativas'
-    }
-];
-
-// Medidas mock data
-let medidasData = [
-    {
-        id: 1,
-        medida: 'Verificación de entrega y uso completo de EPP para Poda',
-        responsable: 'Responsable del SG-SST',
-        recurso: 'Humano',
-        fechaPlaneacion: '2024-03-15',
-        cargos: ['Operarios de campo']
-    },
-    {
-        id: 2,
-        medida: 'Pausas activas visuales',
-        responsable: 'Representante Legal',
-        recurso: 'Financiero',
-        fechaPlaneacion: '2024-04-01',
-        cargos: ['Personal administrativo', 'Auxiliar Contable']
-    }
-];
-
-const initRiskActions = () => {
+const initRiskActions = async () => {
     // Set program title with risk info
     if (selectedRisk.peligro) {
         document.getElementById('programTitle').textContent = 
             `PROGRAMA DE GESTIÓN - ${selectedRisk.programas || 'SIN PROGRAMA'}`;
     }
 
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    try {
+        const res = await fetch(`${API_URL}?idEmpresa=${idEmpresa}`);
+        const resp = await res.json();
+        if (resp.status === 'ok') {
+            programaData = resp.result.programa || { objetivo: '', marcoLegal: '', peligrosAsociados: [] };
+            indicadoresData = resp.result.indicadores || [];
+            medidasData = resp.result.medidas || [];
+            
+            if (selectedRisk.peligro && programaData.peligrosAsociados.length === 0) {
+                programaData.peligrosAsociados.push({id: 1, nombre: selectedRisk.peligro});
+            }
+        }
+    } catch (e) {
+        console.error("Error loading risk consolidation", e);
+    }
+
     // Load existing data
     const objetivoEl = document.getElementById('objetivo');
     const marcoLegalEl = document.getElementById('marcoLegal');
     
-    if (objetivoEl) objetivoEl.value = programaData.objetivo;
-    if (marcoLegalEl) marcoLegalEl.value = programaData.marcoLegal;
+    if (objetivoEl) objetivoEl.value = programaData.objetivo || '';
+    if (marcoLegalEl) marcoLegalEl.value = programaData.marcoLegal || '';
 
-     renderPeligros();
+    renderPeligros();
     renderIndicadores();
     renderMedidas();
 };
@@ -509,16 +484,40 @@ window.removeCargo = (medidaId, index) => {
     }
 };
 
-window.savePrograma = () => {
+window.savePrograma = async () => {
     programaData.objetivo = document.getElementById('objetivo').value;
     programaData.marcoLegal = document.getElementById('marcoLegal').value;
+    
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    const payload = {
+        idEmpresa: idEmpresa,
+        objetivo: programaData.objetivo,
+        marcoLegal: programaData.marcoLegal,
+        indicadores: indicadoresData,
+        medidas: medidasData
+    };
 
-    Swal.fire({
-        icon: 'success',
-        title: '¡Guardado!',
-        text: 'El programa de gestión ha sido guardado correctamente',
-        confirmButtonColor: '#329bd6'
-    });
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const resp = await res.json();
+        
+        if (resp.status === 'ok') {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Guardado!',
+                text: 'El programa de gestión ha sido guardado correctamente',
+                confirmButtonColor: '#329bd6'
+            });
+        } else {
+            Swal.fire('Error', 'Error al guardar el programa', 'error');
+        }
+    } catch(e) {
+        Swal.fire('Error', 'Ocurrió un error en la solicitud', 'error');
+    }
 };
 
 window.goBackToConsolidation = () => {

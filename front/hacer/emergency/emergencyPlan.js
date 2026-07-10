@@ -1,16 +1,7 @@
-// Mock Data
-let emergencyData = [
-    { id: 1, name: 'SST- PE-01 PLAN DE EMERGENCIAS', date: '2024-01-15', file: 'plan_emergencias_v1.pdf' },
-    { id: 2, name: 'VISTA DE BOMBEROS', date: '2024-02-10', file: 'informe_bomberos_2024.pdf' },
-    { id: 3, name: 'ACTA DE CONFORMACION BRIGADA', date: '2024-03-05', file: 'acta_brigada_2024.pdf' },
-    { id: 4, name: 'SIMULACRO DE EVACUACIÓN - INFORME', date: '2024-04-20', file: 'informe_simulacro.pdf' },
-    { id: 5, name: 'ANÁLISIS DE VULNERABILIDAD', date: '2024-01-20', file: 'analisis_vulnerabilidad.pdf' },
-    { id: 6, name: 'PON DE EVACUACIÓN', date: '2024-01-25', file: 'pon_evacuacion.pdf' },
-    { id: 7, name: 'DIRECTORIO DE EMERGENCIAS', date: '2024-01-10', file: 'directorio_2024.pdf' },
-    { id: 8, name: 'INVENTARIO DE EQUIPOS DE EMERGENCIA', date: '2024-05-15', file: 'inventario_equipos.pdf' },
-    { id: 9, name: 'CAPACITACIÓN BRIGADA DE PRIMEROS AUXILIOS', date: '2024-06-01', file: 'capacitacion_brigada.pdf' },
-    { id: 10, name: 'INSPECCIÓN DE EXTINTORES', date: '2024-06-15', file: 'inspeccion_extintores_junio.xls' }
-];
+import config from '../../js/config.js';
+const API_URL = `${config.BASE_API_URL}emergency.php`;
+
+let emergencyData = [];
     
 function updateFileName(input) {
     const fileNameDisplay = document.getElementById('fileNameDisplay');
@@ -37,8 +28,22 @@ function updateFileName(input) {
 window.updateFileName = updateFileName;
 
 
-function initEmergency() {
+async function initEmergency() {
+    await loadEmergencyData();
     renderEmergencyList();
+}
+
+async function loadEmergencyData() {
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    try {
+        const res = await fetch(`${API_URL}?idEmpresa=${idEmpresa}`);
+        const resp = await res.json();
+        if (resp.status === 'ok') {
+            emergencyData = resp.result || [];
+        }
+    } catch (e) {
+        console.error("Error loading emergency data", e);
+    }
 }
 
 function renderEmergencyList() {
@@ -90,7 +95,7 @@ function hideCreateEmergency() {
     document.getElementById('emergencyListView').style.display = 'block';
 }
 
-function saveEmergency() {
+async function saveEmergency() {
     const name = document.getElementById('planName').value;
     const date = document.getElementById('planDate').value;
     const fileInput = document.getElementById('planFile');
@@ -100,27 +105,39 @@ function saveEmergency() {
         return;
     }
     
-    // Simulate file upload
-    const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : 'documento_nuevo.pdf';
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    const formData = new FormData();
+    formData.append('idEmpresa', idEmpresa);
+    formData.append('name', name);
+    formData.append('date', date);
+    if (fileInput && fileInput.files.length > 0) {
+        formData.append('file', fileInput.files[0]);
+    }
 
-    const newDoc = {
-        id: Date.now(),
-        name: name,
-        date: date,
-        file: fileName
-    };
-
-    emergencyData.push(newDoc);
-    renderEmergencyList();
-    
-    Swal.fire({
-        title: 'Guardado',
-        text: 'Documento registrado exitosamente',
-        icon: 'success',
-        confirmButtonColor: '#ff6b00'
-    }).then(() => {
-        hideCreateEmergency();
-    });
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            body: formData
+        });
+        const resp = await res.json();
+        
+        if (resp.status === 'ok') {
+            await loadEmergencyData();
+            renderEmergencyList();
+            Swal.fire({
+                title: 'Guardado',
+                text: 'Documento registrado exitosamente',
+                icon: 'success',
+                confirmButtonColor: '#ff6b00'
+            }).then(() => {
+                hideCreateEmergency();
+            });
+        } else {
+            Swal.fire('Error', 'Error al guardar el documento', 'error');
+        }
+    } catch(e) {
+        Swal.fire('Error', 'Ocurrió un error en la solicitud', 'error');
+    }
 }
 
 function deleteEmergency(id) {
@@ -132,11 +149,23 @@ function deleteEmergency(id) {
         confirmButtonColor: '#ff6b00',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Sí, eliminar'
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            emergencyData = emergencyData.filter(d => d.id !== id);
-            renderEmergencyList();
-            Swal.fire('Eliminado', 'El documento ha sido eliminado.', 'success');
+            try {
+                const res = await fetch(`${API_URL}?id=${id}`, {
+                    method: 'DELETE'
+                });
+                const resp = await res.json();
+                if (resp.status === 'ok') {
+                    await loadEmergencyData();
+                    renderEmergencyList();
+                    Swal.fire('Eliminado', 'El documento ha sido eliminado.', 'success');
+                } else {
+                    Swal.fire('Error', 'Error al eliminar el documento', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error', 'Ocurrió un error', 'error');
+            }
         }
     });
 }
