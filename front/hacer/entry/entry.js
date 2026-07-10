@@ -1,5 +1,4 @@
 import config from '../../js/config.js';
-import { showLoading, hideLoading } from '../../js/utils.js';
 
 const API_URL = `${config.BASE_API_URL}entry.php`;
 const MEDICAL_FILES_API = `${config.BASE_API_URL}entryMedicalFiles.php`;
@@ -481,8 +480,6 @@ async function uploadMedicalFile(idEntry, tipoExamen, fechaExamen, fileInput) {
     formData.append('archivo', fileInput.files[0]);
 
     try {
-        showLoading();
-
         const res = await fetch(MEDICAL_FILES_API, {
             method: 'POST',
             body: formData
