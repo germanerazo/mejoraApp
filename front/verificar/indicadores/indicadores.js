@@ -101,85 +101,17 @@ function generarGrafica() {
     container.scrollIntoView({ behavior: 'smooth' });
 }
 
-const mockIndicadores = [
-    {
-        id: 1,
-        nombre: "Frecuencia de Accidentalidad",
-        objetivo: "Medir la frecuencia con la que ocurren accidentes de trabajo.",
-        responsable: "Lider SST",
-        dirigido: "Alta Gerencia",
-        fuente: "Reportes AT",
-        formula: "(N° AT / N° Trabajadores) * 100",
-        periodicidad: "Mensual",
-        tipo: "Resultado",
-        tipoLimite: "Menor o Igual",
-        esperado: "<= 5%",
-        critico: "> 10%"
-    },
-    {
-        id: 2,
-        nombre: "Eficiencia de Capacitación",
-        objetivo: "Evaluar el impacto de las capacitaciones bimestrales.",
-        responsable: "Coordinador HSEQ",
-        dirigido: "Copasst",
-        fuente: "Evaluaciones",
-        formula: "(Evaluaciones aprobadas / Total evaluaciones) * 100",
-        periodicidad: "Bimestral",
-        tipo: "Proceso",
-        tipoLimite: "Mayor o Igual",
-        esperado: ">= 90%",
-        critico: "< 80%"
-    },
-    {
-        id: 3,
-        nombre: "Cumplimiento Trimestral de Inspecciones",
-        objetivo: "Asegurar que las inspecciones se realicen cada trimestre.",
-        responsable: "Inspector de Seguridad",
-        dirigido: "Director Técnico",
-        fuente: "Checklist",
-        formula: "(Inspecciones realizadas / Inspecciones programadas) * 100",
-        periodicidad: "Trimestral",
-        tipo: "Estructura",
-        tipoLimite: "Igual",
-        esperado: "100%",
-        critico: "< 100%"
-    },
-    {
-        id: 4,
-        nombre: "Severidad de Accidentalidad Semestral",
-        objetivo: "Medir los días perdidos por accidentes cada semestre.",
-        responsable: "Lider SST",
-        dirigido: "Gerencia General",
-        fuente: "Incapacidades",
-        formula: "(Días perdidos / N° Horas trabajadas) * 240.000",
-        periodicidad: "Semestral",
-        tipo: "Resultado",
-        tipoLimite: "Menor o Igual",
-        esperado: "0",
-        critico: "> 0"
-    },
-    {
-        id: 5,
-        nombre: "Cumplimiento del Sistema de Gestión (Anual)",
-        objetivo: "Verificar el avance anual del SG-SST.",
-        responsable: "Gerencia",
-        dirigido: "Junta Directiva",
-        fuente: "Auditoría",
-        formula: "Suma de puntaje estándar / Puntaje Total",
-        periodicidad: "Anual",
-        tipo: "Estructura",
-        tipoLimite: "Mayor o Igual",
-        esperado: ">= 95%",
-        critico: "< 85%"
-    }
-];
+import config from '../../../js/config.js';
+const API_URL = `${config.BASE_API_URL}indicadores.php`;
+
+let mockIndicadores = [];
 
 function mostrarIndicadores(anio) {
     document.getElementById('view-periodos').style.display = 'none';
     document.getElementById('view-indicadores').style.display = 'block';
     document.getElementById('titulo-indicadores').innerHTML = `<i class="fas fa-chart-line"></i> Listado de Indicadores - Periodo ${anio}`;
     
-    cargarDatosSimulados();
+    loadIndicadores();
 }
 
 function mostrarPeriodos() {
@@ -187,11 +119,30 @@ function mostrarPeriodos() {
     document.getElementById('view-indicadores').style.display = 'none';
 }
 
+async function loadIndicadores() {
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    try {
+        const res = await fetch(`${API_URL}?idEmpresa=${idEmpresa}`);
+        const resp = await res.json();
+        if (resp.status === 'ok') {
+            mockIndicadores = resp.result || [];
+            cargarDatosSimulados();
+        }
+    } catch (e) {
+        console.error("Error loading indicadores", e);
+    }
+}
+
 function cargarDatosSimulados() {
     const tbody = document.getElementById('indicadoresBody');
     if (!tbody) return;
     tbody.innerHTML = '';
     
+    if (mockIndicadores.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No hay indicadores registrados.</td></tr>';
+        return;
+    }
+
     mockIndicadores.forEach(ind => {
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -206,7 +157,7 @@ function cargarDatosSimulados() {
             <td>${ind.tipoLimite}</td>
             <td>${ind.dirigido}</td>
             <td style="text-align:center;">
-                <button class="btn-view-premium" onclick="verDetalleIndicador(${ind.id})" title="Ver Gráfica">
+                <button class="btn-view-premium" onclick="window.verDetalleIndicador(${ind.id})" title="Ver Gráfica">
                     <i class="fas fa-chart-line"></i>
                 </button>
             </td>
@@ -277,6 +228,16 @@ function volverAListado() {
 }
 
 function guardarCambiosIndicador() {
-    alert("¡Cambios guardados exitosamente!");
-    volverAListado();
+    // En un sistema real esto guardaría los valores digitados
+    Swal.fire('Guardado', '¡Cambios guardados exitosamente!', 'success').then(() => {
+        volverAListado();
+    });
 }
+
+// Make accessible to onclick
+window.mostrarIndicadores = mostrarIndicadores;
+window.mostrarPeriodos = mostrarPeriodos;
+window.verDetalleIndicador = verDetalleIndicador;
+window.volverAListado = volverAListado;
+window.guardarCambiosIndicador = guardarCambiosIndicador;
+window.generarGrafica = generarGrafica;

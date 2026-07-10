@@ -1,22 +1,27 @@
 
-// Mock Data - Enhanced for testing
-let morbidityData = [
-    { id: 1, idNum: '1098765432', name: 'Brayan Daniel Cardenas Quitian', startDate: '2025-02-25', endDate: '2025-03-16', days: 20, code: 'S626', type: 'Enfermedad comun' },
-    { id: 2, idNum: '52487651', name: 'Maria Fernanda Lopez', startDate: '2025-01-10', endDate: '2025-01-12', days: 3, code: 'J00', type: 'Enfermedad comun' },
-    { id: 3, idNum: '1012345678', name: 'Carlos Andres Perez', startDate: '2024-11-05', endDate: '2024-11-20', days: 16, code: 'S82', type: 'Accidente de trabajo' },
-    { id: 4, idNum: '1023456789', name: 'Luisa Fernanda Gomez', startDate: '2024-12-01', endDate: '2025-03-20', days: 110, code: 'Z33', type: 'Enfermedad comun' }, // Changed to valid type
-    { id: 5, idNum: '80123456', name: 'Jorge Eliecer Diaz', startDate: '2025-01-15', endDate: '2025-01-22', days: 8, code: 'Z35', type: 'Enfermedad laboral' },
-    { id: 6, idNum: '52987654', name: 'Ana Maria Rodriguez', startDate: '2025-02-01', endDate: '2025-02-05', days: 5, code: 'Z63', type: 'Enfermedad comun' },
-    { id: 7, idNum: '79654321', name: 'Pedro Pablo Ramirez', startDate: '2025-02-10', endDate: '2025-02-12', days: 3, code: 'Z59', type: 'Enfermedad laboral' },
-    { id: 8, idNum: '1034567890', name: 'Sofia Vergara', startDate: '2025-01-05', endDate: '2025-01-05', days: 1, code: 'K08', type: 'Accidente de trabajo' },
-    { id: 9, idNum: '1045678901', name: 'Diego Armando Maradona', startDate: '2025-03-01', endDate: '2025-03-10', days: 10, code: 'I10', type: 'Enfermedad comun' },
-    { id: 10, idNum: '1056789012', name: 'Shakira Isabel Mebarak', startDate: '2025-02-14', endDate: '2025-02-28', days: 15, code: 'J10', type: 'Enfermedad comun' }
-];
+import config from '../../js/config.js';
+const API_URL = `${config.BASE_API_URL}morbidity.php`;
 
-function initMorbidity() {
+let morbidityData = [];
+
+async function initMorbidity() {
+    await loadMorbidityData();
     renderMorbidityList();
     renderFirstAidList();
     initAutocomplete();
+}
+
+async function loadMorbidityData() {
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    try {
+        const res = await fetch(`${API_URL}?idEmpresa=${idEmpresa}`);
+        const resp = await res.json();
+        if (resp.status === 'ok') {
+            morbidityData = resp.result || [];
+        }
+    } catch (e) {
+        console.error("Error loading morbidity data", e);
+    }
 }
 
 function renderMorbidityList(data = morbidityData) {
@@ -94,7 +99,7 @@ function calculateDays() {
     }
 }
 
-function saveMorbidity() {
+async function saveMorbidity() {
     const name = document.getElementById('morbidityEmployee').value;
     const type = document.getElementById('morbidityType').value;
     const start = document.getElementById('morbidityStartDate').value;
@@ -110,35 +115,38 @@ function saveMorbidity() {
         return;
     }
 
-    if (editingId) {
-        // Update Existing
-        const index = morbidityData.findIndex(i => i.id == editingId);
-        if (index !== -1) {
-            morbidityData[index] = {
-                ...morbidityData[index],
-                name, type, startDate: start, endDate: end, days, code, cause
-            };
-            Swal.fire('Actualizado', 'Registro actualizado exitosamente', 'success');
-        }
-    } else {
-        // Create New
-        const newRecord = {
-            id: Date.now(),
-            idNum: Math.floor(Math.random() * 1000000000).toString(), // Mock ID
-            name: name,
-            startDate: start,
-            endDate: end,
-            days: days,
-            code: code || '---',
-            type: type,
-            cause: cause || ''
-        };
-        morbidityData.push(newRecord);
-        Swal.fire('Guardado', 'Registro guardado exitosamente', 'success');
-    }
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    const payload = {
+        idEmpresa: idEmpresa,
+        id: editingId || 0,
+        name: name,
+        type: type,
+        startDate: start,
+        endDate: end,
+        days: days,
+        code: code,
+        cause: cause
+    };
 
-    renderMorbidityList();
-    hideCreateMorbidity();
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const resp = await res.json();
+        
+        if (resp.status === 'ok') {
+            await loadMorbidityData();
+            renderMorbidityList();
+            hideCreateMorbidity();
+            Swal.fire(editingId ? 'Actualizado' : 'Guardado', 'Registro guardado exitosamente', 'success');
+        } else {
+            Swal.fire('Error', 'Error al guardar el registro', 'error');
+        }
+    } catch(e) {
+        Swal.fire('Error', 'Ocurrió un error en la solicitud', 'error');
+    }
 }
 
 function deleteMorbidity(id) {
@@ -150,11 +158,23 @@ function deleteMorbidity(id) {
         confirmButtonColor: '#ff6b00',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Sí, eliminar'
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            morbidityData = morbidityData.filter(item => item.id !== id);
-            renderMorbidityList(); 
-            Swal.fire('Eliminado', 'El registro ha sido eliminado.', 'success');
+            try {
+                const res = await fetch(`${API_URL}?id=${id}`, {
+                    method: 'DELETE'
+                });
+                const resp = await res.json();
+                if (resp.status === 'ok') {
+                    await loadMorbidityData();
+                    renderMorbidityList();
+                    Swal.fire('Eliminado!', 'El registro ha sido eliminado.', 'success');
+                } else {
+                    Swal.fire('Error', 'Error al eliminar el registro', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error', 'Ocurrió un error', 'error');
+            }
         }
     });
 }

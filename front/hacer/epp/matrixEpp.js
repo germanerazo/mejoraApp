@@ -9,38 +9,10 @@ const eppList = [
     { id: 4, name: 'Botas de Seguridad', standard: 'ASTM F2413' }
 ];
 
-let matrixData = [
-    {
-        id: 1,
-        cargo: 'Operario de Campo',
-        epp: 'Casco de Seguridad',
-        norma: 'ANSI Z89.1',
-        frecuencia: 'Anual',
-        almacenamiento: 'Lugar seco y ventilado',
-        mantenimiento: 'Limpieza con jabón neutro',
-        disposicion: 'Residuo ordinario (si no contaminado)'
-    },
-    {
-        id: 2,
-        cargo: 'Operario de Campo',
-        epp: 'Botas de Seguridad',
-        norma: 'ASTM F2413',
-        frecuencia: 'Semestral',
-        almacenamiento: 'Lugar fresco',
-        mantenimiento: 'Aplicar grasa protectora',
-        disposicion: 'Residuo ordinario'
-    },
-    {
-        id: 3,
-        cargo: 'Analista de Laboratorio',
-        epp: 'Guantes de Nitrilo',
-        norma: 'EN 374',
-        frecuencia: 'Diaria',
-        almacenamiento: 'Caja original',
-        mantenimiento: 'Desechable',
-        disposicion: 'Residuo peligroso'
-    }
-];
+import config from '../../js/config.js';
+const API_URL = `${config.BASE_API_URL}eppMatrix.php`;
+
+let matrixData = [];
 
 const renderFilterOptions = () => {
     const select = document.getElementById('cargoFilter');
@@ -170,15 +142,30 @@ window.addMatrixEntry = () => {
 
             return { cargo, epp: eppName, norma, frecuencia: freq, almacenamiento: storage, mantenimiento: maint, disposicion: disposal };
         }
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            const newId = matrixData.length > 0 ? Math.max(...matrixData.map(m => m.id)) + 1 : 1;
-            matrixData.push({
-                id: newId,
+            const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+            const payload = {
+                idEmpresa: idEmpresa,
                 ...result.value
-            });
-            renderMatrix();
-            Swal.fire('Guardado', 'Asignación registrada.', 'success');
+            };
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const resp = await res.json();
+                if (resp.status === 'ok') {
+                    await loadMatrixData();
+                    renderMatrix();
+                    Swal.fire('Guardado', 'Asignación registrada.', 'success');
+                } else {
+                    Swal.fire('Error', 'Error al guardar', 'error');
+                }
+            } catch(e) {
+                Swal.fire('Error', 'Ocurrió un error en la solicitud', 'error');
+            }
         }
     });
 };
@@ -250,11 +237,31 @@ window.editMatrixEntry = (id) => {
                 disposicion: document.getElementById('swal-disposal').value
             };
         }
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            Object.assign(item, result.value);
-            renderMatrix();
-            Swal.fire('Actualizado', 'Registro modificado.', 'success');
+            const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+            const payload = {
+                idEmpresa: idEmpresa,
+                id: item.id,
+                ...result.value
+            };
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const resp = await res.json();
+                if (resp.status === 'ok') {
+                    await loadMatrixData();
+                    renderMatrix();
+                    Swal.fire('Actualizado', 'Registro modificado.', 'success');
+                } else {
+                    Swal.fire('Error', 'Error al actualizar', 'error');
+                }
+            } catch(e) {
+                Swal.fire('Error', 'Ocurrió un error en la solicitud', 'error');
+            }
         }
     });
 };
@@ -267,21 +274,43 @@ window.deleteMatrixEntry = (id) => {
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar',
         confirmButtonColor: '#e74c3c'
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            matrixData = matrixData.filter(m => m.id !== id);
-            renderMatrix();
-            Swal.fire('Eliminado', 'Registro eliminado.', 'success');
+            try {
+                const res = await fetch(`${API_URL}?id=${id}`, {
+                    method: 'DELETE'
+                });
+                const resp = await res.json();
+                if (resp.status === 'ok') {
+                    await loadMatrixData();
+                    renderMatrix();
+                    Swal.fire('Eliminado', 'Registro eliminado.', 'success');
+                } else {
+                    Swal.fire('Error', 'Error al eliminar', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error', 'Ocurrió un error', 'error');
+            }
         }
     });
 };
 
+async function loadMatrixData() {
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    try {
+        const res = await fetch(`${API_URL}?idEmpresa=${idEmpresa}`);
+        const resp = await res.json();
+        if (resp.status === 'ok') {
+            matrixData = resp.result || [];
+        }
+    } catch (e) {
+        console.error("Error loading matrix data", e);
+    }
+}
+
 // Init
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadMatrixData();
     renderFilterOptions();
     renderMatrix();
 });
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    renderFilterOptions();
-    renderMatrix();
-}

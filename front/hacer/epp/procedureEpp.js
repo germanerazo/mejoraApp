@@ -1,11 +1,9 @@
 // JavaScript for EPP Procedures (Procedimiento EPP)
 
-// Mock procedures
-let procedures = [
-    { id: 1, title: 'Procedimiento de Entrega de EPP', date: '2024-01-15', file: 'PT-001.pdf' },
-    { id: 2, title: 'Guía de Selección de EPP', date: '2024-02-10', file: 'MN-005.pdf' },
-    { id: 3, title: 'Instructivo de Mantenimiento de EPP', date: '2024-03-20', file: 'IN-022.pdf' }
-];
+import config from '../../js/config.js';
+const API_URL = `${config.BASE_API_URL}eppProcedures.php`;
+
+let procedures = [];
 
 const renderProcedures = () => {
     const container = document.getElementById('proceduresList');
@@ -70,19 +68,34 @@ window.addProcedure = () => {
                 return false;
             }
 
-            return { title, date, fileName: fileInput.files[0].name };
+            return { title, date, file: fileInput.files[0] };
         }
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            const newId = procedures.length > 0 ? Math.max(...procedures.map(p => p.id)) + 1 : 1;
-            procedures.push({
-                id: newId,
-                title: result.value.title,
-                date: result.value.date,
-                file: result.value.fileName
-            });
-            renderProcedures();
-            Swal.fire('Subido', 'El documento ha sido cargado con éxito', 'success');
+            const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+            const formData = new FormData();
+            formData.append('idEmpresa', idEmpresa);
+            formData.append('title', result.value.title);
+            formData.append('date', result.value.date);
+            formData.append('file', result.value.file);
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                const resp = await res.json();
+                
+                if (resp.status === 'ok') {
+                    await loadProcedures();
+                    renderProcedures();
+                    Swal.fire('Subido', 'El documento ha sido cargado con éxito', 'success');
+                } else {
+                    Swal.fire('Error', 'Error al subir el documento', 'error');
+                }
+            } catch(e) {
+                Swal.fire('Error', 'Ocurrió un error en la solicitud', 'error');
+            }
         }
     });
 };
@@ -107,17 +120,42 @@ window.deleteProcedure = (id) => {
         cancelButtonColor: '#95a5a6',
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            procedures = procedures.filter(p => p.id !== id);
-            renderProcedures();
-            Swal.fire('Eliminado', 'El documento ha sido eliminado.', 'success');
+            try {
+                const res = await fetch(`${API_URL}?id=${id}`, {
+                    method: 'DELETE'
+                });
+                const resp = await res.json();
+                if (resp.status === 'ok') {
+                    await loadProcedures();
+                    renderProcedures();
+                    Swal.fire('Eliminado', 'El documento ha sido eliminado.', 'success');
+                } else {
+                    Swal.fire('Error', 'Error al eliminar el documento', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error', 'Ocurrió un error', 'error');
+            }
         }
     });
 };
 
-// Init
-document.addEventListener('DOMContentLoaded', renderProcedures);
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    renderProcedures();
+async function loadProcedures() {
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    try {
+        const res = await fetch(`${API_URL}?idEmpresa=${idEmpresa}`);
+        const resp = await res.json();
+        if (resp.status === 'ok') {
+            procedures = resp.result || [];
+        }
+    } catch (e) {
+        console.error("Error loading procedures", e);
+    }
 }
+
+// Init
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadProcedures();
+    renderProcedures();
+});

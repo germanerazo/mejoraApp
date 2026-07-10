@@ -1,40 +1,11 @@
 // JavaScript for EPP Delivery (Entrega EPP)
 
-// Mock Employees
-const employees = [
-    { id: 101, name: 'Juan Pérez', id_number: '12345678', position: 'Operario de Campo', status: 'Activo' },
-    { id: 102, name: 'María Gómez', id_number: '87654321', position: 'Auxiliar Administrativo', status: 'Activo' },
-    { id: 103, name: 'Carlos Ruiz', id_number: '11223344', position: 'Supervisor', status: 'Activo' }
-];
+import config from '../../js/config.js';
+const API_URL = `${config.BASE_API_URL}eppDelivery.php`;
 
-// Mock catalog for delivery selection
-const eppCatalog = [
-    { id: 1, name: 'Casco de Seguridad' },
-    { id: 2, name: 'Gafas de Seguridad' },
-    { id: 3, name: 'Guantes de Cuero' },
-    { id: 4, name: 'Botas de Seguridad' }
-];
-
-// Mock history (Simulating database with local array)
-let deliveryHistory = [
-    {
-        id: 1709251200000, // Dummy timestamp ID
-        empId: 101, // Juan Pérez
-        date: '2024-03-01',
-        items: [
-            { id: '1', name: 'Casco de Seguridad', size: 'M', qty: '1' },
-            { id: '3', name: 'Guantes de Cuero', size: 'L', qty: '2' }
-        ]
-    },
-    {
-        id: 1711929600000, 
-        empId: 101, // Juan Pérez
-        date: '2024-04-01',
-        items: [
-            { id: '4', name: 'Botas de Seguridad', size: '40', qty: '1' }
-        ]
-    }
-];
+let employees = [];
+let eppCatalog = [];
+let deliveryHistory = [];
 
 const renderEmployees = (filter = '') => {
     const tbody = document.getElementById('employeeBody');
@@ -176,45 +147,52 @@ window.openDeliveryModal = (empId, deliveryToEdit = null) => {
                 items: currentDeliveryItems
             };
         }
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            if (isEdit) {
-                // Update existing
-                const index = deliveryHistory.findIndex(h => h.id === deliveryToEdit.id);
-                if (index !== -1) {
-                    deliveryHistory[index] = {
-                        ...deliveryHistory[index],
-                        date: result.value.date,
-                        items: result.value.items
-                    };
-                }
-                Swal.fire('Actualizado', 'La entrega ha sido actualizada.', 'success').then(() => {
-                    window.viewHistory(empId); // Return to history
+            const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+            const payload = {
+                idEmpresa: idEmpresa,
+                id: isEdit ? deliveryToEdit.id : 0,
+                empId: result.value.empId,
+                date: result.value.date,
+                items: result.value.items
+            };
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
-            } else {
-                // Create new
-                // Create a unique ID
-                const newId = Date.now();
-                deliveryHistory.push({
-                    id: newId,
-                    ...result.value
-                });
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Entrega Registrada',
-                    text: 'Se ha guardado la entrega correctamente.',
-                    showDenyButton: true,
-                    denyButtonText: 'Imprimir',
-                    confirmButtonText: 'Cerrar'
-                }).then((res) => {
-                    if (res.isDenied) {
-                        window.printDelivery(newId);
+                const resp = await res.json();
+                if (resp.status === 'ok') {
+                    await loadDeliveryData();
+                    if (isEdit) {
+                        Swal.fire('Actualizado', 'La entrega ha sido actualizada.', 'success').then(() => {
+                            window.viewHistory(empId);
+                        });
+                    } else {
+                        const newId = resp.result.insertedId;
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Entrega Registrada',
+                            text: 'Se ha guardado la entrega correctamente.',
+                            showDenyButton: true,
+                            denyButtonText: 'Imprimir',
+                            confirmButtonText: 'Cerrar'
+                        }).then((res2) => {
+                            if (res2.isDenied) {
+                                window.printDelivery(newId, empId);
+                            }
+                        });
                     }
-                });
+                } else {
+                    Swal.fire('Error', 'Error al guardar', 'error');
+                }
+            } catch(e) {
+                Swal.fire('Error', 'Error en la solicitud', 'error');
             }
         } else {
-             // Cancelled
              if (isEdit) window.viewHistory(empId);
         }
     });
@@ -359,22 +337,25 @@ window.deleteDelivery = (deliveryId, empId) => {
         cancelButtonColor: '#3085d6',
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            const index = deliveryHistory.findIndex(d => d.id === deliveryId);
-            if (index !== -1) {
-                deliveryHistory.splice(index, 1);
-                Swal.fire(
-                    'Eliminado',
-                    'El registro ha sido eliminado.',
-                    'success'
-                ).then(() => {
-                    // Reopen history
-                    window.viewHistory(empId);
+            try {
+                const res = await fetch(`${API_URL}?id=${deliveryId}`, {
+                    method: 'DELETE'
                 });
+                const resp = await res.json();
+                if (resp.status === 'ok') {
+                    await loadDeliveryData();
+                    Swal.fire('Eliminado', 'El registro ha sido eliminado.', 'success').then(() => {
+                        window.viewHistory(empId);
+                    });
+                } else {
+                    Swal.fire('Error', 'No se pudo eliminar', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error', 'Error en la solicitud', 'error');
             }
         } else {
-            // Cancelled, reopen history
             window.viewHistory(empId);
         }
     });
@@ -593,9 +574,23 @@ window.printDelivery = (deliveryId, empId = null) => {
     printWindow.document.close();
 };
 
-// Init
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    renderEmployees();
-} else {
-    document.addEventListener('DOMContentLoaded', () => renderEmployees());
+async function loadDeliveryData() {
+    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    try {
+        const res = await fetch(`${API_URL}?idEmpresa=${idEmpresa}`);
+        const resp = await res.json();
+        if (resp.status === 'ok') {
+            employees = resp.result.employees || [];
+            eppCatalog = resp.result.eppCatalog || [];
+            deliveryHistory = resp.result.deliveryHistory || [];
+        }
+    } catch (e) {
+        console.error("Error loading delivery data", e);
+    }
 }
+
+// Init
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadDeliveryData();
+    renderEmployees();
+});
