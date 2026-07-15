@@ -85,25 +85,6 @@
                     <td class="form-input-cell">
                         <select id="responsable" class="form-control" name="responsable">
                             <option value="">Seleccione</option>
-                            <option value="Auxiliar Administrativa y contable - Bogotá">Auxiliar Administrativa y contable - Bogotá</option>
-                            <option value="Auxiliar Administrativo - Plantación">Auxiliar Administrativo - Plantación</option>
-                            <option value="Auxiliar de Campo">Auxiliar de Campo</option>
-                            <option value="Auxiliar de Sanidad">Auxiliar de Sanidad</option>
-                            <option value="Campamentero">Campamentero</option>
-                            <option value="Carguero">Carguero</option>
-                            <option value="Cosechero">Cosechero</option>
-                            <option value="Director Contable y Administrativo">Director Contable y Administrativo</option>
-                            <option value="Director Plantación">Director Plantación</option>
-                            <option value="Gerente">Gerente</option>
-                            <option value="Mantenimiento de instalaciones">Mantenimiento de instalaciones</option>
-                            <option value="Plateo Mecánico">Plateo Mecánico</option>
-                            <option value="Plateo Químico - Mantenimiento">Plateo Químico - Mantenimiento</option>
-                            <option value="Responsable del SG-SST">Responsable del SG-SST</option>
-                            <option value="Soldador">Soldador</option>
-                            <option value="Supervisor de campo">Supervisor de campo</option>
-                            <option value="Supervisor de mantenimiento">Supervisor de mantenimiento</option>
-                            <option value="Supervisor Sanidad">Supervisor Sanidad</option>
-                            <option value="Tractorista - Cable aéreo">Tractorista - Cable aéreo</option>
                         </select>
                     </td>
                 </tr>

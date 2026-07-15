@@ -1,9 +1,40 @@
-// JavaScript for Risk Indicator Form
+import config from "../../js/config.js";
 
-const initRiskIndicator = () => {
+const SHEET_API = `${config.BASE_API_URL}processSheet.php`;
+let idEmpresa = null;
+
+const loadCargos = async () => {
+    try {
+        const res = await fetch(`${SHEET_API}?action=getPersonnelConsolidado&idEmpresa=${idEmpresa}`);
+        const personnel = await res.json();
+        
+        const responsableSelect = document.getElementById('responsable');
+        responsableSelect.innerHTML = '<option value="">Seleccione</option>';
+        
+        // Ensure uniqueness if roles are repeated across sheets
+        const roles = [...new Set(personnel.map(p => p.role).filter(Boolean))].sort();
+        
+        roles.forEach(role => {
+            const option = document.createElement('option');
+            option.value = role;
+            option.textContent = role;
+            responsableSelect.appendChild(option);
+        });
+    } catch (e) {
+        console.error("Error loading cargos:", e);
+    }
+};
+
+const initRiskIndicator = async () => {
     // Get current date for the default value
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('fecha').value = today;
+
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    if (user && user.idClient) {
+        idEmpresa = user.idClient;
+        await loadCargos();
+    }
 
     // Load existing indicator if editing (check URL params)
     const urlParams = new URLSearchParams(window.location.search);
