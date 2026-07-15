@@ -17,7 +17,7 @@ class riskConsolidation extends connection {
 
         // Get Program
         $queryProgram = "SELECT * FROM risk_program WHERE id_empresa = $idEmpresa LIMIT 1";
-        $programData = parent::obtenerDatos($queryProgram);
+        $programData = parent::getData($queryProgram);
         
         if (empty($programData)) {
             // Mock empty state if not exists
@@ -41,11 +41,11 @@ class riskConsolidation extends connection {
 
         // Get Indicators
         $queryIndicators = "SELECT * FROM risk_program_indicators WHERE id_program = $idProgram";
-        $indicators = parent::obtenerDatos($queryIndicators);
+        $indicators = parent::getData($queryIndicators);
 
         // Get Measures
         $queryMeasures = "SELECT * FROM risk_program_measures WHERE id_program = $idProgram";
-        $measuresRaw = parent::obtenerDatos($queryMeasures);
+        $measuresRaw = parent::getData($queryMeasures);
         
         $medidas = [];
         foreach($measuresRaw as $m) {
@@ -93,7 +93,7 @@ class riskConsolidation extends connection {
         $marcoLegal = parent::nonQueryId("SELECT '" . ($data['marcoLegal'] ?? '') . "'");
         
         // Check if exists
-        $check = parent::obtenerDatos("SELECT id FROM risk_program WHERE id_empresa = $idEmpresa");
+        $check = parent::getData("SELECT id FROM risk_program WHERE id_empresa = $idEmpresa");
         if (empty($check)) {
             $query = "INSERT INTO risk_program (id_empresa, objetivo, marco_legal) VALUES ($idEmpresa, '$objetivo', '$marcoLegal')";
             $id = parent::nonQueryId($query);
