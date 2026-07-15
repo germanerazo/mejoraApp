@@ -46,24 +46,15 @@ const initRiskIndicator = async () => {
     }
 };
 
-window.saveIndicador = () => {
+window.saveIndicador = async () => {
     // Collect form data
-    const data = {
-        formula: document.getElementById('formula').value,
-        responsable: document.getElementById('responsable').value,
-        limiteOperador: document.getElementById('limiteOperador').value,
-        limiteEsperado: document.getElementById('limiteEsperado').value,
-        limiteCritico: document.getElementById('limiteCritico').value,
-        fuenteInformacion: document.getElementById('formula').value, // Assuming this maps to source, or check field name
-        periodicidad: document.getElementById('periodicidad').value,
-        tipoIndicador: document.getElementById('tipoIndicador').value,
-        tipoLimite: document.getElementById('tipoLimite').value,
-        dirigidoA: document.getElementById('dirigidoA').value,
-        fecha: document.getElementById('fecha').value
-    };
-
+    const formulaEl = document.getElementById('formula');
+    const responsableEl = document.getElementById('responsable');
+    const limiteEsperadoEl = document.getElementById('limiteEsperado');
+    const limiteOperadorEl = document.getElementById('limiteOperador');
+    
     // Basic Validation
-    if (!data.formula || !data.responsable || !data.limiteEsperado) {
+    if (!formulaEl.value || !responsableEl.value || !limiteEsperadoEl.value) {
         Swal.fire({
             icon: 'error',
             title: 'Error',
@@ -73,19 +64,70 @@ window.saveIndicador = () => {
         return;
     }
 
-    // Simulate saving
-    console.log('Saving Indicator:', data);
+    const data = {
+        formula: formulaEl.value,
+        responsable: responsableEl.value,
+        limiteEsperado: `${limiteOperadorEl.value} ${limiteEsperadoEl.value}`,
+        limiteCritico: document.getElementById('limiteCritico').value,
+        fuente: document.getElementById('fuenteInformacion').value, 
+        periodicidad: document.getElementById('periodicidad').value,
+        tipoIndicador: document.getElementById('tipoIndicador').value,
+        tipoLimite: document.getElementById('tipoLimite').value,
+        dirigidoA: document.getElementById('dirigidoA').value,
+        fecha: document.getElementById('fecha').value
+    };
 
-    Swal.fire({
-        icon: 'success',
-        title: '¡Guardado!',
-        text: 'El indicador ha sido guardado correctamente',
-        confirmButtonColor: '#329bd6'
-    }).then(() => {
-        // In a real app, you might save to localStorage or backend here
-        // For now, let's just go back
-        goBack();
-    });
+    try {
+        const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+        
+        // 1. Fetch current consolidation data
+        const getRes = await fetch(`${config.BASE_API_URL}riskConsolidation.php?idEmpresa=${idEmpresa}`);
+        const getResp = await getRes.json();
+        
+        let payload = {
+            idEmpresa: idEmpresa,
+            objetivo: '',
+            marcoLegal: '',
+            indicadores: [],
+            medidas: []
+        };
+
+        if (getResp.status === 'ok') {
+            payload.objetivo = getResp.result.programa?.objetivo || '';
+            payload.marcoLegal = getResp.result.programa?.marcoLegal || '';
+            payload.indicadores = getResp.result.indicadores || [];
+            payload.medidas = getResp.result.medidas || [];
+        }
+
+        // Add the new indicator
+        const newId = payload.indicadores.length > 0 ? Math.max(...payload.indicadores.map(i => i.id)) + 1 : 1;
+        data.id = newId;
+        payload.indicadores.push(data);
+
+        // 2. Post the updated data to save it
+        const postRes = await fetch(`${config.BASE_API_URL}riskConsolidation.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const postResp = await postRes.json();
+
+        if (postResp.status === 'ok') {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Guardado!',
+                text: 'El indicador ha sido guardado correctamente',
+                confirmButtonColor: '#329bd6'
+            }).then(() => {
+                goBack();
+            });
+        } else {
+            Swal.fire('Error', 'Error al guardar el indicador', 'error');
+        }
+    } catch(e) {
+        console.error("Error saving indicator:", e);
+        Swal.fire('Error', 'Ocurrió un error en la solicitud', 'error');
+    }
 };
 
 window.goBack = () => {
