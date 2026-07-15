@@ -89,8 +89,8 @@ class riskConsolidation extends connection {
     
     public function saveProgram($data) {
         $idEmpresa = intval($data['idEmpresa']);
-        $objetivo = parent::nonQueryId("SELECT '" . ($data['objetivo'] ?? '') . "'");
-        $marcoLegal = parent::nonQueryId("SELECT '" . ($data['marcoLegal'] ?? '') . "'");
+        $objetivo = addslashes($data['objetivo'] ?? '');
+        $marcoLegal = addslashes($data['marcoLegal'] ?? '');
         
         // Check if exists
         $check = parent::getData("SELECT id FROM risk_program WHERE id_empresa = $idEmpresa");
