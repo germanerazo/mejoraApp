@@ -176,6 +176,7 @@ window.addPeligro = () => {
                 nombre: result.value
             });
             renderPeligros();
+            savePrograma(true);
         }
     });
 };
@@ -194,7 +195,9 @@ window.removePeligro = (id) => {
         if (result.isConfirmed) {
             programaData.peligrosAsociados = programaData.peligrosAsociados.filter(p => p.id !== id);
             renderPeligros();
-            Swal.fire('Eliminado', 'El peligro ha sido eliminado', 'success');
+            savePrograma(true).then(() => {
+                Swal.fire('Eliminado', 'El peligro ha sido eliminado', 'success');
+            });
         }
     });
 };
@@ -264,7 +267,9 @@ window.editIndicador = (id) => {
             indicador.periodicidad = result.value.periodicidad;
             indicador.dirigidoA = result.value.dirigido;
             renderIndicadores();
-            Swal.fire('Actualizado', 'Indicador actualizado correctamente', 'success');
+            savePrograma(true).then(() => {
+                Swal.fire('Actualizado', 'Indicador actualizado correctamente', 'success');
+            });
         }
     });
 };
@@ -283,7 +288,9 @@ window.deleteIndicador = (id) => {
         if (result.isConfirmed) {
             indicadoresData = indicadoresData.filter(i => i.id !== id);
             renderIndicadores();
-            Swal.fire('Eliminado', 'Indicador eliminado correctamente', 'success');
+            savePrograma(true).then(() => {
+                Swal.fire('Eliminado', 'Indicador eliminado correctamente', 'success');
+            });
         }
     });
 };
@@ -351,7 +358,9 @@ window.addMedida = () => {
                 cargos: initialCargos
             });
             renderMedidas();
-            Swal.fire('Guardado', 'Medida agregada correctamente', 'success');
+            savePrograma(true).then(() => {
+                Swal.fire('Guardado', 'Medida agregada correctamente', 'success');
+            });
         }
     });
 };
@@ -406,7 +415,30 @@ window.editMedida = (id) => {
             medida.recurso = result.value.recurso;
             medida.fechaPlaneacion = result.value.fecha;
             renderMedidas();
-            Swal.fire('Actualizado', 'Medida actualizada correctamente', 'success');
+            savePrograma(true).then(() => {
+                Swal.fire('Actualizado', 'Medida actualizada correctamente', 'success');
+            });
+        }
+    });
+};
+
+window.deleteMedida = (id) => {
+    Swal.fire({
+        title: '¿Eliminar medida?',
+        text: 'Esta acción no se puede deshacer',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            medidasData = medidasData.filter(m => m.id !== id);
+            renderMedidas();
+            savePrograma(true).then(() => {
+                Swal.fire('Eliminado', 'Medida eliminada correctamente', 'success');
+            });
         }
     });
 };
@@ -469,6 +501,7 @@ window.addCargo = (medidaId) => {
         if (!Array.isArray(medida.cargos)) medida.cargos = [];
         medida.cargos.push(newCargo);
         renderMedidas(); // Update main table
+        savePrograma(true);
         
         // Refresh the modal content specifically without closing it
         window.manageCargos(medidaId); 
@@ -480,11 +513,12 @@ window.removeCargo = (medidaId, index) => {
     if (medida && Array.isArray(medida.cargos)) {
         medida.cargos.splice(index, 1);
         renderMedidas(); // Update main table
+        savePrograma(true);
         window.manageCargos(medidaId); // Refresh modal
     }
 };
 
-window.savePrograma = async () => {
+window.savePrograma = async (silent = false) => {
     programaData.objetivo = document.getElementById('objetivo').value;
     programaData.marcoLegal = document.getElementById('marcoLegal').value;
     
@@ -506,17 +540,19 @@ window.savePrograma = async () => {
         const resp = await res.json();
         
         if (resp.status === 'ok') {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Guardado!',
-                text: 'El programa de gestión ha sido guardado correctamente',
-                confirmButtonColor: '#329bd6'
-            });
+            if (!silent) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Guardado!',
+                    text: 'El programa de gestión ha sido guardado correctamente',
+                    confirmButtonColor: '#329bd6'
+                });
+            }
         } else {
-            Swal.fire('Error', 'Error al guardar el programa', 'error');
+            if (!silent) Swal.fire('Error', 'Error al guardar el programa', 'error');
         }
     } catch(e) {
-        Swal.fire('Error', 'Ocurrió un error en la solicitud', 'error');
+        if (!silent) Swal.fire('Error', 'Ocurrió un error en la solicitud', 'error');
     }
 };
 
