@@ -53,4 +53,4 @@
     </div>
 </div>
 
-<script type="module" src="../planear/legalProcedure/legalProcedure.js?v=1.0"></script>
+<script type="module" src="../planear/legalProcedure/legalProcedure.js?v=<?= time() ?>"></script>

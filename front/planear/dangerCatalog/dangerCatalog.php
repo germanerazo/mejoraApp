@@ -92,4 +92,4 @@
     </div>
 </div>
 
-<script type="module" src="../planear/dangerCatalog/dangerCatalog.js?v=1.0"></script>
+<script type="module" src="../planear/dangerCatalog/dangerCatalog.js?v=<?= time() ?>"></script>

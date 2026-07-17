@@ -169,4 +169,4 @@
     </div>
 </div>
 
-<script src="../verificar/indicadores/indicadores.js"></script>
+<script src="../verificar/indicadores/indicadores.js?v=<?= time() ?>"></script>

@@ -151,4 +151,4 @@
     </div>
 </div>
 
-<script type="module" src="../hacer/exams/exams.js?v=1.0"></script>
+<script type="module" src="../hacer/exams/exams.js?v=<?= time() ?>"></script>

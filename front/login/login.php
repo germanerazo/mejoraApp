@@ -23,6 +23,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.all.min.js"></script>
-  <script type="module" src="./login.js"></script>
+  <script type="module" src="./login.js?v=<?= time() ?>"></script>
 </body>
 </html>

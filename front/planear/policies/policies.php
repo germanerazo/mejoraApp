@@ -31,4 +31,4 @@
     </div>
 </div>
 
-<script type="module" src="../planear/policies/policies.js?v=1.0"></script>
+<script type="module" src="../planear/policies/policies.js?v=<?= time() ?>"></script>

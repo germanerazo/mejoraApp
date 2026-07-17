@@ -195,4 +195,4 @@
 
 </div>
 
-<script type="module" src="../hacer/profile/profileList.js?v=2.0"></script>
+<script type="module" src="../hacer/profile/profileList.js?v=<?= time() ?>"></script>

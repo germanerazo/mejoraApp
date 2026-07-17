@@ -69,4 +69,4 @@
     </div>
 </div>
 
-<script type="module" src="../hacer/procedures/procedures.js?v=1.0"></script>
+<script type="module" src="../hacer/procedures/procedures.js?v=<?= time() ?>"></script>

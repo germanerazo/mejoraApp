@@ -155,4 +155,4 @@
         </div>
     </div>
 
-    <script type="module" src="../planear/process/processSheet.js?v=1.3"></script>
+    <script type="module" src="../planear/process/processSheet.js?v=<?= time() ?>"></script>

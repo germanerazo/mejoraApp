@@ -30,7 +30,7 @@
         </table>
     </div>
     <!-- Mueve tu script de módulo aquí -->
-    <script type="module" src="../access/access.js"></script>
+    <script type="module" src="../access/access.js?v=<?= time() ?>"></script>
 </body>
 
 </html>

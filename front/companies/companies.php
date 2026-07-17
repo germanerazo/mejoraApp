@@ -319,7 +319,7 @@
         </div>
     </div>
     <!-- Mueve tu script de módulo aquí -->
-    <script type="module" src="../companies/companies.js?v=1.1"></script>
+    <script type="module" src="../companies/companies.js?v=<?= time() ?>"></script>
 </body>
 
 </html>

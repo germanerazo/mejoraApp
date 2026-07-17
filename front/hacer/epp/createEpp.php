@@ -32,4 +32,4 @@
     </div>
 </div>
 
-<script type="module" src="../hacer/epp/createEpp.js?v=2.0"></script>
+<script type="module" src="../hacer/epp/createEpp.js?v=<?= time() ?>"></script>

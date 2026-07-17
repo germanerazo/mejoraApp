@@ -477,4 +477,4 @@
     </form>
 </div>
 
-<script type="module" src="../planear/annual/annual.js?v=1.0"></script>
+<script type="module" src="../planear/annual/annual.js?v=<?= time() ?>"></script>

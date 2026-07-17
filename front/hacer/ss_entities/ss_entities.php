@@ -66,4 +66,4 @@
     </form>
 </div>
 
-<script type="module" src="../hacer/ss_entities/ss_entities.js?v=1.0"></script>
+<script type="module" src="../hacer/ss_entities/ss_entities.js?v=<?= time() ?>"></script>

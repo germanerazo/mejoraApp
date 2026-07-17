@@ -105,4 +105,4 @@
 
 <!-- SheetJS para exportar -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script type="module" src="../planear/hazardRiskMgmt/riskReport.js?v=1.0"></script>
+<script type="module" src="../planear/hazardRiskMgmt/riskReport.js?v=<?= time() ?>"></script>

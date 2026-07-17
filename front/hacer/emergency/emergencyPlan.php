@@ -76,7 +76,7 @@
     </div>
 </div>
 
-<script src="../hacer/emergency/emergencyPlan.js"></script>
+<script src="../hacer/emergency/emergencyPlan.js?v=<?= time() ?>"></script>
 <script>
     if(typeof initEmergency === 'function') {
         initEmergency();

@@ -191,4 +191,4 @@
     </div>
 </div>
 
-<script type="module" src="../planear/strategic/strategic.js?v=1.2"></script>
+<script type="module" src="../planear/strategic/strategic.js?v=<?= time() ?>"></script>

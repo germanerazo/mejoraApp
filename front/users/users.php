@@ -127,7 +127,7 @@
         </div>
     </div>
     <!-- Mueve tu script de módulo aquí -->
-    <script type="module" src="../users/users.js"></script>
+    <script type="module" src="../users/users.js?v=<?= time() ?>"></script>
 </body>
 
 </html>

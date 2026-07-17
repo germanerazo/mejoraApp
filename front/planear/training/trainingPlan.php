@@ -77,7 +77,7 @@
     </div>
 </div>
 
-<script src="../planear/training/trainingPlan.js"></script>
+<script src="../planear/training/trainingPlan.js?v=<?= time() ?>"></script>
 <script>
     if(typeof initTraining === 'function') {
         initTraining();

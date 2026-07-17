@@ -85,4 +85,4 @@
     </div>
 </div>
 
-<script type="module" src="../verificar/budget/budget.js?v=1.0"></script>
+<script type="module" src="../verificar/budget/budget.js?v=<?= time() ?>"></script>

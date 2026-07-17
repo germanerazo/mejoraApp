@@ -35,7 +35,7 @@
             <div class="empty-state">Cargando procesos...</div>
         </div>
     </div>
-    <script type="module" src="../planear/process/processMap.js?v=1.1"></script>
+    <script type="module" src="../planear/process/processMap.js?v=<?= time() ?>"></script>
 </body>
 
 </html>

@@ -250,4 +250,4 @@
     </div>
 </div>
 
-<script type="module" src="../planear/legal/legal.js?v=1.0"></script>
+<script type="module" src="../planear/legal/legal.js?v=<?= time() ?>"></script>

@@ -53,4 +53,4 @@
     </div>
 </div>
 
-<script type="module" src="../planear/hazards/hazards.js?v=1.7"></script>
+<script type="module" src="../planear/hazards/hazards.js?v=<?= time() ?>"></script>

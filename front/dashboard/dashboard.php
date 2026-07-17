@@ -15,7 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.all.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-  <script type="module" src="./dashboard.js?v=1.2"></script>
+  <script type="module" src="./dashboard.js?v=<?= time() ?>"></script>
   <link rel="icon" href="../assets/favicon.png" type="image/png">
 </head>
 

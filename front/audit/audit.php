@@ -70,7 +70,7 @@
         </div>
     </div>
     
-    <script type="module" src="../audit/audit.js"></script>
+    <script type="module" src="../audit/audit.js?v=<?= time() ?>"></script>
 </body>
 
 </html>
