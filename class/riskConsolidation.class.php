@@ -78,6 +78,8 @@ class riskConsolidation extends connection {
                 'limiteCritico' => $i['limite_critico'],
                 'fuente' => $i['fuente'],
                 'periodicidad' => $i['periodicidad'],
+                'tipo_indicador' => $i['tipo_indicador'] ?? '',
+                'tipo_limite' => $i['tipo_limite'] ?? '',
                 'dirigidoA' => $i['dirigido_a']
             ];
         }
@@ -136,8 +138,8 @@ class riskConsolidation extends connection {
                 $periodicidad = addslashes($ind['periodicidad'] ?? '');
                 $dirigidoA = addslashes($ind['dirigidoA'] ?? '');
                 
-                $tipoIndicador = addslashes($ind['tipoIndicador'] ?? '');
-                $tipoLimite = addslashes($ind['tipoLimite'] ?? '');
+                $tipoIndicador = addslashes($ind['tipoIndicador'] ?? $ind['tipo_indicador'] ?? '');
+                $tipoLimite = addslashes($ind['tipoLimite'] ?? $ind['tipo_limite'] ?? '');
                 
                 $query = "INSERT INTO risk_program_indicators (id_program, formula, responsable, limite_esperado, limite_critico, fuente, periodicidad, tipo_indicador, tipo_limite, dirigido_a) 
                           VALUES ($idProgram, '$formula', '$responsable', '$esperado', '$critico', '$fuente', '$periodicidad', '$tipoIndicador', '$tipoLimite', '$dirigidoA')";
