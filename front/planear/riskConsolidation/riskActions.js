@@ -564,6 +564,7 @@ window.savePrograma = async (silent = false) => {
         idEmpresa: idEmpresa,
         objetivo: programaData.objetivo,
         marcoLegal: programaData.marcoLegal,
+        peligrosAsociados: programaData.peligrosAsociados,
         indicadores: indicadoresData,
         medidas: medidasData
     };

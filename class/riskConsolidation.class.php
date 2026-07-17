@@ -140,8 +140,8 @@ class riskConsolidation extends connection {
         // For simplicity we truncate and insert to sync the state.
         
         parent::nonQuery("DELETE FROM risk_program_dangers WHERE id_program = $idProgram");
-        if (isset($data['programa']['peligrosAsociados']) && is_array($data['programa']['peligrosAsociados'])) {
-            foreach ($data['programa']['peligrosAsociados'] as $p) {
+        if (isset($data['peligrosAsociados']) && is_array($data['peligrosAsociados'])) {
+            foreach ($data['peligrosAsociados'] as $p) {
                 $nombre = addslashes($p['nombre'] ?? '');
                 if (!empty($nombre)) {
                     $query = "INSERT INTO risk_program_dangers (id_program, danger_name) VALUES ($idProgram, '$nombre')";
