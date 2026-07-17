@@ -13,6 +13,7 @@ let programaData = {
 let indicadoresData = [];
 let medidasData = [];
 let catalogDangers = []; // Store fetched dangers for the modal
+let catalogMeasures = []; // Store fetched measures for the modal
 
 const initRiskActions = async () => {
     // Set program title with risk info
@@ -332,13 +333,33 @@ window.deleteIndicador = (id) => {
     });
 };
 
-window.addMedida = () => {
+window.addMedida = async () => {
+    // Fetch measures if not already fetched
+    if (catalogMeasures.length === 0) {
+        try {
+            const res = await fetch(`${config.BASE_API_URL}dangerMgmt.php?action=measures`);
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                catalogMeasures = data;
+            }
+        } catch (e) {
+            console.error("Error fetching measures", e);
+        }
+    }
+
+    let datalistHtml = '<datalist id="medidasDatalist">';
+    catalogMeasures.forEach(m => {
+        datalistHtml += `<option value="${m.name.replace(/"/g, '&quot;')}"></option>`;
+    });
+    datalistHtml += '</datalist>';
+
     Swal.fire({
         title: 'Nueva Medida de Prevención',
         html: `
             <div style="text-align: left;">
                 <label style="display: block; margin-bottom: 5px; font-weight: 500;">Medida de Prevención y Control:</label>
-                <textarea id="swal-medida" class="swal2-textarea" placeholder="Descripción de la medida"></textarea>
+                <input type="text" id="swal-medida" list="medidasDatalist" class="swal2-input" placeholder="Buscar o escribir medida..." style="width: 100%; box-sizing: border-box; margin: 0; margin-bottom: 15px;">
+                ${datalistHtml}
                 
                 <label style="display: block; margin-bottom: 5px; margin-top: 10px; font-weight: 500;">Responsable:</label>
                 <input type="text" id="swal-responsable" class="swal2-input" placeholder="Ej: Responsable del SG-SST">
@@ -354,9 +375,7 @@ window.addMedida = () => {
                 
                 <label style="display: block; margin-bottom: 5px; margin-top: 10px; font-weight: 500;">Fecha de Planeación:</label>
                 <input type="date" id="swal-fecha" class="swal2-input">
-                
-                <label style="display: block; margin-bottom: 5px; margin-top: 10px; font-weight: 500;">Cargo Inicial (Opcional):</label>
-                <input type="text" id="swal-cargos" class="swal2-input" placeholder="Ej: Operarios de campo">
+
             </div>
         `,
         showCancelButton: true,
@@ -369,14 +388,13 @@ window.addMedida = () => {
             const responsable = document.getElementById('swal-responsable').value;
             const recurso = document.getElementById('swal-recurso').value;
             const fecha = document.getElementById('swal-fecha').value;
-            const cargo = document.getElementById('swal-cargos').value;
 
             if (!medida || !responsable || !recurso || !fecha) {
-                Swal.showValidationMessage('Todos los campos son obligatorios excepto Cargo Inicial');
+                Swal.showValidationMessage('Todos los campos son obligatorios');
                 return false;
             }
 
-            return { medida, responsable, recurso, fecha, cargo };
+            return { medida, responsable, recurso, fecha };
         }
     }).then((result) => {
         if (result.isConfirmed) {
@@ -384,15 +402,13 @@ window.addMedida = () => {
                 ? Math.max(...medidasData.map(m => m.id)) + 1 
                 : 1;
             
-            const initialCargos = result.value.cargo ? [result.value.cargo] : [];
-
             medidasData.push({
                 id: newId,
                 medida: result.value.medida,
                 responsable: result.value.responsable,
                 recurso: result.value.recurso,
                 fechaPlaneacion: result.value.fecha,
-                cargos: initialCargos
+                cargos: []
             });
             renderMedidas();
             savePrograma(true).then(() => {
