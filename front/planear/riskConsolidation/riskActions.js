@@ -52,8 +52,16 @@ const initRiskActions = async () => {
     const objetivoEl = document.getElementById('objetivo');
     const marcoLegalEl = document.getElementById('marcoLegal');
     
-    if (objetivoEl) objetivoEl.value = programaData.objetivo || '';
-    if (marcoLegalEl) marcoLegalEl.value = programaData.marcoLegal || '';
+    // Restore from session storage if we navigated back without saving
+    const savedObjetivo = sessionStorage.getItem('temp_risk_objetivo');
+    const savedMarcoLegal = sessionStorage.getItem('temp_risk_marcoLegal');
+    
+    if (objetivoEl) objetivoEl.value = savedObjetivo !== null ? savedObjetivo : (programaData.objetivo || '');
+    if (marcoLegalEl) marcoLegalEl.value = savedMarcoLegal !== null ? savedMarcoLegal : (programaData.marcoLegal || '');
+    
+    // Clear temp storage after restoring
+    sessionStorage.removeItem('temp_risk_objetivo');
+    sessionStorage.removeItem('temp_risk_marcoLegal');
 
     renderPeligros();
     renderIndicadores();
@@ -214,6 +222,10 @@ window.removePeligro = (id) => {
 };
 
 window.addIndicador = () => {
+    // Temporarily save text in session storage so it survives navigation
+    sessionStorage.setItem('temp_risk_objetivo', document.getElementById('objetivo').value);
+    sessionStorage.setItem('temp_risk_marcoLegal', document.getElementById('marcoLegal').value);
+
     // Get the current risk ID from the URL or localStorage if available
     const urlParams = new URLSearchParams(window.location.search);
     const riskId = urlParams.get('riskId');
@@ -223,6 +235,10 @@ window.addIndicador = () => {
 };
 
 window.editIndicador = (id) => {
+    // Temporarily save text in session storage so it survives navigation
+    sessionStorage.setItem('temp_risk_objetivo', document.getElementById('objetivo').value);
+    sessionStorage.setItem('temp_risk_marcoLegal', document.getElementById('marcoLegal').value);
+
     console.log("editIndicador ID", id);
     const indicador = indicadoresData.find(i => i.id == id);
     console.log("indicador", indicador);

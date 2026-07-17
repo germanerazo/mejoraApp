@@ -107,7 +107,7 @@
     </div>
 
     <!-- Script -->
-    <script type="module" src="../planear/riskConsolidation/riskActions.js?v=1.0"></script>
+    <script type="module" src="../planear/riskConsolidation/riskActions.js?v=<?= time() ?>"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
