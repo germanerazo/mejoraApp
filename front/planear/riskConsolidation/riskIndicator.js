@@ -85,6 +85,14 @@ const initRiskIndicator = async () => {
                     document.getElementById('limiteCritico').value = indicator.limiteCritico || '';
                     document.getElementById('fuenteInformacion').value = indicator.fuente || '';
                     document.getElementById('periodicidad').value = indicator.periodicidad || 'Mensual';
+                    
+                    if (indicator.tipo_indicador) {
+                        document.getElementById('tipoIndicador').value = indicator.tipo_indicador;
+                    }
+                    if (indicator.tipo_limite) {
+                        document.getElementById('tipoLimite').value = indicator.tipo_limite;
+                    }
+                    
                     document.getElementById('dirigidoA').value = indicator.dirigidoA || '';
                     
                     // limiteEsperado was combined operator + value

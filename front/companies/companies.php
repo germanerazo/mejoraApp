@@ -320,6 +320,7 @@
     </div>
     <!-- Mueve tu script de módulo aquí -->
     <script type="module" src="../companies/companies.js?v=<?= time() ?>"></script>
+
 </body>
 
 </html>

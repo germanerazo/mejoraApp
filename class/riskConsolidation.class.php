@@ -17,6 +17,12 @@ class riskConsolidation extends connection {
         try {
             parent::nonQuery("ALTER TABLE risk_program_indicators ADD COLUMN responsable VARCHAR(100) AFTER formula");
         } catch(Exception $e) {}
+        try {
+            parent::nonQuery("ALTER TABLE risk_program_indicators ADD COLUMN tipo_indicador VARCHAR(100) AFTER periodicidad");
+        } catch(Exception $e) {}
+        try {
+            parent::nonQuery("ALTER TABLE risk_program_indicators ADD COLUMN tipo_limite VARCHAR(100) AFTER tipo_indicador");
+        } catch(Exception $e) {}
 
         // Get Program
         $queryProgram = "SELECT * FROM risk_program WHERE id_empresa = $idEmpresa LIMIT 1";
@@ -130,8 +136,11 @@ class riskConsolidation extends connection {
                 $periodicidad = addslashes($ind['periodicidad'] ?? '');
                 $dirigidoA = addslashes($ind['dirigidoA'] ?? '');
                 
-                $query = "INSERT INTO risk_program_indicators (id_program, formula, responsable, limite_esperado, limite_critico, fuente, periodicidad, dirigido_a) 
-                          VALUES ($idProgram, '$formula', '$responsable', '$esperado', '$critico', '$fuente', '$periodicidad', '$dirigidoA')";
+                $tipoIndicador = addslashes($ind['tipoIndicador'] ?? '');
+                $tipoLimite = addslashes($ind['tipoLimite'] ?? '');
+                
+                $query = "INSERT INTO risk_program_indicators (id_program, formula, responsable, limite_esperado, limite_critico, fuente, periodicidad, tipo_indicador, tipo_limite, dirigido_a) 
+                          VALUES ($idProgram, '$formula', '$responsable', '$esperado', '$critico', '$fuente', '$periodicidad', '$tipoIndicador', '$tipoLimite', '$dirigidoA')";
                 parent::nonQueryId($query);
             }
         }
