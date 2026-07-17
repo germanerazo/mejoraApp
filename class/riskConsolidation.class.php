@@ -11,6 +11,7 @@ class riskConsolidation extends connection {
         try {
             parent::nonQuery("ALTER TABLE risk_program_measures ADD COLUMN recurso VARCHAR(100) AFTER responsable");
             parent::nonQuery("ALTER TABLE risk_program_measures ADD COLUMN cargos TEXT AFTER fecha");
+            parent::nonQuery("ALTER TABLE risk_program_indicators ADD COLUMN responsable VARCHAR(100) AFTER formula");
         } catch(Exception $e) {
             // ignore if already exists
         }
@@ -64,6 +65,7 @@ class riskConsolidation extends connection {
             $indicadores[] = [
                 'id' => $i['id'],
                 'formula' => $i['formula'],
+                'responsable' => $i['responsable'] ?? '',
                 'limiteEsperado' => $i['limite_esperado'],
                 'limiteCritico' => $i['limite_critico'],
                 'fuente' => $i['fuente'],
@@ -118,15 +120,16 @@ class riskConsolidation extends connection {
         parent::nonQuery("DELETE FROM risk_program_indicators WHERE id_program = $idProgram");
         if (isset($data['indicadores']) && is_array($data['indicadores'])) {
             foreach ($data['indicadores'] as $ind) {
-                $formula = $ind['formula'] ?? '';
-                $esperado = $ind['limiteEsperado'] ?? '';
-                $critico = $ind['limiteCritico'] ?? '';
-                $fuente = $ind['fuente'] ?? '';
-                $periodicidad = $ind['periodicidad'] ?? '';
-                $dirigidoA = $ind['dirigidoA'] ?? '';
+                $formula = addslashes($ind['formula'] ?? '');
+                $responsable = addslashes($ind['responsable'] ?? '');
+                $esperado = addslashes($ind['limiteEsperado'] ?? '');
+                $critico = addslashes($ind['limiteCritico'] ?? '');
+                $fuente = addslashes($ind['fuente'] ?? '');
+                $periodicidad = addslashes($ind['periodicidad'] ?? '');
+                $dirigidoA = addslashes($ind['dirigidoA'] ?? '');
                 
-                $query = "INSERT INTO risk_program_indicators (id_program, formula, limite_esperado, limite_critico, fuente, periodicidad, dirigido_a) 
-                          VALUES ($idProgram, '$formula', '$esperado', '$critico', '$fuente', '$periodicidad', '$dirigidoA')";
+                $query = "INSERT INTO risk_program_indicators (id_program, formula, responsable, limite_esperado, limite_critico, fuente, periodicidad, dirigido_a) 
+                          VALUES ($idProgram, '$formula', '$responsable', '$esperado', '$critico', '$fuente', '$periodicidad', '$dirigidoA')";
                 parent::nonQueryId($query);
             }
         }

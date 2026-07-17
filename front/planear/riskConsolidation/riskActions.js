@@ -20,7 +20,7 @@ const initRiskActions = async () => {
             `PROGRAMA DE GESTIÓN - ${selectedRisk.programas || 'SIN PROGRAMA'}`;
     }
 
-    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    let idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
     try {
         const res = await fetch(`${API_URL}?idEmpresa=${idEmpresa}`);
         const resp = await res.json();
@@ -28,6 +28,17 @@ const initRiskActions = async () => {
             programaData = resp.result.programa || { objetivo: '', marcoLegal: '', peligrosAsociados: [] };
             indicadoresData = resp.result.indicadores || [];
             medidasData = resp.result.medidas || [];
+            
+            // Assign temporary local IDs to elements fetched from DB that don't have one
+            if (Array.isArray(programaData.peligrosAsociados)) {
+                programaData.peligrosAsociados.forEach((item, index) => { if (item.id === undefined) item.id = index + 1; });
+            }
+            if (Array.isArray(indicadoresData)) {
+                indicadoresData.forEach((item, index) => { if (item.id === undefined) item.id = index + 1; });
+            }
+            if (Array.isArray(medidasData)) {
+                medidasData.forEach((item, index) => { if (item.id === undefined) item.id = index + 1; });
+            }
             
             if (selectedRisk.peligro && programaData.peligrosAsociados.length === 0) {
                 programaData.peligrosAsociados.push({id: 1, nombre: selectedRisk.peligro});
@@ -193,7 +204,7 @@ window.removePeligro = (id) => {
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            programaData.peligrosAsociados = programaData.peligrosAsociados.filter(p => p.id !== id);
+            programaData.peligrosAsociados = programaData.peligrosAsociados.filter(p => p.id != id);
             renderPeligros();
             savePrograma(true).then(() => {
                 Swal.fire('Eliminado', 'El peligro ha sido eliminado', 'success');
@@ -212,66 +223,16 @@ window.addIndicador = () => {
 };
 
 window.editIndicador = (id) => {
-    const indicador = indicadoresData.find(i => i.id === id);
+    console.log("editIndicador ID", id);
+    const indicador = indicadoresData.find(i => i.id == id);
+    console.log("indicador", indicador);
     if (!indicador) return;
 
-    Swal.fire({
-        title: 'Editar Indicador',
-        html: `
-            <div style="text-align: left;">
-                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Descripción de Fórmula:</label>
-                <textarea id="swal-formula" class="swal2-textarea">${indicador.formula}</textarea>
-                
-                <label style="display: block; margin-bottom: 5px; margin-top: 10px; font-weight: 500;">Límite Esperado:</label>
-                <input type="text" id="swal-esperado" class="swal2-input" value="${indicador.limiteEsperado}">
-                
-                <label style="display: block; margin-bottom: 5px; margin-top: 10px; font-weight: 500;">Límite Crítico:</label>
-                <input type="text" id="swal-critico" class="swal2-input" value="${indicador.limiteCritico}">
-                
-                <label style="display: block; margin-bottom: 5px; margin-top: 10px; font-weight: 500;">Fuente de Información:</label>
-                <input type="text" id="swal-fuente" class="swal2-input" value="${indicador.fuente}">
-                
-                <label style="display: block; margin-bottom: 5px; margin-top: 10px; font-weight: 500;">Periodicidad:</label>
-                <select id="swal-periodicidad" class="swal2-input">
-                    <option value="Mensual" ${indicador.periodicidad === 'Mensual' ? 'selected' : ''}>Mensual</option>
-                    <option value="Trimestral" ${indicador.periodicidad === 'Trimestral' ? 'selected' : ''}>Trimestral</option>
-                    <option value="Semestral" ${indicador.periodicidad === 'Semestral' ? 'selected' : ''}>Semestral</option>
-                    <option value="Anual" ${indicador.periodicidad === 'Anual' ? 'selected' : ''}>Anual</option>
-                </select>
-                
-                <label style="display: block; margin-bottom: 5px; margin-top: 10px; font-weight: 500;">Dirigido A:</label>
-                <input type="text" id="swal-dirigido" class="swal2-input" value="${indicador.dirigidoA}">
-            </div>
-        `,
-        showCancelButton: true,
-        confirmButtonText: 'Guardar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#329bd6',
-        width: '600px',
-        preConfirm: () => {
-            return {
-                formula: document.getElementById('swal-formula').value,
-                esperado: document.getElementById('swal-esperado').value,
-                critico: document.getElementById('swal-critico').value,
-                fuente: document.getElementById('swal-fuente').value,
-                periodicidad: document.getElementById('swal-periodicidad').value,
-                dirigido: document.getElementById('swal-dirigido').value
-            };
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            indicador.formula = result.value.formula;
-            indicador.limiteEsperado = result.value.esperado;
-            indicador.limiteCritico = result.value.critico;
-            indicador.fuente = result.value.fuente;
-            indicador.periodicidad = result.value.periodicidad;
-            indicador.dirigidoA = result.value.dirigido;
-            renderIndicadores();
-            savePrograma(true).then(() => {
-                Swal.fire('Actualizado', 'Indicador actualizado correctamente', 'success');
-            });
-        }
-    });
+    const urlParams = new URLSearchParams(window.location.search);
+    const riskId = urlParams.get('riskId') || '';
+    
+    // Redirect to the indicator form page passing the indicatorId to edit
+    window.location.hash = `../planear/riskConsolidation/riskIndicator.php?riskId=${riskId}&indicatorId=${id}`;
 };
 
 window.deleteIndicador = (id) => {
@@ -286,9 +247,13 @@ window.deleteIndicador = (id) => {
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            indicadoresData = indicadoresData.filter(i => i.id !== id);
+            console.log('🗑️ Eliminando indicador con ID:', id);
+            
+            indicadoresData = indicadoresData.filter(i => i.id != id);
             renderIndicadores();
+            
             savePrograma(true).then(() => {
+                console.log('✅ Indicador eliminado de la base de datos');
                 Swal.fire('Eliminado', 'Indicador eliminado correctamente', 'success');
             });
         }
@@ -366,7 +331,7 @@ window.addMedida = () => {
 };
 
 window.editMedida = (id) => {
-    const medida = medidasData.find(m => m.id === id);
+    const medida = medidasData.find(m => m.id == id);
     if (!medida) return;
 
     Swal.fire({
@@ -434,7 +399,7 @@ window.deleteMedida = (id) => {
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            medidasData = medidasData.filter(m => m.id !== id);
+            medidasData = medidasData.filter(m => m.id != id);
             renderMedidas();
             savePrograma(true).then(() => {
                 Swal.fire('Eliminado', 'Medida eliminada correctamente', 'success');
@@ -444,7 +409,7 @@ window.deleteMedida = (id) => {
 };
 
 window.manageCargos = (id) => {
-    const medida = medidasData.find(m => m.id === id);
+    const medida = medidasData.find(m => m.id == id);
     if (!medida) return;
 
     // Generate List HTML
@@ -496,7 +461,7 @@ window.addCargo = (medidaId) => {
     
     if (!newCargo) return;
 
-    const medida = medidasData.find(m => m.id === medidaId);
+    const medida = medidasData.find(m => m.id == medidaId);
     if (medida) {
         if (!Array.isArray(medida.cargos)) medida.cargos = [];
         medida.cargos.push(newCargo);
@@ -509,7 +474,7 @@ window.addCargo = (medidaId) => {
 };
 
 window.removeCargo = (medidaId, index) => {
-    const medida = medidasData.find(m => m.id === medidaId);
+    const medida = medidasData.find(m => m.id == medidaId);
     if (medida && Array.isArray(medida.cargos)) {
         medida.cargos.splice(index, 1);
         renderMedidas(); // Update main table
@@ -522,7 +487,7 @@ window.savePrograma = async (silent = false) => {
     programaData.objetivo = document.getElementById('objetivo').value;
     programaData.marcoLegal = document.getElementById('marcoLegal').value;
     
-    const idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+    let idEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
     const payload = {
         idEmpresa: idEmpresa,
         objetivo: programaData.objetivo,
@@ -540,6 +505,9 @@ window.savePrograma = async (silent = false) => {
         const resp = await res.json();
         
         if (resp.status === 'ok') {
+            // RELOAD DATA FROM BACKEND TO GET CORRECT IDs
+            await initRiskActions();
+            
             if (!silent) {
                 Swal.fire({
                     icon: 'success',
