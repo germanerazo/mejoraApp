@@ -10,11 +10,13 @@ class riskConsolidation extends connection {
         // In a real env, use proper migrations
         try {
             parent::nonQuery("ALTER TABLE risk_program_measures ADD COLUMN recurso VARCHAR(100) AFTER responsable");
+        } catch(Exception $e) {}
+        try {
             parent::nonQuery("ALTER TABLE risk_program_measures ADD COLUMN cargos TEXT AFTER fecha");
+        } catch(Exception $e) {}
+        try {
             parent::nonQuery("ALTER TABLE risk_program_indicators ADD COLUMN responsable VARCHAR(100) AFTER formula");
-        } catch(Exception $e) {
-            // ignore if already exists
-        }
+        } catch(Exception $e) {}
 
         // Get Program
         $queryProgram = "SELECT * FROM risk_program WHERE id_empresa = $idEmpresa LIMIT 1";
