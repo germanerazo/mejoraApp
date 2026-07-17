@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Reportes de Auditoría</title>
-    <link rel="stylesheet" href="../audit/audit.css">
+    <link rel="stylesheet" href="../audit/audit.css?v=<?= time() ?>">
     <link rel="stylesheet" href="../styles/colors.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />

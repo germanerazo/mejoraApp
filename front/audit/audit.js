@@ -32,7 +32,7 @@ function initDataTable() {
             url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
         },
         pageLength: 25,
-        order: [[0, "desc"]], // Default sort by date_time descending
+        order: [], // Default: respect backend order (descending)
         columnDefs: [
             {
                 targets: 7, // Detalles Column
@@ -89,7 +89,7 @@ async function loadAuditData() {
             }
 
             auditDataTable.row.add([
-                formatDate(item.date_time),
+                `<span style="display:none;">${item.date_time}</span>${formatDate(item.date_time)}`,
                 item.user || 'Desconocido',
                 item.user_ident || 'N/A',
                 item.company_name !== 'N/A' ? item.company_name : (item.company_id || 'N/A'),
