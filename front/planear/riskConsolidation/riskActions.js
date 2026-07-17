@@ -12,6 +12,7 @@ let programaData = {
 };
 let indicadoresData = [];
 let medidasData = [];
+let catalogDangers = []; // Store fetched dangers for the modal
 
 const initRiskActions = async () => {
     // Set program title with risk info
@@ -171,33 +172,88 @@ const renderMedidas = () => {
     tbody.innerHTML = html;
 };
 
-window.addPeligro = () => {
-    Swal.fire({
-        title: 'Agregar Peligro Asociado',
-        input: 'text',
-        inputPlaceholder: 'Nombre del peligro',
-        showCancelButton: true,
-        confirmButtonText: 'Agregar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#329bd6',
-        inputValidator: (value) => {
-            if (!value) {
-                return 'Debes ingresar un nombre para el peligro';
+window.addPeligro = async () => {
+    // Show modal
+    document.getElementById('dangerModal').style.display = 'flex';
+    document.getElementById('dangerSearchInput').value = '';
+    
+    // Fetch dangers if not already fetched
+    if (catalogDangers.length === 0) {
+        document.getElementById('dangerModalList').innerHTML = '<li style="padding:20px;text-align:center;">Cargando...</li>';
+        try {
+            const res = await fetch(`${config.BASE_API_URL}dangerCatalog.php?action=list`);
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                catalogDangers = data;
             }
+        } catch (e) {
+            console.error("Error fetching dangers", e);
+            document.getElementById('dangerModalList').innerHTML = '<li style="padding:20px;text-align:center;color:red;">Error al cargar peligros.</li>';
+            return;
         }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const newId = programaData.peligrosAsociados.length > 0 
-                ? Math.max(...programaData.peligrosAsociados.map(p => p.id)) + 1 
-                : 1;
-            programaData.peligrosAsociados.push({
-                id: newId,
-                nombre: result.value
-            });
-            renderPeligros();
-            savePrograma(true);
-        }
+    }
+    
+    renderDangerModalList(catalogDangers);
+};
+
+window.closeDangerModal = () => {
+    document.getElementById('dangerModal').style.display = 'none';
+};
+
+window.filterDangers = () => {
+    const term = document.getElementById('dangerSearchInput').value.toLowerCase();
+    const filtered = catalogDangers.filter(d => 
+        (d.name && d.name.toLowerCase().includes(term)) || 
+        (d.type_name && d.type_name.toLowerCase().includes(term))
+    );
+    renderDangerModalList(filtered);
+};
+
+const renderDangerModalList = (list) => {
+    const ul = document.getElementById('dangerModalList');
+    if (list.length === 0) {
+        ul.innerHTML = '<li style="padding:20px;text-align:center;color:#7f8c8d;">No se encontraron peligros</li>';
+        return;
+    }
+    
+    let html = '';
+    list.forEach(d => {
+        // Prevent adding duplicates
+        const isAdded = programaData.peligrosAsociados.some(p => p.nombre === d.name);
+        
+        html += `
+            <li class="danger-list-item">
+                <div class="danger-item-info">
+                    <strong>${d.name}</strong>
+                    <span>Tipo: ${d.type_name || 'N/A'}</span>
+                </div>
+                <button class="danger-item-btn" 
+                    ${isAdded ? 'style="background:#bdc3c7;cursor:not-allowed;" disabled' : `onclick="selectDanger('${d.name.replace(/'/g, "\\'")}')"`}>
+                    ${isAdded ? 'Agregado' : 'Seleccionar'}
+                </button>
+            </li>
+        `;
     });
+    ul.innerHTML = html;
+};
+
+window.selectDanger = (nombre) => {
+    const newId = programaData.peligrosAsociados.length > 0 
+        ? Math.max(...programaData.peligrosAsociados.map(p => p.id)) + 1 
+        : 1;
+        
+    programaData.peligrosAsociados.push({
+        id: newId,
+        nombre: nombre
+    });
+    
+    renderPeligros();
+    savePrograma(true); // Auto-save when added
+    
+    // As per user plan request, we can close it, but keeping it open might be better if they want to add multiple. 
+    // We'll close it to match the simple flow, or let them close it manually. 
+    // Let's close it automatically as stated in the plan:
+    closeDangerModal();
 };
 
 window.removePeligro = (id) => {

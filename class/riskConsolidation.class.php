@@ -23,6 +23,13 @@ class riskConsolidation extends connection {
         try {
             parent::nonQuery("ALTER TABLE risk_program_indicators ADD COLUMN tipo_limite VARCHAR(100) AFTER tipo_indicador");
         } catch(Exception $e) {}
+        try {
+            parent::nonQuery("CREATE TABLE IF NOT EXISTS risk_program_dangers (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                id_program INT NOT NULL,
+                danger_name VARCHAR(255) NOT NULL
+            )");
+        } catch(Exception $e) {}
 
         // Get Program
         $queryProgram = "SELECT * FROM risk_program WHERE id_empresa = $idEmpresa LIMIT 1";
@@ -84,6 +91,11 @@ class riskConsolidation extends connection {
             ];
         }
 
+        // Get Dangers
+        $queryDangers = "SELECT id, danger_name as nombre FROM risk_program_dangers WHERE id_program = $idProgram";
+        $dangers = parent::getData($queryDangers);
+        $peligrosAsociados = is_array($dangers) ? $dangers : [];
+
         return [
             "status" => "ok",
             "result" => [
@@ -91,7 +103,7 @@ class riskConsolidation extends connection {
                     "id" => $idProgram,
                     "objetivo" => $program['objetivo'],
                     "marcoLegal" => $program['marco_legal'],
-                    "peligrosAsociados" => [] // simplified
+                    "peligrosAsociados" => $peligrosAsociados
                 ],
                 "indicadores" => $indicadores,
                 "medidas" => $medidas
@@ -124,8 +136,19 @@ class riskConsolidation extends connection {
         $prog = $this->saveProgram($data);
         $idProgram = $prog['result']['idProgram'];
 
-        // We receive the whole object of medidas and indicadores. 
+        // We receive the whole object of medidas, indicadores and programa (peligros)
         // For simplicity we truncate and insert to sync the state.
+        
+        parent::nonQuery("DELETE FROM risk_program_dangers WHERE id_program = $idProgram");
+        if (isset($data['programa']['peligrosAsociados']) && is_array($data['programa']['peligrosAsociados'])) {
+            foreach ($data['programa']['peligrosAsociados'] as $p) {
+                $nombre = addslashes($p['nombre'] ?? '');
+                if (!empty($nombre)) {
+                    $query = "INSERT INTO risk_program_dangers (id_program, danger_name) VALUES ($idProgram, '$nombre')";
+                    parent::nonQueryId($query);
+                }
+            }
+        }
         
         parent::nonQuery("DELETE FROM risk_program_indicators WHERE id_program = $idProgram");
         if (isset($data['indicadores']) && is_array($data['indicadores'])) {

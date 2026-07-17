@@ -8,6 +8,103 @@
     <link rel="stylesheet" href="../planear/risk/risk.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+<style>
+    /* Modal Styles */
+    .danger-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .danger-modal {
+        background: #fff;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        animation: slideInDown 0.3s ease-out;
+    }
+    .danger-modal-header {
+        padding: 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .danger-modal-title {
+        margin: 0;
+        font-size: 1.25rem;
+        color: #2c3e50;
+    }
+    .danger-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #7f8c8d;
+    }
+    .danger-modal-search {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+    }
+    .danger-modal-search input {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #dcdde1;
+        border-radius: 6px;
+        font-size: 1rem;
+        outline: none;
+    }
+    .danger-modal-search input:focus {
+        border-color: #329bd6;
+    }
+    .danger-modal-list {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        overflow-y: auto;
+        flex: 1;
+    }
+    .danger-list-item {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.2s;
+    }
+    .danger-list-item:hover {
+        background: #f8f9fa;
+    }
+    .danger-item-info strong {
+        display: block;
+        color: #2c3e50;
+        margin-bottom: 4px;
+    }
+    .danger-item-info span {
+        display: block;
+        color: #7f8c8d;
+        font-size: 0.85rem;
+    }
+    .danger-item-btn {
+        background: #329bd6;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+    .danger-item-btn:hover {
+        background: #2780b3;
+    }
+</style>
 <body>
 
     <div class="page-header">
@@ -103,6 +200,22 @@
             <button class="btn-secondary-premium" onclick="goBackToConsolidation()" style="padding: 12px 30px;">
                 <i class="fas fa-arrow-left"></i> Volver
             </button>
+        </div>
+    </div>
+
+    <!-- Danger Search Modal -->
+    <div id="dangerModal" class="danger-modal-overlay">
+        <div class="danger-modal">
+            <div class="danger-modal-header">
+                <h3 class="danger-modal-title">Seleccionar Peligro</h3>
+                <button class="danger-modal-close" onclick="closeDangerModal()">&times;</button>
+            </div>
+            <div class="danger-modal-search">
+                <input type="text" id="dangerSearchInput" placeholder="Buscar por nombre o tipo..." onkeyup="filterDangers()">
+            </div>
+            <ul id="dangerModalList" class="danger-modal-list">
+                <!-- Populated via JS -->
+            </ul>
         </div>
     </div>
 
