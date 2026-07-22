@@ -17,6 +17,11 @@ class annual extends connection {
     public function getFullPlan($idPlan) {
         $idPlan = intval($idPlan);
         
+        // Ensure table has external_id column for consolidation records
+        try {
+            parent::nonQuery("ALTER TABLE annual_activities ADD COLUMN external_id VARCHAR(100) DEFAULT NULL AFTER category");
+        } catch(Exception $e) {}
+
         // Basic Info
         $queryPlan = "SELECT * FROM annual_plans WHERE idPlan = $idPlan";
         $planData = parent::getData($queryPlan);
@@ -134,7 +139,16 @@ class annual extends connection {
         $planDate = $this->sanitize($data['planDate']);
         $execDate = !empty($data['execDate']) ? "'" . $this->sanitize($data['execDate']) . "'" : "NULL";
         $obs = $this->sanitize($data['obs']);
-        $idActivity = isset($data['idActivity']) ? intval($data['idActivity']) : null;
+        $idActivity = isset($data['idActivity']) && $data['idActivity'] !== '' ? intval($data['idActivity']) : null;
+        $externalId = isset($data['external_id']) && $data['external_id'] !== '' ? $this->sanitize($data['external_id']) : null;
+
+        // If no ID but external_id exists, check if it's already in the DB
+        if (!$idActivity && $externalId) {
+            $check = parent::getData("SELECT idActivity FROM annual_activities WHERE idPlan = $idPlan AND external_id = '$externalId' LIMIT 1");
+            if (!empty($check)) {
+                $idActivity = $check[0]['idActivity'];
+            }
+        }
 
         if ($idActivity) {
             $query = "UPDATE annual_activities SET 
@@ -145,8 +159,9 @@ class annual extends connection {
             parent::nonQuery($query);
             $id = $idActivity;
         } else {
-            $query = "INSERT INTO annual_activities (idPlan, category, name, activity, responsible, resources, target, planDate, execDate, obs) 
-                      VALUES ($idPlan, '$category', '$name', '$activityText', '$responsible', '$resources', '$target', '$planDate', $execDate, '$obs')";
+            $extIdField = $externalId ? "'$externalId'" : "NULL";
+            $query = "INSERT INTO annual_activities (idPlan, category, external_id, name, activity, responsible, resources, target, planDate, execDate, obs) 
+                      VALUES ($idPlan, '$category', $extIdField, '$name', '$activityText', '$responsible', '$resources', '$target', '$planDate', $execDate, '$obs')";
             $id = parent::nonQueryId($query);
         }
 

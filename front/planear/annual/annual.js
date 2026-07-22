@@ -9,6 +9,7 @@ let annualData = [];
 let activeFullPlan = null;
 let activePlanId = null;
 let idEmpresa = null;
+let annualConsolidationData = []; // Store dynamically generated consolidation records
 
 const getToken = () => sessionStorage.getItem('token');
 
@@ -610,6 +611,10 @@ const loadConsolidationPrograms = async (planId) => {
 
         if (withPrograms.length === 0) return;
 
+        // Reset consolidation cache
+        annualConsolidationData = [];
+        const existingActivities = activeFullPlan.activities || [];
+
         // Build rows for each risk with programs
         let html = '';
         withPrograms.forEach(item => {
@@ -625,12 +630,39 @@ const loadConsolidationPrograms = async (planId) => {
                     const cargosText = Array.isArray(med.cargos) && med.cargos.length > 0
                         ? med.cargos.join(', ')
                         : '-';
+                    
+                    const externalId = `cons_adc${item.id}_med${med.id}`;
+                    let execDate = '-';
+                    let obs = '-';
+                    let dbIdActivity = '';
+
+                    // Check if execution data was saved for this consolidation row
+                    const savedRecord = existingActivities.find(a => a.external_id === externalId);
+                    if (savedRecord) {
+                        execDate = savedRecord.execDate || '-';
+                        obs = savedRecord.obs || '-';
+                        dbIdActivity = savedRecord.idActivity;
+                    }
+
+                    // Save to local cache for editing
+                    annualConsolidationData.push({
+                        externalId: externalId,
+                        dbIdActivity: dbIdActivity,
+                        nombre,
+                        actividad: med.medida || item.medidas,
+                        responsable: med.responsable || '-',
+                        recurso: med.recurso || '-',
+                        cargosText,
+                        fechaPlaneacion: med.fechaPlaneacion || '-',
+                        execDate: execDate !== '-' ? execDate : '',
+                        obs: obs !== '-' ? obs : ''
+                    });
 
                     html += `<tr style="background-color: #f0f7ff;">
                         <td style="text-align: center;">
-                            <span style="color: #329bd6; font-size: 0.8rem;" title="Desde Consolidación de Riesgos">
-                                <i class="fas fa-link"></i>
-                            </span>
+                            <button class="btn-edit-premium" onclick="editConsolidationActivity('${externalId}')" title="Editar Ejecución">
+                                <i class="fas fa-edit"></i>
+                            </button>
                         </td>
                         <td style="font-weight: 600; color: #34495e;">${nombre}</td>
                         <td><div style="font-size: 0.95em; line-height: 1.4;">${med.medida || item.medidas}</div></td>
@@ -638,17 +670,42 @@ const loadConsolidationPrograms = async (planId) => {
                         <td>${med.recurso || '-'}</td>
                         <td>${cargosText}</td>
                         <td>${med.fechaPlaneacion || '-'}</td>
-                        <td>-</td>
-                        <td>-</td>
+                        <td>${execDate}</td>
+                        <td>${obs}</td>
                     </tr>`;
                 });
             } else {
                 // No medidas: show a single row with empty fields
+                const externalId = `cons_adc${item.id}_nomed`;
+                let execDate = '-';
+                let obs = '-';
+                let dbIdActivity = '';
+
+                const savedRecord = existingActivities.find(a => a.external_id === externalId);
+                if (savedRecord) {
+                    execDate = savedRecord.execDate || '-';
+                    obs = savedRecord.obs || '-';
+                    dbIdActivity = savedRecord.idActivity;
+                }
+
+                annualConsolidationData.push({
+                    externalId: externalId,
+                    dbIdActivity: dbIdActivity,
+                    nombre,
+                    actividad: item.medidas,
+                    responsable: '-',
+                    recurso: '-',
+                    cargosText: '-',
+                    fechaPlaneacion: '-',
+                    execDate: execDate !== '-' ? execDate : '',
+                    obs: obs !== '-' ? obs : ''
+                });
+
                 html += `<tr style="background-color: #f0f7ff;">
                     <td style="text-align: center;">
-                        <span style="color: #329bd6; font-size: 0.8rem;" title="Desde Consolidación de Riesgos">
-                            <i class="fas fa-link"></i>
-                        </span>
+                        <button class="btn-edit-premium" onclick="editConsolidationActivity('${externalId}')" title="Editar Ejecución">
+                            <i class="fas fa-edit"></i>
+                        </button>
                     </td>
                     <td style="font-weight: 600; color: #34495e;">${nombre}</td>
                     <td><div style="font-size: 0.95em; line-height: 1.4;">${item.medidas}</div></td>
@@ -656,8 +713,8 @@ const loadConsolidationPrograms = async (planId) => {
                     <td>-</td>
                     <td>-</td>
                     <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
+                    <td>${execDate}</td>
+                    <td>${obs}</td>
                 </tr>`;
             }
         });
@@ -671,6 +728,81 @@ const loadConsolidationPrograms = async (planId) => {
 
 window.printAnnual = () => {
     window.print();
+};
+
+window.editConsolidationActivity = (externalId) => {
+    const item = annualConsolidationData.find(i => i.externalId === externalId);
+    if (!item) return;
+
+    document.getElementById('consExternalId').value = item.externalId;
+    document.getElementById('consEditId').value = item.dbIdActivity;
+    
+    // Read only fields
+    document.getElementById('consFieldName').value = item.nombre;
+    document.getElementById('consFieldActivity').value = item.actividad;
+    document.getElementById('consFieldResponsible').value = item.responsable;
+    document.getElementById('consFieldResources').value = item.recurso;
+    document.getElementById('consFieldTarget').value = item.cargosText;
+    document.getElementById('consFieldPlanDate').value = item.fechaPlaneacion;
+    
+    // Editable fields
+    document.getElementById('consFieldExecDate').value = item.execDate;
+    document.getElementById('consFieldObs').value = item.obs;
+
+    document.getElementById('annualDetailView').style.display = 'none';
+    document.getElementById('annualConsolidationEditView').style.display = 'block';
+};
+
+window.hideConsolidationEditView = () => {
+    document.getElementById('annualConsolidationEditView').style.display = 'none';
+    document.getElementById('annualDetailView').style.display = 'block';
+};
+
+window.saveConsolidationActivity = async () => {
+    const externalId = document.getElementById('consExternalId').value;
+    const idActivity = document.getElementById('consEditId').value;
+    
+    const execDate = document.getElementById('consFieldExecDate').value;
+    const obs = document.getElementById('consFieldObs').value;
+
+    const name = document.getElementById('consFieldName').value;
+    const activity = document.getElementById('consFieldActivity').value;
+    const responsible = document.getElementById('consFieldResponsible').value;
+    const resources = document.getElementById('consFieldResources').value;
+    const target = document.getElementById('consFieldTarget').value;
+    const planDate = document.getElementById('consFieldPlanDate').value;
+
+    try {
+        const res = await fetch(`${API_URL}?action=saveActivity`, {
+            method: 'POST',
+            body: JSON.stringify({
+                token: getToken(),
+                idPlan: activePlanId,
+                category: 'programs',
+                idActivity: idActivity,
+                external_id: externalId,
+                name: name,
+                activity: activity,
+                responsible: responsible,
+                resources: resources,
+                target: target,
+                planDate: planDate,
+                execDate: execDate,
+                obs: obs
+            })
+        });
+        const resp = await res.json();
+        if (resp.status === 'ok') {
+            await refreshDetail();
+            Swal.fire('Guardado', 'Ejecución guardada.', 'success');
+            hideConsolidationEditView();
+        } else {
+            Swal.fire('Error', resp.result.error_msg || 'Error al guardar', 'error');
+        }
+    } catch (err) {
+        console.error('Consolidation save error:', err);
+        Swal.fire('Error', 'Error de conexión', 'error');
+    }
 };
 
 if (document.readyState === 'loading') {

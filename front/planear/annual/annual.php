@@ -477,4 +477,61 @@
     </form>
 </div>
 
+<!-- Edit Consolidation Activity View -->
+<div id="annualConsolidationEditView" class="content-card" style="display: none;">
+    <div class="section-header">
+        <h2 class="section-title">EDITAR EJECUCIÓN (CONSOLIDACIÓN)</h2>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-new-record" onclick="saveConsolidationActivity()"><i class="fas fa-save"></i> Guardar</button>
+            <button class="btn-secondary-premium" onclick="hideConsolidationEditView()"><i class="fas fa-arrow-left"></i> Volver</button>
+        </div>
+    </div>
+
+    <form id="consolidationEditForm" style="max-width: 800px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <input type="hidden" id="consExternalId">
+        <input type="hidden" id="consCategoryContext" value="programs">
+        <input type="hidden" id="consEditId">
+        
+        <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">Nombre:</label>
+            <input type="text" id="consFieldName" class="form-input-date" style="width: 100%; background: #f0f0f0; color: #555;" disabled>
+        </div>
+
+        <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">Actividad:</label>
+            <textarea id="consFieldActivity" class="form-input-text" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background: #f0f0f0; color: #555;" disabled></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Responsable:</label>
+            <input type="text" id="consFieldResponsible" class="form-input-date" style="width: 100%; background: #f0f0f0; color: #555;" disabled>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Recursos:</label>
+            <input type="text" id="consFieldResources" class="form-input-date" style="width: 100%; background: #f0f0f0; color: #555;" disabled>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Dirigido A:</label>
+            <input type="text" id="consFieldTarget" class="form-input-date" style="width: 100%; background: #f0f0f0; color: #555;" disabled>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Fecha Planeación:</label>
+            <input type="text" id="consFieldPlanDate" class="form-input-date" style="width: 100%; background: #f0f0f0; color: #555;" disabled>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Fecha Ejecución:</label>
+            <input type="date" id="consFieldExecDate" class="form-input-date">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Observaciones:</label>
+            <textarea id="consFieldObs" class="form-input-text" rows="1" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+        </div>
+    </form>
+</div>
+
 <script type="module" src="../planear/annual/annual.js?v=<?= time() ?>"></script>
