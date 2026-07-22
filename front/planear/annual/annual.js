@@ -1,6 +1,8 @@
 import config from "../../js/config.js";
 
 const API_URL = `${config.BASE_API_URL}annual.php`;
+const DANGER_API = `${config.BASE_API_URL}dangerMgmt.php`;
+const RISK_CONS_API = `${config.BASE_API_URL}riskConsolidation.php`;
 
 // State
 let annualData = [];
@@ -155,6 +157,7 @@ window.viewAnnual = async (id) => {
         
         renderAllSections();
         loadSignaturesUI();
+        loadConsolidationPrograms(id);
     } catch (err) {
         console.error('View error:', err);
     }
@@ -548,6 +551,121 @@ window.handleSignatureSelect = (input, imgId, placeholderId) => {
             document.getElementById(placeholderId).style.display = 'none';
         }
         reader.readAsDataURL(input.files[0]);
+    }
+};
+
+// ── CONSOLIDATION PROGRAMS FOR "PROGRAMAS DE GESTIÓN" ──────────
+
+const loadConsolidationPrograms = async (planId) => {
+    const tbody = document.querySelector('#tablePrograms tbody');
+    if (!tbody) return;
+
+    // Use exact same idEmpresa resolution as riskActions.js for compatibility (defaults to 1 if not in storage)
+    const riskConsIdEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+
+    try {
+        // 1. Fetch risks (full report) for this plan
+        const resDangers = await fetch(`${DANGER_API}?action=fullReport&idEmpresa=${idEmpresa}&idPlan=${planId}`);
+        const dangersRaw = await resDangers.json();
+
+        // 2. Fetch saved consolidation programs for this plan
+        const resProg = await fetch(`${DANGER_API}?action=getRiskPrograms&idPlan=${planId}`);
+        const progData = await resProg.json();
+
+        // 3. Fetch program measures (responsable, recurso, cargos, fecha) from riskConsolidation
+        const resMeasures = await fetch(`${RISK_CONS_API}?idEmpresa=${riskConsIdEmpresa}`);
+        const measuresResp = await resMeasures.json();
+        const programMedidas = (measuresResp.status === 'ok' && measuresResp.result) ? measuresResp.result.medidas || [] : [];
+
+        // Build consolidation data merging dangers with their programs
+        let consolidationItems = [];
+        if (Array.isArray(dangersRaw)) {
+            consolidationItems = dangersRaw.map(item => ({
+                id: item.adc_id,
+                peligro: item.danger_name,
+                medidas: item.measures,
+                programas: '',
+                pve: '',
+                subProgramas: ''
+            }));
+
+            // Merge with saved programs
+            if (Array.isArray(progData)) {
+                consolidationItems.forEach(risk => {
+                    const found = progData.find(p => parseInt(p.adc_id) === parseInt(risk.id));
+                    if (found) {
+                        risk.programas = found.programas || '';
+                        risk.pve = found.pve || '';
+                        risk.subProgramas = found.subProgramas || '';
+                    }
+                });
+            }
+        }
+
+        // Filter: only show rows that have at least programas or PVE
+        const withPrograms = consolidationItems.filter(item =>
+            (item.programas && item.programas.trim() !== '') ||
+            (item.pve && item.pve.trim() !== '')
+        );
+
+        if (withPrograms.length === 0) return;
+
+        // Build rows for each risk with programs
+        let html = '';
+        withPrograms.forEach(item => {
+            // Build "Nombre" column: Programas - SubProgramas
+            let nombre = item.programas || '';
+            if (item.subProgramas && item.subProgramas.trim() !== '') {
+                nombre += nombre ? ' - ' + item.subProgramas : item.subProgramas;
+            }
+
+            if (programMedidas.length > 0) {
+                // Create one row per medida (each responsable record from riskActions)
+                programMedidas.forEach(med => {
+                    const cargosText = Array.isArray(med.cargos) && med.cargos.length > 0
+                        ? med.cargos.join(', ')
+                        : '-';
+
+                    html += `<tr style="background-color: #f0f7ff;">
+                        <td style="text-align: center;">
+                            <span style="color: #329bd6; font-size: 0.8rem;" title="Desde Consolidación de Riesgos">
+                                <i class="fas fa-link"></i>
+                            </span>
+                        </td>
+                        <td style="font-weight: 600; color: #34495e;">${nombre}</td>
+                        <td><div style="font-size: 0.95em; line-height: 1.4;">${med.medida || item.medidas}</div></td>
+                        <td>${med.responsable || '-'}</td>
+                        <td>${med.recurso || '-'}</td>
+                        <td>${cargosText}</td>
+                        <td>${med.fechaPlaneacion || '-'}</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>`;
+                });
+            } else {
+                // No medidas: show a single row with empty fields
+                html += `<tr style="background-color: #f0f7ff;">
+                    <td style="text-align: center;">
+                        <span style="color: #329bd6; font-size: 0.8rem;" title="Desde Consolidación de Riesgos">
+                            <i class="fas fa-link"></i>
+                        </span>
+                    </td>
+                    <td style="font-weight: 600; color: #34495e;">${nombre}</td>
+                    <td><div style="font-size: 0.95em; line-height: 1.4;">${item.medidas}</div></td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                </tr>`;
+            }
+        });
+
+        // Append consolidation rows after the existing manual activities
+        tbody.innerHTML += html;
+    } catch (err) {
+        console.error('Error loading consolidation programs:', err);
     }
 };
 
