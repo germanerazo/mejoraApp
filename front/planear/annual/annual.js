@@ -256,7 +256,8 @@ const renderActivityTableUI = (category, tableId) => {
     const tbody = document.querySelector(`#${tableId} tbody`);
     if (!tbody) return;
     
-    const relevant = activeFullPlan.activities.filter(i => i.category === category);
+    // Filter out consolidation activities (they have an external_id) from standard rendering
+    const relevant = activeFullPlan.activities.filter(i => i.category === category && !i.external_id);
     let html = '';
 
     if (relevant.length === 0) {
@@ -541,6 +542,8 @@ const refreshDetail = async () => {
     const res = await fetch(`${API_URL}?idPlan=${activePlanId}`);
     activeFullPlan = await res.json();
     renderAllSections();
+    loadSignaturesUI();
+    loadConsolidationPrograms(activePlanId);
 };
 
 window.handleSignatureSelect = (input, imgId, placeholderId) => {
@@ -658,11 +661,23 @@ const loadConsolidationPrograms = async (planId) => {
                         obs: obs !== '-' ? obs : ''
                     });
 
+                    let actionButtons = `<button class="btn-edit-premium" onclick="editConsolidationActivity('${externalId}')" title="Editar Ejecución">
+                                            <i class="fas fa-edit"></i>
+                                         </button>`;
+                    if (dbIdActivity) {
+                        actionButtons = `<div style="display: flex; gap: 5px; justify-content: center;">
+                                            <button class="btn-delete-premium" onclick="deleteActivity(${dbIdActivity})" title="Eliminar Ejecución">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            <button class="btn-edit-premium" onclick="editConsolidationActivity('${externalId}')" title="Editar Ejecución">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                         </div>`;
+                    }
+
                     html += `<tr style="background-color: #f0f7ff;">
                         <td style="text-align: center;">
-                            <button class="btn-edit-premium" onclick="editConsolidationActivity('${externalId}')" title="Editar Ejecución">
-                                <i class="fas fa-edit"></i>
-                            </button>
+                            ${actionButtons}
                         </td>
                         <td style="font-weight: 600; color: #34495e;">${nombre}</td>
                         <td><div style="font-size: 0.95em; line-height: 1.4;">${med.medida || item.medidas}</div></td>
@@ -701,11 +716,23 @@ const loadConsolidationPrograms = async (planId) => {
                     obs: obs !== '-' ? obs : ''
                 });
 
+                let actionButtons = `<button class="btn-edit-premium" onclick="editConsolidationActivity('${externalId}')" title="Editar Ejecución">
+                                        <i class="fas fa-edit"></i>
+                                     </button>`;
+                if (dbIdActivity) {
+                    actionButtons = `<div style="display: flex; gap: 5px; justify-content: center;">
+                                        <button class="btn-delete-premium" onclick="deleteActivity(${dbIdActivity})" title="Eliminar Ejecución">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                        <button class="btn-edit-premium" onclick="editConsolidationActivity('${externalId}')" title="Editar Ejecución">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                     </div>`;
+                }
+
                 html += `<tr style="background-color: #f0f7ff;">
                     <td style="text-align: center;">
-                        <button class="btn-edit-premium" onclick="editConsolidationActivity('${externalId}')" title="Editar Ejecución">
-                            <i class="fas fa-edit"></i>
-                        </button>
+                        ${actionButtons}
                     </td>
                     <td style="font-weight: 600; color: #34495e;">${nombre}</td>
                     <td><div style="font-size: 0.95em; line-height: 1.4;">${item.medidas}</div></td>
