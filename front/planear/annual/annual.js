@@ -147,9 +147,30 @@ window.deleteAnnual = (id) => {
 
 window.viewAnnual = async (id) => {
     try {
-        const res = await fetch(`${API_URL}?idPlan=${id}`);
-        activeFullPlan = await res.json();
+        Swal.fire({
+            title: 'Cargando detalle...',
+            text: 'Por favor espere',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const riskConsIdEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+
+        const [resPlan, resDangers, resProg, resMeasures] = await Promise.all([
+            fetch(`${API_URL}?idPlan=${id}`),
+            fetch(`${DANGER_API}?action=fullReport&idEmpresa=${idEmpresa}&idPlan=${id}`),
+            fetch(`${DANGER_API}?action=getRiskPrograms&idPlan=${id}`),
+            fetch(`${RISK_CONS_API}?idEmpresa=${riskConsIdEmpresa}`)
+        ]);
+
+        activeFullPlan = await resPlan.json();
         activePlanId = id;
+        
+        const dangersRaw = await resDangers.json();
+        const progData = await resProg.json();
+        const measuresResp = await resMeasures.json();
 
         document.getElementById('annualListView').style.display = 'none';
         document.getElementById('annualDetailView').style.display = 'block';
@@ -158,9 +179,12 @@ window.viewAnnual = async (id) => {
         
         renderAllSections();
         loadSignaturesUI();
-        loadConsolidationPrograms(id);
+        renderConsolidationPrograms(dangersRaw, progData, measuresResp);
+        
+        Swal.close();
     } catch (err) {
         console.error('View error:', err);
+        Swal.fire('Error', 'Error al cargar el detalle del plan', 'error');
     }
 };
 
@@ -539,11 +563,38 @@ window.saveSignatures = async () => {
 
 const refreshDetail = async () => {
     if (!activePlanId) return;
-    const res = await fetch(`${API_URL}?idPlan=${activePlanId}`);
-    activeFullPlan = await res.json();
-    renderAllSections();
-    loadSignaturesUI();
-    loadConsolidationPrograms(activePlanId);
+
+    Swal.fire({
+        title: 'Actualizando...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+        const riskConsIdEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
+
+        const [resPlan, resDangers, resProg, resMeasures] = await Promise.all([
+            fetch(`${API_URL}?idPlan=${activePlanId}`),
+            fetch(`${DANGER_API}?action=fullReport&idEmpresa=${idEmpresa}&idPlan=${activePlanId}`),
+            fetch(`${DANGER_API}?action=getRiskPrograms&idPlan=${activePlanId}`),
+            fetch(`${RISK_CONS_API}?idEmpresa=${riskConsIdEmpresa}`)
+        ]);
+
+        activeFullPlan = await resPlan.json();
+        
+        const dangersRaw = await resDangers.json();
+        const progData = await resProg.json();
+        const measuresResp = await resMeasures.json();
+
+        renderAllSections();
+        loadSignaturesUI();
+        renderConsolidationPrograms(dangersRaw, progData, measuresResp);
+        
+        Swal.close();
+    } catch (err) {
+        console.error('Refresh error:', err);
+        Swal.fire('Error', 'Error al actualizar el detalle', 'error');
+    }
 };
 
 window.handleSignatureSelect = (input, imgId, placeholderId) => {
@@ -560,25 +611,11 @@ window.handleSignatureSelect = (input, imgId, placeholderId) => {
 
 // ── CONSOLIDATION PROGRAMS FOR "PROGRAMAS DE GESTIÓN" ──────────
 
-const loadConsolidationPrograms = async (planId) => {
+const renderConsolidationPrograms = (dangersRaw, progData, measuresResp) => {
     const tbody = document.querySelector('#tablePrograms tbody');
     if (!tbody) return;
 
-    // Use exact same idEmpresa resolution as riskActions.js for compatibility (defaults to 1 if not in storage)
-    const riskConsIdEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
-
     try {
-        // 1. Fetch risks (full report) for this plan
-        const resDangers = await fetch(`${DANGER_API}?action=fullReport&idEmpresa=${idEmpresa}&idPlan=${planId}`);
-        const dangersRaw = await resDangers.json();
-
-        // 2. Fetch saved consolidation programs for this plan
-        const resProg = await fetch(`${DANGER_API}?action=getRiskPrograms&idPlan=${planId}`);
-        const progData = await resProg.json();
-
-        // 3. Fetch program measures (responsable, recurso, cargos, fecha) from riskConsolidation
-        const resMeasures = await fetch(`${RISK_CONS_API}?idEmpresa=${riskConsIdEmpresa}`);
-        const measuresResp = await resMeasures.json();
         const programMedidas = (measuresResp.status === 'ok' && measuresResp.result) ? measuresResp.result.medidas || [] : [];
 
         // Build consolidation data merging dangers with their programs

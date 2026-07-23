@@ -145,20 +145,37 @@ class dangerMgmt extends connection {
              ORDER BY p.name, pa.name, d.name, c.name"
         );
 
+        if (empty($rows)) {
+            return [];
+        }
+
+        $adcIds = array_column($rows, 'adc_id');
+        $inAdcIds = implode(',', array_map('intval', $adcIds));
+
+        $allMeasures = parent::getData(
+            "SELECT adcm.activity_danger_consequence_id as adc_id,
+                    pm.name               AS measure_name,
+                    adcm.elimination,
+                    adcm.substitution,
+                    adcm.engineering_control,
+                    adcm.administrative_control,
+                    adcm.ppe
+             FROM activity_danger_consequence_measures adcm
+             JOIN preventive_measures pm ON pm.id = adcm.preventive_measure_id
+             WHERE adcm.activity_danger_consequence_id IN ($inAdcIds)"
+        );
+
+        $measuresByAdcId = [];
+        if (is_array($allMeasures)) {
+            foreach ($allMeasures as $m) {
+                $measuresByAdcId[$m['adc_id']][] = $m;
+            }
+        }
+
         // Para cada fila agregar medidas agrupadas y flags de tipo de control
         foreach ($rows as &$row) {
             $adcId = intval($row['adc_id']);
-            $measures = parent::getData(
-                "SELECT pm.name               AS measure_name,
-                        adcm.elimination,
-                        adcm.substitution,
-                        adcm.engineering_control,
-                        adcm.administrative_control,
-                        adcm.ppe
-                 FROM activity_danger_consequence_measures adcm
-                 JOIN preventive_measures pm ON pm.id = adcm.preventive_measure_id
-                 WHERE adcm.activity_danger_consequence_id = $adcId"
-            );
+            $measures = isset($measuresByAdcId[$adcId]) ? $measuresByAdcId[$adcId] : [];
 
             $names          = [];
             $elimination    = 0;
