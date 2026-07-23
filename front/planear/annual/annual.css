@@ -57,6 +57,10 @@
     border-radius: 4px;
 }
 
+.btn-new-record.hidden-btn {
+    display: none !important;
+}
+
 .btn-new-record {
     background-color: var(--fondo);
     color: white;
@@ -88,6 +92,12 @@
 
 @media print {
 
+    /* Orientación vertical por defecto */
+    @page {
+        size: portrait;
+        margin: 10mm;
+    }
+
     /* Hide Everything by default */
     body * {
         visibility: hidden;
@@ -99,29 +109,33 @@
         visibility: visible;
     }
 
-    /* Position Detail View to Overlay Everything */
+    /* Position Detail View para que muestre todo el contenido */
     #annualDetailView {
-        position: fixed;
+        position: absolute;
         left: 0;
         top: 0;
         width: 100%;
-        height: 100%;
+        height: auto;
         margin: 0;
-        padding: 20px;
+        padding: 10px;
+        box-sizing: border-box;
         background-color: white;
         z-index: 99999;
-        /* Top of stack */
-        overflow-y: auto;
+        overflow: visible;
     }
 
-    /* Hide Action Buttons and UI Elements */
-    button,
-    .btn-new-record,
-    .btn-secondary,
-    .btn-icon-delete,
-    .btn-icon-view,
-    .btn-icon,
-    .no-print {
+    /* Hide Action Buttons and UI Elements (Increased specificity to override colors.css) */
+    #annualDetailView button,
+    #annualDetailView .btn-new-record,
+    #annualDetailView .btn-secondary,
+    #annualDetailView .btn-secondary-premium,
+    #annualDetailView .btn-hover-graph,
+    #annualDetailView .btn-icon-delete,
+    #annualDetailView .btn-icon-view,
+    #annualDetailView .btn-icon,
+    #annualDetailView .btn-delete-premium,
+    #annualDetailView .btn-edit-premium,
+    #annualDetailView .no-print {
         display: none !important;
     }
 
@@ -131,19 +145,57 @@
         display: none !important;
     }
 
+    /* Tablas con tamaño apropiado para impresión */
+    .annual-table {
+        width: 100%;
+        font-size: 9pt;
+        margin-top: 8px;
+    }
+
+    .annual-table th,
+    .annual-table td {
+        padding: 4px 6px;
+        border: 1px solid #999;
+        word-break: break-word;
+    }
+
+    .annual-table th {
+        background-color: #e8e8e8 !important;
+        color: #000 !important;
+        font-weight: bold;
+    }
+
+    /* Contenedores de tablas sin overflow */
+    .table-container {
+        overflow: visible !important;
+    }
+
     /* Improve Layout for Print */
     .section-header {
         border-bottom: 2px solid #000;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
+    }
+
+    .section-header h2 {
+        font-size: 14pt;
+        color: #000 !important;
+    }
+
+    #detailPeriod {
+        color: #333 !important;
+        font-size: 10pt;
     }
 
     .section-subtitle {
         page-break-after: avoid;
-        margin-top: 20px;
-        color: #000;
+        margin-top: 15px;
+        margin-bottom: 8px;
+        color: #000 !important;
         border-bottom: 1px solid #000;
+        font-size: 11pt;
     }
 
+    /* Page breaks inteligentes */
     table {
         page-break-inside: auto;
     }
@@ -152,9 +204,32 @@
         page-break-inside: avoid;
     }
 
+    /* Cada sección de objetivos y actividades evita cortes innecesarios */
+    h3.section-subtitle {
+        page-break-before: auto;
+    }
+
+    /* Firmas visibles */
+    .signature-section,
+    .signature-card {
+        page-break-inside: avoid;
+    }
+
+    .signature-card img {
+        max-width: 200px !important;
+        max-height: 100px !important;
+    }
+
+    /* Ocultar inputs de firma, solo mostrar previews */
+    .signature-card input[type="file"],
+    .signature-card .placeholder-sig {
+        display: none !important;
+    }
+
     /* Ensure backgrounds/colors print */
     * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        box-sizing: border-box !important;
     }
 }

@@ -96,6 +96,7 @@
     <!-- Activities (Organizational) -->
     <div style="margin-bottom: 10px;">
         <button class="btn-new-record" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('organizational')"><i class="fas fa-plus-circle"></i> Nuevo Registro</button>
+        <button class="btn-hover-graph" style="font-size: 0.9rem; padding: 5px 10px; margin-left: 10px;" onclick="showSectionGraph('organizational', 'Gestión Organizacional')"><i class="fas fa-chart-pie"></i> Graficar</button>
     </div>
     <div class="table-container">
         <table class="annual-table" id="tableOrganizational">
@@ -134,6 +135,9 @@
         </table>
     </div>
 
+    <div style="margin-bottom: 10px;">
+        <button class="btn-hover-graph" style="font-size: 0.9rem; padding: 5px 10px;" onclick="showSectionGraph('programs', 'Programas de Gestión')"><i class="fas fa-chart-pie"></i> Graficar</button>
+    </div>
     <div class="table-container">
         <table class="annual-table" id="tablePrograms">
             <thead>
@@ -173,6 +177,7 @@
 
     <div style="margin-bottom: 10px;">
         <button class="btn-new-record" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('inspections')"><i class="fas fa-plus-circle"></i> Nuevo Registro</button>
+        <button class="btn-hover-graph" style="font-size: 0.9rem; padding: 5px 10px; margin-left: 10px;" onclick="showSectionGraph('inspections', 'Inspecciones')"><i class="fas fa-chart-pie"></i> Graficar</button>
     </div>
     <div class="table-container">
         <table class="annual-table" id="tableInspections">
@@ -213,6 +218,7 @@
 
     <div style="margin-bottom: 10px;">
         <button class="btn-new-record" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('audits')"><i class="fas fa-plus-circle"></i> Nuevo Registro</button>
+        <button class="btn-hover-graph" style="font-size: 0.9rem; padding: 5px 10px; margin-left: 10px;" onclick="showSectionGraph('audits', 'Auditorias')"><i class="fas fa-chart-pie"></i> Graficar</button>
     </div>
     <div class="table-container">
         <table class="annual-table" id="tableAudits">
@@ -253,6 +259,7 @@
 
     <div style="margin-bottom: 10px;">
         <button class="btn-new-record" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('vulnerability')"><i class="fas fa-plus-circle"></i> Nuevo Registro</button>
+        <button class="btn-hover-graph" style="font-size: 0.9rem; padding: 5px 10px; margin-left: 10px;" onclick="showSectionGraph('vulnerability', 'Gestión de Vulnerabilidad')"><i class="fas fa-chart-pie"></i> Graficar</button>
     </div>
     <div class="table-container">
         <table class="annual-table" id="tableVulnerability">
@@ -293,6 +300,7 @@
 
     <div style="margin-bottom: 10px;">
         <button class="btn-new-record" style="font-size: 0.9rem; padding: 5px 10px;" onclick="addActivity('managementRelease')"><i class="fas fa-plus-circle"></i> Nuevo Registro</button>
+        <button class="btn-hover-graph" style="font-size: 0.9rem; padding: 5px 10px; margin-left: 10px;" onclick="showSectionGraph('managementRelease', 'Revisión por Dirección')"><i class="fas fa-chart-pie"></i> Graficar</button>
     </div>
     <div class="table-container">
         <table class="annual-table" id="tableManagementReview">
@@ -332,8 +340,8 @@
     </div>
 
     <div style="margin-bottom: 10px;">
-        <button class="btn-new-record" style="font-size: 0.9rem; padding: 5px 15px;" onclick="addActivity('medical')">
-            <i class="fas fa-plus-circle"></i> Nuevo Registro
+        <button class="btn-hover-graph" style="font-size: 0.9rem; padding: 5px 10px;" onclick="showSectionGraph('medical', 'Exámenes Médicos')">
+            <i class="fas fa-chart-pie"></i> Graficar
         </button>
     </div>
     <div class="table-container">
@@ -504,22 +512,22 @@
 
         <div class="form-group">
             <label class="form-label">Responsable:</label>
-            <input type="text" id="consFieldResponsible" class="form-input-date" style="width: 100%; background: #f0f0f0; color: #555;" disabled>
+            <input type="text" id="consFieldResponsible" class="form-input-date" style="width: 100%;">
         </div>
 
         <div class="form-group">
             <label class="form-label">Recursos:</label>
-            <input type="text" id="consFieldResources" class="form-input-date" style="width: 100%; background: #f0f0f0; color: #555;" disabled>
+            <input type="text" id="consFieldResources" class="form-input-date" style="width: 100%;">
         </div>
 
         <div class="form-group">
             <label class="form-label">Dirigido A:</label>
-            <input type="text" id="consFieldTarget" class="form-input-date" style="width: 100%; background: #f0f0f0; color: #555;" disabled>
+            <input type="text" id="consFieldTarget" class="form-input-date" style="width: 100%;">
         </div>
 
         <div class="form-group">
             <label class="form-label">Fecha Planeación:</label>
-            <input type="text" id="consFieldPlanDate" class="form-input-date" style="width: 100%; background: #f0f0f0; color: #555;" disabled>
+            <input type="date" id="consFieldPlanDate" class="form-input-date" style="width: 100%;">
         </div>
 
         <div class="form-group">
@@ -534,4 +542,11 @@
     </form>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<script>
+    if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+        Chart.register(ChartDataLabels);
+    }
+</script>
 <script type="module" src="../planear/annual/annual.js?v=<?= time() ?>"></script>

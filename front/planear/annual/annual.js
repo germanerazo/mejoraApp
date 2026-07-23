@@ -246,11 +246,18 @@ window.hideAnnualDetail = () => {
 const renderObjectiveTableUI = (category, tableId) => {
     const tbody = document.querySelector(`#${tableId} tbody`);
     if (!tbody) return;
-    const relevant = activeFullPlan.objectives.filter(i => i.category === category);
     
+    const allObjectives = activeFullPlan.objectives || [];
+    const relevant = allObjectives.filter(i => i.category === category);
+    
+    // Ocultar o mostrar botón de agregar objetivo
     const addBtn = document.getElementById(`btnAddObj_${category}`);
     if (addBtn) {
-        addBtn.style.display = relevant.length > 0 ? 'none' : 'inline-block';
+        if (relevant.length > 0) {
+            addBtn.classList.add('hidden-btn');
+        } else {
+            addBtn.classList.remove('hidden-btn');
+        }
     }
 
     let html = '';
@@ -260,13 +267,15 @@ const renderObjectiveTableUI = (category, tableId) => {
     } else {
         relevant.forEach(item => {
             html += `<tr>
-                <td style="display: flex; gap: 5px;">
-                    <button class="btn-delete-premium" onclick="deleteObjective(${item.idObjective})" title="Eliminar">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                    <button class="btn-edit-premium" onclick="editObjective(${item.idObjective})" title="Editar">
-                        <i class="fas fa-edit"></i>
-                    </button>
+                <td>
+                    <div style="display: flex; gap: 5px; align-items: center; justify-content: center; height: 100%;">
+                        <button class="btn-delete-premium" onclick="deleteObjective(${item.idObjective})" title="Eliminar">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                        <button class="btn-edit-premium" onclick="editObjective(${item.idObjective})" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
                 </td>
                 <td>${item.objective}</td>
                 <td>${item.meta}</td>
@@ -280,22 +289,34 @@ const renderActivityTableUI = (category, tableId) => {
     const tbody = document.querySelector(`#${tableId} tbody`);
     if (!tbody) return;
     
+    if (category === 'medical') {
+        renderMedicalExams(tableId);
+        return;
+    }
+    
     // Filter out consolidation activities (they have an external_id) from standard rendering
     const relevant = activeFullPlan.activities.filter(i => i.category === category && !i.external_id);
     let html = '';
 
     if (relevant.length === 0) {
-        html = '<tr><td colspan="10" style="text-align: center; color: #999;">Sin actividades.</td></tr>';
+        // No mostrar "Sin actividades" para programs, ya que los registros de consolidación se renderizan aparte
+        if (category === 'programs') {
+            html = '';
+        } else {
+            html = '<tr><td colspan="10" style="text-align: center; color: #999;">Sin actividades.</td></tr>';
+        }
     } else {
         relevant.forEach(item => {
             html += `<tr>
-                <td style="display: flex; gap: 5px;">
-                    <button class="btn-delete-premium" onclick="deleteActivity(${item.idActivity})" title="Eliminar">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                    <button class="btn-edit-premium" onclick="editActivity(${item.idActivity})" title="Editar">
-                        <i class="fas fa-edit"></i>
-                    </button>
+                <td>
+                    <div style="display: flex; gap: 5px; align-items: center; justify-content: center; height: 100%;">
+                        <button class="btn-delete-premium" onclick="deleteActivity(${item.idActivity})" title="Eliminar">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                        <button class="btn-edit-premium" onclick="editActivity(${item.idActivity})" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
                 </td>
                 <td>${item.name}</td>
                 <td>${item.activity}</td>
@@ -308,6 +329,93 @@ const renderActivityTableUI = (category, tableId) => {
             </tr>`;
         });
     }
+    tbody.innerHTML = html;
+};
+
+const renderMedicalExams = (tableId) => {
+    const tbody = document.querySelector(`#${tableId} tbody`);
+    if (!tbody) return;
+
+    let html = '';
+    const employees = activeFullPlan.employees || [];
+    const existingActivities = activeFullPlan.activities || [];
+
+    if (employees.length === 0) {
+        html = '<tr><td colspan="10" style="text-align: center; color: #999;">No hay empleados registrados.</td></tr>';
+    } else {
+        // Prepare global variable to cache data for editing (similar to annualConsolidationData)
+        if (typeof window.annualMedicalData === 'undefined') {
+            window.annualMedicalData = [];
+        } else {
+            window.annualMedicalData.length = 0;
+        }
+
+        employees.forEach(emp => {
+            const externalId = `med_exam_${emp.id}`;
+            const nombre = emp.nombre;
+            const actividad = 'Exámen médico';
+
+            let execDate = '-';
+            let obs = '-';
+            let planDate = '-';
+            let responsable = '-';
+            let resources = '-';
+            let target = '-';
+            let dbIdActivity = '';
+
+            const savedRecord = existingActivities.find(a => a.external_id === externalId);
+            if (savedRecord) {
+                execDate = savedRecord.execDate || '-';
+                obs = savedRecord.obs || '-';
+                planDate = savedRecord.planDate || '-';
+                responsable = savedRecord.responsible || '-';
+                resources = savedRecord.resources || '-';
+                target = savedRecord.target || '-';
+                dbIdActivity = savedRecord.idActivity;
+            }
+
+            window.annualMedicalData.push({
+                externalId: externalId,
+                dbIdActivity: dbIdActivity,
+                nombre: nombre,
+                actividad: actividad,
+                responsable: responsable !== '-' ? responsable : '',
+                recurso: resources !== '-' ? resources : '',
+                target: target !== '-' ? target : '',
+                fechaPlaneacion: planDate !== '-' ? planDate : '',
+                execDate: execDate !== '-' ? execDate : '',
+                obs: obs !== '-' ? obs : ''
+            });
+
+            let actionButtons = `<button class="btn-edit-premium" onclick="editMedicalActivity('${externalId}')" title="Editar Ejecución">
+                                    <i class="fas fa-edit"></i>
+                                 </button>`;
+            
+            if (dbIdActivity) {
+                actionButtons = `<div style="display: flex; gap: 5px; justify-content: center;">
+                                    <button class="btn-delete-premium" onclick="deleteActivity(${dbIdActivity})" title="Eliminar Ejecución">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    <button class="btn-edit-premium" onclick="editMedicalActivity('${externalId}')" title="Editar Ejecución">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                 </div>`;
+            }
+
+            html += `<tr style="background-color: #fdfdfd;">
+                <td style="text-align: center;">${actionButtons}</td>
+                <td style="font-weight: 600;">${nombre}</td>
+                <td>${actividad}</td>
+                <td>${responsable}</td>
+                <td>${resources}</td>
+                <td>${target}</td>
+                <td>${planDate}</td>
+                <td>${execDate}</td>
+                <td>${obs}</td>
+            </tr>`;
+        });
+    }
+
     tbody.innerHTML = html;
 };
 
@@ -841,10 +949,130 @@ window.printAnnual = () => {
     window.print();
 };
 
+window.showSectionGraph = (category, sectionName) => {
+    let relevant = [];
+    if (category === 'programs') {
+        // Para programas, excluimos las consolidadas de las normales, pero agregamos las guardadas de consolidación
+        relevant = activeFullPlan.activities.filter(i => i.category === category && !i.external_id);
+        
+        // Agregar los datos de consolidación
+        annualConsolidationData.forEach(item => {
+            relevant.push({
+                planDate: item.fechaPlaneacion,
+                execDate: item.execDate
+            });
+        });
+    } else {
+        relevant = activeFullPlan.activities.filter(i => i.category === category);
+    }
+
+    if (relevant.length === 0) {
+        Swal.fire('Atención', 'No hay registros en esta sección para graficar.', 'info');
+        return;
+    }
+
+    let siCount = 0;
+    let noCount = 0;
+
+    relevant.forEach(item => {
+        let pDate = item.planDate;
+        let eDate = item.execDate;
+        
+        if (!pDate || pDate === '-' || pDate.trim() === '') pDate = null;
+        if (!eDate || eDate === '-' || eDate.trim() === '') eDate = null;
+
+        if (pDate && eDate) {
+            let pd = new Date(pDate);
+            let ed = new Date(eDate);
+            if (ed <= pd) {
+                siCount++;
+            } else {
+                noCount++; // Ejecutado pero tarde
+            }
+        } else {
+            // Si no tiene fecha de ejecución, es un "No" (a menos que tampoco tenga de planeación, igual es no cumplido)
+            noCount++;
+        }
+    });
+
+    if (siCount === 0 && noCount === 0) {
+        Swal.fire('Atención', 'No hay fechas de planeación/ejecución para graficar.', 'info');
+        return;
+    }
+
+    Swal.fire({
+        title: `Gráfica: ${sectionName}`,
+        html: `
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                <div style="width: 100%; height: 300px;">
+                    <canvas id="sectionChart"></canvas>
+                </div>
+                <table style="width: 80%; border-collapse: collapse; margin-top: 10px; font-size: 14px;">
+                    <thead>
+                        <tr style="background-color: #f8f9fa;">
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Estado</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: bold; color: #2ecc71;">Sí (Cumplido)</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold;">${siCount}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: bold; color: #e74c3c;">No (Atrasado / Sin Ejecutar)</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold;">${noCount}</td>
+                        </tr>
+                        <tr style="background-color: #f8f9fa;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: bold; text-align: right;">Total:</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold;">${siCount + noCount}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `,
+        showCloseButton: true,
+        showConfirmButton: false,
+        width: '600px',
+        didOpen: () => {
+            const ctx = document.getElementById('sectionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Sí (Cumplido)', 'No (Atrasado / Sin Ejecutar)'],
+                    datasets: [{
+                        data: [siCount, noCount],
+                        backgroundColor: ['#2ecc71', '#e74c3c'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: 'bold', size: 14 },
+                            formatter: (value, context) => {
+                                let sum = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                if (sum === 0) return '';
+                                let percentage = (value * 100 / sum).toFixed(1) + "%";
+                                return percentage;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+};
+
 window.editConsolidationActivity = (externalId) => {
     const item = annualConsolidationData.find(i => i.externalId === externalId);
     if (!item) return;
 
+    document.getElementById('consCategoryContext').value = 'programs';
     document.getElementById('consExternalId').value = item.externalId;
     document.getElementById('consEditId').value = item.dbIdActivity;
     
@@ -854,9 +1082,52 @@ window.editConsolidationActivity = (externalId) => {
     document.getElementById('consFieldResponsible').value = item.responsable;
     document.getElementById('consFieldResources').value = item.recurso;
     document.getElementById('consFieldTarget').value = item.cargosText;
+    
+    // Editable fields but might be read-only in programs? In programs they are read-only except execDate/obs.
+    document.getElementById('consFieldResponsible').disabled = true;
+    document.getElementById('consFieldResponsible').style.background = '#f0f0f0';
+    document.getElementById('consFieldResources').disabled = true;
+    document.getElementById('consFieldResources').style.background = '#f0f0f0';
+    document.getElementById('consFieldTarget').disabled = true;
+    document.getElementById('consFieldTarget').style.background = '#f0f0f0';
+    document.getElementById('consFieldPlanDate').disabled = true;
+    document.getElementById('consFieldPlanDate').style.background = '#f0f0f0';
+    
+    document.getElementById('consFieldPlanDate').value = item.fechaPlaneacion;
+    document.getElementById('consFieldExecDate').value = item.execDate;
+    document.getElementById('consFieldObs').value = item.obs;
+
+    document.getElementById('annualDetailView').style.display = 'none';
+    document.getElementById('annualConsolidationEditView').style.display = 'block';
+};
+
+window.editMedicalActivity = (externalId) => {
+    const item = window.annualMedicalData.find(i => i.externalId === externalId);
+    if (!item) return;
+
+    document.getElementById('consCategoryContext').value = 'medical';
+    document.getElementById('consExternalId').value = item.externalId;
+    document.getElementById('consEditId').value = item.dbIdActivity;
+    
+    // Read only fields
+    document.getElementById('consFieldName').value = item.nombre;
+    document.getElementById('consFieldActivity').value = item.actividad;
+    
+    // Editable fields for Medical Exams
+    document.getElementById('consFieldResponsible').disabled = false;
+    document.getElementById('consFieldResponsible').style.background = '#fff';
+    document.getElementById('consFieldResources').disabled = false;
+    document.getElementById('consFieldResources').style.background = '#fff';
+    document.getElementById('consFieldTarget').disabled = false;
+    document.getElementById('consFieldTarget').style.background = '#fff';
+    document.getElementById('consFieldPlanDate').disabled = false;
+    document.getElementById('consFieldPlanDate').style.background = '#fff';
+
+    document.getElementById('consFieldResponsible').value = item.responsable;
+    document.getElementById('consFieldResources').value = item.recurso;
+    document.getElementById('consFieldTarget').value = item.target;
     document.getElementById('consFieldPlanDate').value = item.fechaPlaneacion;
     
-    // Editable fields
     document.getElementById('consFieldExecDate').value = item.execDate;
     document.getElementById('consFieldObs').value = item.obs;
 
@@ -870,6 +1141,7 @@ window.hideConsolidationEditView = () => {
 };
 
 window.saveConsolidationActivity = async () => {
+    const category = document.getElementById('consCategoryContext').value;
     const externalId = document.getElementById('consExternalId').value;
     const idActivity = document.getElementById('consEditId').value;
     
@@ -889,7 +1161,7 @@ window.saveConsolidationActivity = async () => {
             body: JSON.stringify({
                 token: getToken(),
                 idPlan: activePlanId,
-                category: 'programs',
+                category: category,
                 idActivity: idActivity,
                 external_id: externalId,
                 name: name,
@@ -905,7 +1177,7 @@ window.saveConsolidationActivity = async () => {
         const resp = await res.json();
         if (resp.status === 'ok') {
             await refreshDetail();
-            Swal.fire('Guardado', 'Ejecución guardada.', 'success');
+            Swal.fire('Guardado', 'Registro guardado.', 'success');
             hideConsolidationEditView();
         } else {
             Swal.fire('Error', resp.result.error_msg || 'Error al guardar', 'error');

@@ -42,6 +42,11 @@ class annual extends connection {
         $sigData = parent::getData($querySig);
         $plan['signatures'] = !empty($sigData) ? $sigData[0] : null;
 
+        // Employees for Medical Exams
+        $idEmpresa = $plan['idEmpresa'];
+        $queryEmp = "SELECT id, nombre, identificacion FROM entry WHERE idEmpresa = $idEmpresa ORDER BY nombre ASC";
+        $plan['employees'] = parent::getData($queryEmp);
+
         return $plan;
     }
 
