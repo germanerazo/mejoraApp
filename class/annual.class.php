@@ -45,7 +45,7 @@ class annual extends connection {
         // Employees for Medical Exams
         try {
             $idEmpresa = intval($plan['idEmpresa']);
-            $queryEmp = "SELECT id, nombre, identificacion FROM entry WHERE idEmpresa = $idEmpresa ORDER BY nombre ASC";
+            $queryEmp = "SELECT idEntry as id, nombre, identificacion FROM entry WHERE idEmpresa = $idEmpresa ORDER BY nombre ASC";
             $plan['employees'] = parent::getData($queryEmp);
         } catch (\Throwable $e) {
             $plan['employees'] = [];
@@ -58,6 +58,8 @@ class annual extends connection {
                 // If both fail, return empty
             }
         }
+        
+        file_put_contents(dirname(__FILE__) . '/../api/debug_plan.txt', "ID EMPRESA: " . print_r($plan['idEmpresa'] ?? $plan['id_empresa'] ?? 'N/A', true) . "\nEMPLOYEES COUNT: " . count($plan['employees']) . "\n");
 
         return $plan;
     }
