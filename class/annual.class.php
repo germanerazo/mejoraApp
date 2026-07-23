@@ -56,6 +56,12 @@ class annual extends connection {
             $_entry = new entry();
             $plan['debug_logs'][] = "3. entry object instantiated";
             
+            // Temporary check of all idEmpresas in entry
+            try {
+                $allCount = parent::getData("SELECT idEmpresa, COUNT(*) as c FROM entry GROUP BY idEmpresa");
+                $plan['debug_logs'][] = "DEBUG DB ENTRY TOTALS: " . json_encode($allCount);
+            } catch (\Throwable $e) {}
+
             $rawEmployees = $_entry->list($idEmpresa);
             $plan['debug_logs'][] = "4. rawEmployees fetched, is_array: " . (is_array($rawEmployees) ? 'yes' : 'no') . ", count: " . (is_array($rawEmployees) ? count($rawEmployees) : 0);
             
