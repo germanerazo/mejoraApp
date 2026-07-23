@@ -78,7 +78,7 @@
     
     <!-- Objectives (Organizational) -->
     <div style="margin-bottom: 20px;">
-        <button class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 15px;" onclick="addObjective('organizational')">
+        <button id="btnAddObj_organizational" class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 15px;" onclick="addObjective('organizational')">
             <i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta
         </button>
         <table class="annual-table" id="tableObjectivesOrganizational" style="margin-top: 5px;">
@@ -121,7 +121,7 @@
 
     <!-- Objectives (Programs) -->
     <div style="margin-bottom: 20px;">
-        <button class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('programs')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
+        <button id="btnAddObj_programs" class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('programs')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
         <table class="annual-table" id="tableObjectivesPrograms" style="margin-top: 5px;">
             <thead>
                 <tr>
@@ -158,7 +158,7 @@
 
     <!-- Objectives (Inspections) -->
     <div style="margin-bottom: 20px;">
-        <button class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('inspections')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
+        <button id="btnAddObj_inspections" class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('inspections')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
         <table class="annual-table" id="tableObjectivesInspections" style="margin-top: 5px;">
             <thead>
                 <tr>
@@ -198,7 +198,7 @@
 
     <!-- Objectives (Audits) -->
     <div style="margin-bottom: 20px;">
-        <button class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('audits')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
+        <button id="btnAddObj_audits" class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('audits')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
         <table class="annual-table" id="tableObjectivesAudits" style="margin-top: 5px;">
             <thead>
                 <tr>
@@ -238,7 +238,7 @@
 
     <!-- Objectives (Vulnerability) -->
     <div style="margin-bottom: 20px;">
-        <button class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('vulnerability')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
+        <button id="btnAddObj_vulnerability" class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('vulnerability')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
         <table class="annual-table" id="tableObjectivesVulnerability" style="margin-top: 5px;">
             <thead>
                 <tr>
@@ -278,7 +278,7 @@
 
     <!-- Objectives (Management Review) -->
     <div style="margin-bottom: 20px;">
-        <button class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('managementRelease')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
+        <button id="btnAddObj_managementRelease" class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('managementRelease')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
         <table class="annual-table" id="tableObjectivesManagementReview" style="margin-top: 5px;">
             <thead>
                 <tr>
@@ -318,7 +318,7 @@
 
     <!-- Objectives (Medical) -->
     <div style="margin-bottom: 20px;">
-        <button class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('medical')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
+        <button id="btnAddObj_medical" class="btn-new-record" style="margin-bottom: 10px; font-size: 0.9rem; padding: 5px 10px;" onclick="addObjective('medical')"><i class="fas fa-plus-circle"></i> Agregar Objetivo y Meta</button>
         <table class="annual-table" id="tableObjectivesMedicalExams" style="margin-top: 5px;">
             <thead>
                 <tr>

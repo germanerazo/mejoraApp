@@ -246,8 +246,13 @@ window.hideAnnualDetail = () => {
 const renderObjectiveTableUI = (category, tableId) => {
     const tbody = document.querySelector(`#${tableId} tbody`);
     if (!tbody) return;
-    
     const relevant = activeFullPlan.objectives.filter(i => i.category === category);
+    
+    const addBtn = document.getElementById(`btnAddObj_${category}`);
+    if (addBtn) {
+        addBtn.style.display = relevant.length > 0 ? 'none' : 'inline-block';
+    }
+
     let html = '';
     
     if (relevant.length === 0) {
