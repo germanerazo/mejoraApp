@@ -45,25 +45,34 @@ class annual extends connection {
         // Employees for Medical Exams
         try {
             $idEmpresa = intval($plan['idEmpresa']);
-            $queryEmp = "SELECT idEntry as id, nombre, identificacion FROM entry WHERE idEmpresa = $idEmpresa ORDER BY nombre ASC";
-            $plan['employees'] = parent::getData($queryEmp);
-        } catch (\Throwable $e) {
-            error_log("Error fetching employees from entry: " . $e->getMessage());
-            // Fallback just in case they meant the personnel table
-            try {
-                $queryEmp2 = "SELECT id, employee_name as nombre, id_num as identificacion FROM personnel WHERE id_empresa = $idEmpresa ORDER BY employee_name ASC";
-                $plan['employees'] = parent::getData($queryEmp2);
-                $plan['debug'] = "Fallback to personnel succeeded.";
-            } catch (\Throwable $e2) {
-                // If both fail, return empty
-                $plan['employees'] = [];
-                $plan['debug_error1'] = $e->getMessage();
-                $plan['debug_error2'] = $e2->getMessage();
+            require_once 'entry.class.php';
+            $_entry = new entry();
+            $rawEmployees = $_entry->list($idEmpresa);
+            
+            $empList = [];
+            if (!empty($rawEmployees) && is_array($rawEmployees)) {
+                foreach($rawEmployees as $emp) {
+                    // Only active employees? The user said "todos los empleados que existan" so we can bring them all, 
+                    // but usually medical exams are for active. We'll just bring them all as in entry list.
+                    $empList[] = [
+                        'id' => $emp['idEntry'],
+                        'nombre' => $emp['nombre'],
+                        'identificacion' => $emp['identificacion']
+                    ];
+                }
             }
+            
+            // Sort by nombre ASC
+            usort($empList, function($a, $b) {
+                return strcmp($a['nombre'], $b['nombre']);
+            });
+
+            $plan['employees'] = $empList;
+        } catch (\Throwable $e) {
+            $plan['employees'] = [];
+            error_log("Error fetching employees from entry class: " . $e->getMessage());
         }
         
-        file_put_contents(dirname(__FILE__) . '/../api/debug_plan.txt', "ID EMPRESA: " . print_r($plan['idEmpresa'] ?? $plan['id_empresa'] ?? 'N/A', true) . "\nEMPLOYEES COUNT: " . count($plan['employees']) . "\n");
-
         return $plan;
     }
 
