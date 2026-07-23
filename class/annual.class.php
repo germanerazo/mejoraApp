@@ -44,44 +44,46 @@ class annual extends connection {
 
         // Employees for Medical Exams
         try {
-            error_log("--- INIT EMPLOYEE FETCH ---");
+            $plan['debug_logs'] = [];
+            $plan['debug_logs'][] = "--- INIT EMPLOYEE FETCH ---";
+            
             $idEmpresa = intval($plan['idEmpresa']);
-            error_log("1. idEmpresa: " . $idEmpresa);
+            $plan['debug_logs'][] = "1. idEmpresa: " . $idEmpresa;
             
             require_once 'entry.class.php';
-            error_log("2. entry.class.php required successfully");
+            $plan['debug_logs'][] = "2. entry.class.php required successfully";
             
             $_entry = new entry();
-            error_log("3. entry object instantiated");
+            $plan['debug_logs'][] = "3. entry object instantiated";
             
             $rawEmployees = $_entry->list($idEmpresa);
-            error_log("4. rawEmployees fetched, is_array: " . (is_array($rawEmployees) ? 'yes' : 'no') . ", count: " . (is_array($rawEmployees) ? count($rawEmployees) : 0));
+            $plan['debug_logs'][] = "4. rawEmployees fetched, is_array: " . (is_array($rawEmployees) ? 'yes' : 'no') . ", count: " . (is_array($rawEmployees) ? count($rawEmployees) : 0);
             
             $empList = [];
             if (!empty($rawEmployees) && is_array($rawEmployees)) {
                 foreach($rawEmployees as $emp) {
                     $empList[] = [
-                        'id' => $emp['idEntry'],
-                        'nombre' => $emp['nombre'],
-                        'identificacion' => $emp['identificacion']
+                        'id' => $emp['idEntry'] ?? 'NO_ID',
+                        'nombre' => $emp['nombre'] ?? 'NO_NAME',
+                        'identificacion' => $emp['identificacion'] ?? 'NO_ID_NUM'
                     ];
                 }
-                error_log("5. Mapped " . count($empList) . " employees");
+                $plan['debug_logs'][] = "5. Mapped " . count($empList) . " employees";
             } else {
-                error_log("5. No employees to map. empty(rawEmployees)? " . (empty($rawEmployees) ? 'yes' : 'no'));
+                $plan['debug_logs'][] = "5. No employees to map. empty(rawEmployees)? " . (empty($rawEmployees) ? 'yes' : 'no');
             }
             
             // Sort by nombre ASC
             usort($empList, function($a, $b) {
                 return strcmp($a['nombre'] ?? '', $b['nombre'] ?? '');
             });
-            error_log("6. Sorted employees");
+            $plan['debug_logs'][] = "6. Sorted employees";
 
             $plan['employees'] = $empList;
-            error_log("7. Employees assigned to plan array, count: " . count($plan['employees']));
+            $plan['debug_logs'][] = "7. Employees assigned to plan array, count: " . count($plan['employees']);
         } catch (\Throwable $e) {
             $plan['employees'] = [];
-            error_log("ERROR EXCEPTION in employee fetch: " . $e->getMessage() . " on line " . $e->getLine());
+            $plan['debug_logs'][] = "ERROR EXCEPTION in employee fetch: " . $e->getMessage() . " on line " . $e->getLine();
         }
         
         return $plan;
