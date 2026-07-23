@@ -48,14 +48,17 @@ class annual extends connection {
             $queryEmp = "SELECT idEntry as id, nombre, identificacion FROM entry WHERE idEmpresa = $idEmpresa ORDER BY nombre ASC";
             $plan['employees'] = parent::getData($queryEmp);
         } catch (\Throwable $e) {
-            $plan['employees'] = [];
             error_log("Error fetching employees from entry: " . $e->getMessage());
             // Fallback just in case they meant the personnel table
             try {
                 $queryEmp2 = "SELECT id, employee_name as nombre, id_num as identificacion FROM personnel WHERE id_empresa = $idEmpresa ORDER BY employee_name ASC";
                 $plan['employees'] = parent::getData($queryEmp2);
+                $plan['debug'] = "Fallback to personnel succeeded.";
             } catch (\Throwable $e2) {
                 // If both fail, return empty
+                $plan['employees'] = [];
+                $plan['debug_error1'] = $e->getMessage();
+                $plan['debug_error2'] = $e2->getMessage();
             }
         }
         

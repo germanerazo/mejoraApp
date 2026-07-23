@@ -170,7 +170,9 @@ window.viewAnnual = async (id) => {
         document.getElementById('annualDetailView').style.display = 'block';
         
         document.getElementById('detailPeriod').innerText = `Desde: ${activeFullPlan.startDate} - Hasta: ${activeFullPlan.endDate}`;
-        
+        if (activeFullPlan.debug_error1 || activeFullPlan.debug_error2 || activeFullPlan.debug) {
+            Swal.fire('Debug Info', `Err1: ${activeFullPlan.debug_error1}<br>Err2: ${activeFullPlan.debug_error2}<br>Debug: ${activeFullPlan.debug}`, 'info');
+        }
         renderAllSections();
         loadSignaturesUI();
         renderConsolidationPrograms(dangersRaw, progData, measuresResp);
