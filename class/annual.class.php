@@ -43,9 +43,21 @@ class annual extends connection {
         $plan['signatures'] = !empty($sigData) ? $sigData[0] : null;
 
         // Employees for Medical Exams
-        $idEmpresa = $plan['idEmpresa'];
-        $queryEmp = "SELECT id, nombre, identificacion FROM entry WHERE idEmpresa = $idEmpresa ORDER BY nombre ASC";
-        $plan['employees'] = parent::getData($queryEmp);
+        try {
+            $idEmpresa = intval($plan['idEmpresa']);
+            $queryEmp = "SELECT id, nombre, identificacion FROM entry WHERE idEmpresa = $idEmpresa ORDER BY nombre ASC";
+            $plan['employees'] = parent::getData($queryEmp);
+        } catch (\Throwable $e) {
+            $plan['employees'] = [];
+            error_log("Error fetching employees from entry: " . $e->getMessage());
+            // Fallback just in case they meant the personnel table
+            try {
+                $queryEmp2 = "SELECT id, employee_name as nombre, id_num as identificacion FROM personnel WHERE id_empresa = $idEmpresa ORDER BY employee_name ASC";
+                $plan['employees'] = parent::getData($queryEmp2);
+            } catch (\Throwable $e2) {
+                // If both fail, return empty
+            }
+        }
 
         return $plan;
     }
