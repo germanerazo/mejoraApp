@@ -1,4 +1,5 @@
 import config from "../../js/config.js";
+import { showLoading, hideLoading } from "../../js/utils.js";
 
 const API_URL = `${config.BASE_API_URL}annual.php`;
 const DANGER_API = `${config.BASE_API_URL}dangerMgmt.php`;
@@ -147,14 +148,7 @@ window.deleteAnnual = (id) => {
 
 window.viewAnnual = async (id) => {
     try {
-        Swal.fire({
-            title: 'Cargando detalle...',
-            text: 'Por favor espere',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
+        showLoading('Cargando detalle...');
 
         const riskConsIdEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
 
@@ -181,9 +175,10 @@ window.viewAnnual = async (id) => {
         loadSignaturesUI();
         renderConsolidationPrograms(dangersRaw, progData, measuresResp);
         
-        Swal.close();
+        hideLoading();
     } catch (err) {
         console.error('View error:', err);
+        hideLoading();
         Swal.fire('Error', 'Error al cargar el detalle del plan', 'error');
     }
 };
@@ -564,11 +559,7 @@ window.saveSignatures = async () => {
 const refreshDetail = async () => {
     if (!activePlanId) return;
 
-    Swal.fire({
-        title: 'Actualizando...',
-        allowOutsideClick: false,
-        didOpen: () => { Swal.showLoading(); }
-    });
+    showLoading('Actualizando...');
 
     try {
         const riskConsIdEmpresa = sessionStorage.getItem('idEmpresa') || localStorage.getItem('idEmpresa') || 1;
@@ -590,22 +581,73 @@ const refreshDetail = async () => {
         loadSignaturesUI();
         renderConsolidationPrograms(dangersRaw, progData, measuresResp);
         
-        Swal.close();
+        hideLoading();
     } catch (err) {
         console.error('Refresh error:', err);
+        hideLoading();
         Swal.fire('Error', 'Error al actualizar el detalle', 'error');
     }
 };
 
 window.handleSignatureSelect = (input, imgId, placeholderId) => {
     if (input.files && input.files[0]) {
+        const file = input.files[0];
         const reader = new FileReader();
+        
         reader.onload = function(e) {
-            document.getElementById(imgId).src = e.target.result;
-            document.getElementById(imgId).style.display = 'block';
-            document.getElementById(placeholderId).style.display = 'none';
-        }
-        reader.readAsDataURL(input.files[0]);
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                // Definir resolución máxima para la firma
+                const MAX_WIDTH = 800;
+                const MAX_HEIGHT = 800;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height = Math.round(height * (MAX_WIDTH / width));
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width = Math.round(width * (MAX_HEIGHT / height));
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                
+                let mimeType = file.type;
+                if (mimeType === 'image/jpeg') {
+                    // Fondo blanco para jpegs para evitar transparencias negras
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, width, height);
+                }
+                
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                let dataUrl;
+                if (mimeType === 'image/jpeg') {
+                    dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                } else {
+                    // Usar webp para mantener transparencia con compresión, o png como respaldo
+                    dataUrl = canvas.toDataURL('image/webp', 0.7);
+                    if (dataUrl.indexOf('image/webp') === -1) {
+                        dataUrl = canvas.toDataURL('image/png');
+                    }
+                }
+
+                document.getElementById(imgId).src = dataUrl;
+                document.getElementById(imgId).style.display = 'block';
+                document.getElementById(placeholderId).style.display = 'none';
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 };
 
