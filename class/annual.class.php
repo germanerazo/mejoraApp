@@ -44,33 +44,44 @@ class annual extends connection {
 
         // Employees for Medical Exams
         try {
+            error_log("--- INIT EMPLOYEE FETCH ---");
             $idEmpresa = intval($plan['idEmpresa']);
+            error_log("1. idEmpresa: " . $idEmpresa);
+            
             require_once 'entry.class.php';
+            error_log("2. entry.class.php required successfully");
+            
             $_entry = new entry();
+            error_log("3. entry object instantiated");
+            
             $rawEmployees = $_entry->list($idEmpresa);
+            error_log("4. rawEmployees fetched, is_array: " . (is_array($rawEmployees) ? 'yes' : 'no') . ", count: " . (is_array($rawEmployees) ? count($rawEmployees) : 0));
             
             $empList = [];
             if (!empty($rawEmployees) && is_array($rawEmployees)) {
                 foreach($rawEmployees as $emp) {
-                    // Only active employees? The user said "todos los empleados que existan" so we can bring them all, 
-                    // but usually medical exams are for active. We'll just bring them all as in entry list.
                     $empList[] = [
                         'id' => $emp['idEntry'],
                         'nombre' => $emp['nombre'],
                         'identificacion' => $emp['identificacion']
                     ];
                 }
+                error_log("5. Mapped " . count($empList) . " employees");
+            } else {
+                error_log("5. No employees to map. empty(rawEmployees)? " . (empty($rawEmployees) ? 'yes' : 'no'));
             }
             
             // Sort by nombre ASC
             usort($empList, function($a, $b) {
-                return strcmp($a['nombre'], $b['nombre']);
+                return strcmp($a['nombre'] ?? '', $b['nombre'] ?? '');
             });
+            error_log("6. Sorted employees");
 
             $plan['employees'] = $empList;
+            error_log("7. Employees assigned to plan array, count: " . count($plan['employees']));
         } catch (\Throwable $e) {
             $plan['employees'] = [];
-            error_log("Error fetching employees from entry class: " . $e->getMessage());
+            error_log("ERROR EXCEPTION in employee fetch: " . $e->getMessage() . " on line " . $e->getLine());
         }
         
         return $plan;

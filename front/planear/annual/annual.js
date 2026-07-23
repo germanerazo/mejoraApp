@@ -340,10 +340,14 @@ const renderMedicalExams = (tableId) => {
 
     let html = '';
     const employees = activeFullPlan.employees || [];
-    const existingActivities = activeFullPlan.activities || [];
+    const activities = activeFullPlan.activities || [];
+    
+    console.log("--- RENDER MEDICAL EXAMS ---");
+    console.log("Employees array received:", employees);
+    console.log("Employees count:", employees.length);
 
     if (employees.length === 0) {
-        html = '<tr><td colspan="10" style="text-align: center; color: #999;">No hay empleados registrados.</td></tr>';
+        html = `<tr><td colspan="9" style="text-align: center; color: #666;">No hay empleados registrados en el sistema.</td></tr>`;
     } else {
         // Prepare global variable to cache data for editing (similar to annualConsolidationData)
         if (typeof window.annualMedicalData === 'undefined') {
